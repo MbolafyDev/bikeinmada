@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mode hors ligne – ZaraStore{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+
+      <h1 class="h4 mb-3 text-center">🚫 Vous êtes hors connexion</h1>
+
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <p>
+            Vous pouvez continuer à consulter certaines pages déjà visitées
+            (ex. <em>commandes, encaissements, articles…</em>).
+          </p>
+
+          <p class="mb-3">
+            Les actions (<strong>création</strong>, <strong>encaissement</strong>, <strong>suppression</strong>)
+            sont désactivées tant que la connexion n’est pas rétablie.
+          </p>
+
+          <p class="mb-3 text-center">
+            <a class="btn btn-outline-success btn-sm" href="{% url 'liste_commandes' %}">⬅ Retour à la liste des commandes</a>
+            <!-- Si besoin, remplacez la ligne ci‑dessus par :
+            <a class="btn btn-outline-success btn-sm" href="/">⬅ Retour à l’accueil</a>
+            -->
+          </p>
+
+          <hr>
+
+          <p class="mb-0">
+            <small class="text-muted">
+              💡 Astuce : ouvrez régulièrement vos pages principales pendant que vous êtes en ligne,
+              elles seront ainsi disponibles hors ligne.
+            </small>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

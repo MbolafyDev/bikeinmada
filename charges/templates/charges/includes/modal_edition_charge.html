@@ -1,0 +1,102 @@
+<!-- Modal édition charge -->
+<div class="modal fade" id="editModal{{ charge.id }}" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" action="{% url 'modifier_charge' charge.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Modifier la charge</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+
+          <!-- Date et page -->
+          <div class=" row mb-3">
+            <div class="col-md-6 mb-3">
+                <label for="date-{{ charge.id }}" class="form-label">Date</label>
+                <input type="date" id="date-{{ charge.id }}" name="date" class="form-control"
+                    value="{{ charge.date|date:'Y-m-d' }}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="page" class="form-label">Page</label>
+              <select name="page" class="form-control">
+                <option value="">Aucun</option>
+                {% for page in pages %}
+                  <option value="{{ page.id }}" {% if charge.page and charge.page.id == page.id %}selected{% endif %}>
+                    {{ page.nom }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Libellé -->
+          <div class="mb-3">
+            <label for="libelle-{{ charge.id }}" class="form-label">Libellé</label>
+            <select id="libelle-{{ charge.id }}" name="libelle" class="form-control" required>
+              {% for p in plans %}
+                <option value="{{ p.id }}" {% if charge.libelle.id == p.id %}selected{% endif %}>
+                  {{ p.compte_numero }} - {{ p.libelle }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- PU, Quantité, Montant -->
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label for="pu-{{ charge.id }}" class="form-label">Prix Unitaire</label>
+              <input type="number" id="pu-{{ charge.id }}" name="pu" class="form-control"
+                     value="{{ charge.pu }}" step="100" required oninput="updateMontant({{ charge.id }})">
+            </div>
+            <div class="col-md-4">
+              <label for="quantite-{{ charge.id }}" class="form-label">Quantité</label>
+              <input type="number" id="quantite-{{ charge.id }}" name="quantite" class="form-control"
+                     value="{{ charge.quantite }}" required oninput="updateMontant({{ charge.id }})">
+            </div>
+            <div class="col-md-4">
+              <label for="montant-{{ charge.id }}" class="form-label">Montant</label>
+              <input type="number" id="montant-{{ charge.id }}" name="montant" class="form-control"
+                     value="{{ charge.montant }}" required readonly>
+            </div>
+          </div>
+
+          <!-- Remarque, Paiement -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="remarque-{{ charge.id }}" class="form-label">Remarque</label>
+              <input type="text" id="remarque-{{ charge.id }}" name="remarque" class="form-control"
+                     value="{{ charge.remarque }}">
+            </div>
+            <div class="col-md-6">
+              <label for="paiement-{{ charge.id }}" class="form-label">Paiement (Caisse)</label>
+              <select id="paiement-{{ charge.id }}" name="paiement" class="form-control" required>
+                {% for c in caisses %}
+                  <option value="{{ c.id }}" {% if charge.paiement.id == c.id %}selected{% endif %}>
+                    {{ c.nom }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Modifier</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function updateMontant(id) {
+    const pu = document.getElementById(`pu-${id}`);
+    const quantite = document.getElementById(`quantite-${id}`);
+    const montant = document.getElementById(`montant-${id}`);
+
+    const total = parseInt(pu.value || 0) * parseInt(quantite.value || 0);
+    montant.value = isNaN(total) ? '' : total;
+}
+</script>

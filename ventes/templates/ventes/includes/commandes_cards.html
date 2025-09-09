@@ -1,0 +1,133 @@
+{# ventes/includes/commandes_cards.html #}
+{% load static %}
+{% load nombre %}
+
+{% with scope=carousel_scope|default:"sm" %}
+{% if commandes %}
+  <div class="row">
+    {% for commande in commandes %}
+      {% with lignes=commande.lignes_commandes.all %}
+      <div class="col-md-6 col-xl-4 mb-4">
+        <div class="card h-100 shadow-sm {% if commande.statut_publication == 'supprimé' or commande.statut_livraison == 'Annulée' or commande.statut_livraison == 'Reportée' %}opacity-50{% endif %}">
+          <div class="card-body">
+            <h5 class="card-title text-success mb-2">Facture n° {{ commande.numero_facture }}</h5>
+
+            <div class="row g-3 align-items-start">
+              <div class="col-5">
+                {% if lignes|length > 1 %}
+                  <div id="carouselCommande{{ scope }}-{{ commande.id }}"
+                       class="carousel slide carousel-dark"
+                       data-bs-touch="true" data-bs-interval="false"
+                       data-list-target="#listeArticles{{ scope }}-{{ commande.id }}">
+                    <div class="carousel-inner">
+                      {% for ligne in lignes %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}"
+                             data-index="{{ forloop.counter0 }}">
+                          <div class="thumb-120">
+                            {% if ligne.article.image %}
+                              <img src="{{ ligne.article.image.url }}" alt="{{ ligne.article.nom }}" loading="lazy">
+                            {% else %}
+                              <img src="{% static 'images/zarastore.png' %}" alt="{{ ligne.article.nom }}" loading="lazy">
+                            {% endif %}
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button"
+                            data-bs-target="#carouselCommande{{ scope }}-{{ commande.id }}" data-bs-slide="prev">
+                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Précédent</span>
+                    </button>
+                    <button class="carousel-control-next" type="button"
+                            data-bs-target="#carouselCommande{{ scope }}-{{ commande.id }}" data-bs-slide="next">
+                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Suivant</span>
+                    </button>
+                  </div>
+                {% else %}
+                  {% for ligne in lignes %}
+                    <div class="thumb-120">
+                      {% if ligne.article.image %}
+                        <img src="{{ ligne.article.image.url }}" alt="{{ ligne.article.nom }}" loading="lazy">
+                      {% else %}
+                        <img src="{% static 'images/zarastore.png' %}" alt="{{ ligne.article.nom }}" loading="lazy">
+                      {% endif %}
+                    </div>
+                  {% empty %}
+                    <div class="thumb-120">
+                      <img src="{% static 'images/zarastore.png' %}" alt="Aucun article" loading="lazy">
+                    </div>
+                  {% endfor %}
+                {% endif %}
+
+                <p class="text-secondary text-decoration-underline my-1">Articles :</p>
+                <ul id="listeArticles{{ scope }}-{{ commande.id }}"
+                    class="article-list list-unstyled ps-0 small"
+                    data-role="liste-articles"
+                    data-count="{{ lignes|length }}">
+                  {% for ligne in lignes %}
+                    <li class="py-1" data-index="{{ forloop.counter0 }}">
+                      <div class="article-line-inner">
+                        <span class="article-name item-text {% if lignes|length > 1 and forloop.first %}text-success fw-semibold{% endif %}">
+                          {% if ligne.article.reference %}
+                            {{ ligne.article.reference|slice:":10" }}
+                          {% else %}
+                            {{ ligne.article.nom|slice:":10" }}
+                          {% endif %}
+                        </span>
+                        <span class="badge rounded-pill bg-secondary ms-1">{{ ligne.quantite }}</span>
+                      </div>
+                    </li>
+                  {% empty %}
+                    <li class="py-1 text-muted">Aucun article</li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+              <div class="col-7">
+                <p class="card-text mb-1"><i class="fa fa-user"></i> {{ commande.client.nom }}</p>
+                <p class="card-text mb-1"><i class="fa fa-calendar"></i> {{ commande.date_livraison|date:"d/m/Y" }}</p>
+                <p class="card-text mb-1"><i class="fa fa-location-dot"></i> {{ commande.client.lieu.lieu }}</p>
+                <p class="card-text mb-1"><i class="fa fa-shop"></i> {{ commande.page }}</p>
+                <p class="card-text mb-1"><i class="fa fa-wallet"></i> {{ commande.statut_vente }}</p>
+                <p class="card-text mb-1"><i class="fa fa-bicycle"></i> {{ commande.statut_livraison }}</p>
+                <p class="card-text mb-0"><i class="fa fa-coins"></i> {{ commande.total_commande|intpoint }} Ar</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer text-end">
+            <button type="button" class="btn btn-sm btn-outline-success" title="Voir"
+                    data-bs-toggle="modal" data-bs-target="#ouvrirDetailCommande_{{ commande.id }}">
+              <i class="fa fa-eye"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-success" title="Modifier"
+                    onclick="window.location.href='{% url 'commande_edit' commande.id %}'"
+                    {% if commande.actions_desactivees %}disabled{% endif %}>
+              <i class="fa fa-edit"></i>
+            </button>
+
+            {% if is_admin and commande.statut_publication == "supprimé" %}
+              <button type="button" class="btn btn-sm btn-outline-success" title="Restaurer"
+                      data-bs-toggle="modal" data-bs-target="#restoreCommandeModal{{ commande.id }}">
+                <i class="fa fa-undo"></i>
+              </button>
+            {% else %}
+              <button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"
+                      data-bs-toggle="modal" data-bs-target="#deleteCommandeModal"
+                      data-id="{{ commande.id }}" data-numero="{{ commande.numero_facture }}"
+                      {% if not is_admin or commande.actions_desactivees %}disabled{% endif %}>
+                <i class="fa fa-trash"></i>
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endwith %}
+    {% endfor %}
+  </div>
+
+{% else %}
+  <div class="alert alert-info text-center">Aucune commande enregistrée.</div>
+{% endif %}
+{% endwith %}

@@ -1,0 +1,27 @@
+{% load nombre %}
+
+<!-- Modal restauration charge -->
+<div class="modal fade" id="restoreModal{{ charge.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'restaurer_charge' charge.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Restaurer la charge</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Veuillez confirmer la restauration de la charge du <strong>{{ charge.date|date:"d/m/Y" }}</strong> ({{ charge.libelle.libelle }} : {{ charge.montant|intpoint }} Ar) </p>
+                    <div class="mb-3">
+                        <label for="password" class="form-label fw-bold">Mot de passe :</label>
+                        <input type="password" name="password" class="form-control" placeholder="Entrez votre mot de passe pour confirmer" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Restaurer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

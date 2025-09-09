@@ -1,0 +1,40 @@
+{% load nombre %}
+
+<div class="table-responsive">
+  <table class="table table-bordered table-striped align-middle">
+    <thead class="table-success">
+      <tr>
+        <th>Date</th>
+        <th>Client</th>
+        <th>Lieu</th>
+        <th>Contact</th>
+        <th class="text-end">Total</th>
+        <th>Statut</th>
+        <th>Livreur</th>
+        <th class="text-end">Frais livreur</th>
+        <th class="text-center">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for commande in commandes %}
+      <tr>
+        <td>{{ commande.date_livraison|date:"d/m/Y" }}</td>
+        <td>{{ commande.client.nom }}</td>
+        <td>{{ commande.client.lieu.lieu }}</td>
+        <td>{{ commande.client.contact }}</td>
+        <td class="text-end">{{ commande.total_commande|intpoint }}</td>
+        <td>{{ commande.statut_livraison }}</td>
+        <td>{{ commande.livreur.nom }}</td>
+        <td class="text-end">{{ commande.frais_livreur|intpoint }}</td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-outline-success"
+                  data-bs-toggle="modal" data-bs-target="#editModal{{ commande.id }}"
+                  {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-edit"></i>
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

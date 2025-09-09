@@ -1,0 +1,20 @@
+{# achats/includes/achats_list_wrapper.html #}
+{% load nombre %}
+
+<div class="d-none d-lg-block">
+  {% if display_mode == 'cards' %}
+    {% include "achats/includes/achats_cards.html" with carousel_scope="lg" %}
+  {% else %}
+    {% include "achats/includes/achats_table.html" %}
+  {% endif %}
+</div>
+
+<div class="d-lg-none">
+  {% include "achats/includes/achats_cards.html" with carousel_scope="sm" %}
+</div>
+
+{# ⚠️ Modals PAR ACHAT (détail + restauration) - #}
+{% for achat in achats %}
+  {% include "achats/includes/achat_detail_modal_content.html" with achat=achat %}
+  {% include "achats/includes/achat_restauration.html" with achat=achat %}
+{% endfor %}

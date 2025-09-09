@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Historique des inventaires{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+
+  <h2 class="text-center mb-2">Historique des ajustements d'inventaire</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <div class="mb-2">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#inventaireModal" {% if not is_admin %}disabled{% endif %}>
+      <i class="fa fa-plus"></i> Ajustement d'inventaire
+    </button>
+  </div>
+
+  <form method="get">
+    <div class="row">
+      <div class="col-md-6 mb-2">
+        <input type="text" name="q" class="form-control"
+          placeholder="Rechercher un article"
+          value="{{ query|default:'' }}"
+          aria-label="Recherche article">
+      </div>
+      <div class="col-md-4">
+          <button class="btn btn-outline-success" type="submit"><i class="fa fa-search"></i> Rechercher</button>
+      </div>
+    </div>
+  </form>
+
+  {% if inventaires %}
+
+  <!-- TABLEAU pour grands écrans -->
+  <div class="d-none d-lg-block">
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-success text-center">
+          <tr>
+            <th>Date</th>
+            <th>Article</th>
+            <th>Ajustement</th>
+            <th>Remarque</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in inventaires %}
+          <tr {% if inv.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+            <td>{{ inv.date|date:"d/m/Y" }}</td>
+            <td>{{ inv.article.nom }}</td>
+            <td class="text-end">{{ inv.ajustement }}</td>
+            <td>{{ inv.remarque|default:"-" }}</td>
+
+            <td style="white-space: nowrap">
+              <!-- Bouton Modifier -->
+              <button class="btn btn-sm btn-outline-success"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editModal{{ inv.id }}"
+                      {% if not is_admin or inv.statut_publication == 'supprimé' %}disabled{% endif %}>
+                  <i class="fa fa-edit"></i>
+              </button>
+
+              {% if inv.statut_publication == "supprimé" and is_admin %}
+              <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                          data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="fa fa-ellipsis-v"></i>
+                  </button>
+                  <ul class="dropdown-menu">
+                      <li>
+                          <a class="dropdown-item text-danger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteDefModal{{ inv.id }}">
+                              Suppr. déf.
+                          </a>
+                      </li>
+                      <li>
+                          <a class="dropdown-item text-success"
+                            data-bs-toggle="modal"
+                            data-bs-target="#restoreModal{{ inv.id }}">
+                              Restaurer
+                          </a>
+                      </li>
+                  </ul>
+              </div>
+              {% else %}
+              <button class="btn btn-sm btn-outline-danger"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteModal{{ inv.id }}"
+                      {% if not is_admin %}disabled{% endif %}>
+                  <i class="fa fa-trash"></i>
+              </button>
+              {% endif %}
+            </td>            
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    
+    </div>
+  </div>
+
+  <!-- VERSION MOBILE -->
+  <div class="d-lg-none">
+    <div class="row">
+      {% for inv in inventaires %}
+      <div class="col-md-6 mb-3">
+        <div class="card shadow-sm" {% if inv.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+          <div class="card-body">
+            <h5 class="card-title text-success">{{ inv.article.nom }}</h5>
+            <p class="card-text mb-1"><strong>Date:</strong> {{ inv.date }}</p>
+            <p class="card-text mb-1"><strong>Ajustement:</strong> {{ inv.ajustement }}</p>
+            <p class="card-text mb-2"><strong>Remarque:</strong> {{ inv.remarque|default:"-" }}</p>
+          </div>
+            <div class="card-footer text-end"> 
+                <!-- Bouton Modifier -->
+                <button class="btn btn-sm btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#editModal{{ inv.id }}" title="Modifier" {% if not is_admin or inv.statut_publication == 'supprimé' %}disabled{% endif %}>
+                  <i class="fa fa-edit"></i>
+                </button>
+                <!-- Bouton Supprimer -->
+                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ inv.id }}" title="Supprimer" {% if not is_admin or inv.statut_publication == 'supprimé' %}disabled{% endif %}>
+                  <i class="fa fa-trash"></i>
+                </button>
+            </div>              
+
+        </div>
+      </div>          
+      {% endfor %}
+    </div>
+  </div>
+
+  {% else %}
+    <div class="alert alert-info text-center">Aucun ajustement d'inventaire trouvé.</div>
+  {% endif %}
+</div>
+
+<!-- ✅ Modal d'inventaire -->
+{% include "stocks/includes/modal_inventaire.html" %}
+
+{% endblock %}

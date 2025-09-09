@@ -1,0 +1,65 @@
+<div class="modal fade" id="editModal{{ article.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ article.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" action="{% url 'article_edit' article.id %}" enctype="multipart/form-data"> <!-- 👈 -->
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel{{ article.id }}">Modifier l’article</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="nom{{ article.id }}" class="form-label">Nom</label>
+            <input type="text" class="form-control" id="nom{{ article.id }}" name="nom" value="{{ article.nom }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label d-block">Image actuelle</label>
+            {% if article.image %}
+              <img src="{{ article.image.url }}" alt="{{ article.nom }}" class="img-thumbnail mb-2" style="max-height:120px;">
+            {% else %}
+              <div class="text-muted mb-2">Aucune image enregistrée.</div>
+            {% endif %}
+
+            <label for="image{{ article.id }}" class="form-label">Nouvelle image (optionnel)</label>
+            <input type="file" class="form-control" id="image{{ article.id }}" name="image" accept="image/*"
+                  data-preview-target="#preview-{{ article.id }}">
+            <div class="form-text">Laissez vide pour conserver l’image actuelle.</div>
+
+            <!-- Aperçu live (nouvelle sélection) -->
+            <img id="preview-{{ article.id }}" class="img-thumbnail mt-2 d-none" style="max-height:150px;" alt="Aperçu image">
+          </div>
+
+          <div class="mb-3">
+            <label for="reference{{ article.id }}" class="form-label">Référence</label>
+            <input type="text" class="form-control" id="reference{{ article.id }}" name="reference" value="{{ article.reference }}">
+          </div>
+
+          <div class="mb-3">
+            <label for="prix_achat{{ article.id }}" class="form-label">Prix d'achat</label>
+            <input type="number" class="form-control" id="prix_achat{{ article.id }}" step="100" name="prix_achat" value="{{ article.prix_achat }}">
+          </div>
+
+          <div class="mb-3">
+            <label for="prix_vente{{ article.id }}" class="form-label">Prix de vente</label>
+            <input type="number" class="form-control" id="prix_vente{{ article.id }}" step="100" name="prix_vente" value="{{ article.prix_vente }}">
+          </div>
+
+          <div class="mb-3">
+            <label for="livraison{{ article.id }}" class="form-label">Livraison</label>
+            <select class="form-select" id="livraison{{ article.id }}" name="livraison">
+              <option value="Payante" {% if article.livraison == "Payante" %}selected{% endif %}>Payante</option>
+              <option value="Gratuite" {% if article.livraison == "Gratuite" %}selected{% endif %}>Gratuite</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

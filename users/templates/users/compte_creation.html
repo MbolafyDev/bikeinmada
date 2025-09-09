@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Créez un compte sur Zara Space pour accéder à toutes les opportunités disponibles
+{% endblock title %}
+
+{% block content %}
+<div class="row mt-2 p-2 justify-content-center">
+    <div class="col-md-8 col-lg-6 bg-white p-3 text-center border border-light rounded">
+
+        <h5 class="text-success my-3">Accédez à votre espace personnel</h5>Inscrivez-vous pour gérer votre boutique</h5>
+        
+        <form class="align-items-center" method="post">
+            {% csrf_token %}
+
+            <!-- Form-wide Errors -->
+            {% for error in form.non_field_errors %}
+                <div class="text-danger mt-1">{{ error }}</div>
+            {% endfor %}
+
+            <!-- Username Field -->
+            <div class="form-group mb-3">
+                <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}"
+                       class="form-control text-center" placeholder="Nom d'utilisateur" 
+                       value="{{ form.username.value|default:'' }}" required>
+                {% for error in form.username.errors %}
+                    <div class="text-danger mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Email Field -->
+            <div class="form-group mb-3">
+                <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"
+                       class="form-control text-center" placeholder="Adresse e-mail" 
+                       value="{{ form.email.value|default:'' }}" required>
+                {% for error in form.email.errors %}
+                    <div class="text-danger mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group mb-3">
+                <input type="password" name="{{ form.password1.name }}" id="{{ form.password1.id_for_label }}"
+                       class="form-control text-center" placeholder="Mot de passe" required>
+                {% for error in form.password1.errors %}
+                    <div class="text-danger mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="form-group mb-3">
+                <input type="password" name="{{ form.password2.name }}" id="{{ form.password2.id_for_label }}"
+                       class="form-control text-center" placeholder="Confirmez le mot de passe" required>
+                {% for error in form.password2.errors %}
+                    <div class="text-danger mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="form-group mb-3 text-left">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="terms" required>
+                    <label class="form-check-label" for="terms">
+                        J’accepte les <a href="" class="text-success">Conditions d’utilisation et politiques de confidentialité</a>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="">
+                <button type="submit" class="btn btn-success">S'inscrire <i class="fa fa-pencil-square-o"></i></button>
+            </div>
+        </form>
+
+        <br>
+        <p>Déjà membre ? <a href="{% url 'login' %}" class="text-success">Se connecter <i class="fa fa-sign-in"></i></a></p>
+    </div>
+</div>
+{% endblock content %}

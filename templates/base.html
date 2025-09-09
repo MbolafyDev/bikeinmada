@@ -1,0 +1,234 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0d6efd">
+  <!-- iOS (ajouts utiles) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <title>{% block title %}{% endblock %}</title>
+
+  <!-- Bootstrap CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}" />
+  <link rel="manifest" href="{% url 'manifest' %}">
+  <!-- iOS (ajouts utiles) -->
+  <link rel="apple-touch-icon" href="{% static 'pwa/icons/icon-192.png' %}">
+
+  {% block css_files %}{% endblock %}
+  {% block extra_css_and_scripts %}{% endblock %}
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+      padding-top: 70px; /* navbar height */
+    }
+
+    .nav-link[data-title] {
+      position: relative;
+      color: #343a40;
+    }
+
+    .nav-link[data-title]::after {
+      content: attr(data-title);
+      position: absolute;
+      bottom: -1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #343a40;
+      color: #fff;
+      padding: 2px 6px;
+      font-size: 0.7rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+      z-index: 10;
+    }
+
+    .nav-link[data-title]:hover::after {
+      opacity: 1;
+    }
+
+    .nav-link i {
+      font-size: 1.2rem;
+      transition: color 0.2s ease-in-out;
+    }
+
+    .nav-link:hover i,
+    .nav-item.dropdown:hover > .nav-link i {
+      color: #198754; /* blue on hover */
+    }
+
+    .nav-link.active i {
+      color: #198754; /* blue if active */
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm fixed-top">
+    <div class="container-fluid d-flex justify-content-between align-items-center px-3">
+      
+      <!-- Logo -->
+      <a class="navbar-brand d-flex align-items-center" href="{% url 'liste_commandes' %}">
+        <img src="{% static 'images/zarastore.png' %}" width="40" height="40" alt="Logo" />
+      </a>
+
+      <!-- Mobile menu toggle button -->
+      <button
+        class="btn btn-outline-success d-lg-none"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasMenu"
+        aria-controls="offcanvasMenu"
+        aria-label="Menu"
+      >
+        <i class="fa fa-bars"></i>
+      </button>
+
+      <!-- Desktop Menu Icons -->
+      <ul class="navbar-nav mx-auto d-none d-lg-flex flex-row gap-3 text-center">
+        {% include 'includes/menu_icons.html' %}
+      </ul>
+
+      <!-- User Info -->
+      <div class="d-flex align-items-center gap-2">
+        {% if user.is_authenticated %}
+          <span class="text-success">{{ user.username }}</span>
+          <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-success" title="Se déconnecter">
+            <i class="fa fa-sign-out-alt"></i>
+          </a>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-sm btn-outline-success" title="Se connecter">
+            <i class="fa fa-sign-in-alt"></i>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- Offcanvas Mobile Menu -->
+  <div
+    class="offcanvas offcanvas-start"
+    tabindex="-1"
+    id="offcanvasMenu"
+    aria-labelledby="offcanvasMenuLabel"
+  >
+    {% include 'includes/menu_mobile.html' %}
+  </div>
+
+  <div class="container-fluid mt-3">
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- HTMX -->
+  {% comment %} <script src="https://unpkg.com/htmx.org"></script> {% endcomment %}
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/service-worker.js", { scope: "/" })
+        .then(reg => {
+          // Optionnel : notifier l’utilisateur d’une mise à jour
+          reg.addEventListener("updatefound", () => {
+            const newSW = reg.installing;
+            newSW?.addEventListener("statechange", () => {
+              if (newSW.state === "installed" && navigator.serviceWorker.controller) {
+                console.log("Mise à jour disponible (nouvelle version de l’app).");
+              }
+            });
+          });
+        })
+        .catch(err => console.error("SW register error:", err));
+    });
+  }
+
+  (function () {
+    function ensureBars() {
+      let bar = document.getElementById("offline-bar");
+      if (!bar) {
+        bar = document.createElement("div");
+        bar.id = "offline-bar";
+        bar.setAttribute("role", "status");
+        bar.style.cssText = `
+          position:fixed; left:0; right:0; bottom:0;
+          padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+          background:#ffe9a8; color:#333; font:14px system-ui;
+          z-index: 1030; /* > navbar bootstrap */
+          display:none; text-align:center; border-top:1px solid #ccc;
+        `;
+        bar.innerHTML = `&#9888; Mode hors ligne : consultation uniquement.`;
+        document.body.appendChild(bar);
+      }
+      let spacer = document.getElementById("offline-spacer");
+      if (!spacer) {
+        spacer = document.createElement("div");
+        spacer.id = "offline-spacer";
+        spacer.style.height = "0px";
+        spacer.style.transition = "height .15s ease";
+        document.body.appendChild(spacer);
+      }
+      return { bar, spacer };
+    }
+
+    function setOfflineUI(off) {
+      const { bar, spacer } = ensureBars();
+
+      // Affiche / cache la barre
+      bar.style.display = off ? "block" : "none";
+
+      // Donne au spacer la même hauteur que la barre (pour pousser le contenu)
+      requestAnimationFrame(() => {
+        const h = off ? bar.offsetHeight : 0;
+        spacer.style.height = h + "px";
+      });
+
+      // Désactive les actions POST (on épargne les formulaires GET)
+      const selectors = ["form", "button[type=submit]", "a[data-action=post]", "input[type=submit]"];
+      selectors.forEach((sel) => {
+        document.querySelectorAll(sel).forEach((el) => {
+          const isGetForm =
+            el.tagName === "FORM" && (el.getAttribute("method") || "GET").toUpperCase() === "GET";
+          if (isGetForm) return;
+          if (off) {
+            el.setAttribute("disabled", "disabled");
+            el.classList.add("disabled");
+            el.title = "Hors ligne : action désactivée";
+          } else {
+            el.removeAttribute("disabled");
+            el.classList.remove("disabled");
+            el.title = "";
+          }
+        });
+      });
+    }
+
+    window.addEventListener("online", () => setOfflineUI(false));
+    window.addEventListener("offline", () => setOfflineUI(true));
+    // État initial
+    setOfflineUI(!navigator.onLine);
+
+    // Ajuste si l’orientation/viewport change (iOS safe-area)
+    window.addEventListener("resize", () => {
+      const bar = document.getElementById("offline-bar");
+      const spacer = document.getElementById("offline-spacer");
+      if (bar && spacer && bar.style.display === "block") {
+        spacer.style.height = bar.offsetHeight + "px";
+      }
+    });
+  })();
+
+</script>
+
+</body>
+</html>

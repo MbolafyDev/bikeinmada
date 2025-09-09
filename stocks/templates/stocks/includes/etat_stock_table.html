@@ -1,0 +1,61 @@
+{% load nombre %}
+{% load static %}
+
+{% if data %}
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped align-middle text-end">
+      <thead class="table-success text-center">
+        <tr>
+          <th>Image</th>
+          <th class="text-start">Article</th>
+          <th>Entrées</th>
+          <th>Sorties</th>
+          <th>Inventaire</th>
+          <th>Stock final</th>
+          {% if is_admin %}
+            <th>P.U</th>
+            <th>Valeur</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in data %}
+        <tr>
+          <td class="text-center">
+            <div class="mx-auto"
+                style="width:auto;height:40px;display:flex;align-items:center;justify-content:center;
+                        background:#fff;border-radius:.25rem;overflow:hidden;">
+              {% if ligne.article.image %}
+                <img src="{{ ligne.article.image.url }}" alt="{{ ligne.article.nom }}"
+                    style="max-width:100%;max-height:100%;object-fit:contain;display:block;">
+              {% else %}
+                <img src="{% static 'images/zarastore.png' %}" alt="{{ ligne.article.nom }}"
+                    style="max-width:100%;max-height:100%;object-fit:contain;display:block;">
+              {% endif %}
+            </div>
+          </td>
+          <td class="text-start">{{ ligne.article.nom }}</td>
+          <td>{{ ligne.entrees }}</td>
+          <td>{{ ligne.sorties }}</td>
+          <td>{{ ligne.ajustements|default:"-" }}</td>
+          <td>{{ ligne.stock_final }}</td>
+          {% if is_admin %}
+            <td>{{ ligne.pu|intpoint }}</td>
+            <td>{{ ligne.valeur|intpoint }}</td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+      {% if is_admin %}
+      <tfoot class="fw-bold table-success">
+        <tr>
+          <td colspan="7" class="text-end">Total valeur des stocks</td>
+          <td>{{ total_valeur|intpoint }}</td>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+{% else %}
+  <div class="alert alert-info text-center">Aucune donnée de stock disponible.</div>
+{% endif %}

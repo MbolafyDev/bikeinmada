@@ -1,0 +1,204 @@
+{% load nombre %}
+
+{% if commandes %}
+<form id="factures-form-services" method="post" action="{% url 'voir_factures_services' %}" target="_blank">
+    {% csrf_token %}
+
+    <!-- ✅ TABLE (grand écran) -->
+    <div class="table-responsive d-none d-lg-block mb-3">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th style="width:34px;"></th>
+                    <th>Facture</th>
+                    <th>Date commande</th>
+                    <th>Client</th>
+                    <th>Page</th>
+                    <th class="text-end">Montant</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for commande in commandes %}
+                <tr {% if commande.statut_vente == 'Supprimée' %}style="text-decoration: line-through;"{% endif %}>
+                    <td>
+                        <input
+                            type="radio"
+                            name="commande_id"
+                            value="{{ commande.id }}"
+                            id="rd-s-{{ commande.id }}"
+                            data-statut="{{ commande.statut_vente }}">
+                    </td>
+                    <td>{{ commande.numero_proforma }}</td>
+                    <td>{{ commande.date_commande|date:"d/m/Y" }}</td>
+                    <td>{{ commande.client.nom|default:commande.client }}</td>
+                    <td>{{ commande.page }}</td>
+                    <td class="text-end">{{ commande.montant_commande|intpoint }}</td>
+                    <td>{{ commande.statut_vente }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ✅ CARTES (petit écran) -->
+    <div class="d-lg-none">
+        <div class="row">
+            {% for commande in commandes %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="form-check mb-2">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="commande_id"
+                                value="{{ commande.id }}"
+                                id="rd-s-card-{{ commande.id }}"
+                                data-statut="{{ commande.statut_vente }}">
+                            <label class="form-check-label" for="rd-s-card-{{ commande.id }}">
+                                <strong class="text-success">
+                                    Facture
+                                    {% if commande.vente.numero_facture %}
+                                        {{ commande.vente.numero_facture }}
+                                    {% else %}
+                                        {{ commande.numero_proforma }}
+                                    {% endif %}
+                                </strong>
+                            </label>
+                        </div>
+                        <p class="mb-1"><strong>Date :</strong> {{ commande.date_commande|date:"d/m/Y" }}</p>
+                        <p class="mb-1"><strong>Client :</strong> {{ commande.client.nom|default:commande.client }}</p>
+                        <p class="mb-1"><strong>Page :</strong> {{ commande.page }}</p>
+                        <p class="mb-1"><strong>Montant :</strong> {{ commande.montant_commande|intpoint }}</p>
+                        <p class="mb-0"><strong>Statut :</strong> {{ commande.statut_vente }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Boutons d'action + Type de facture -->
+    <div class="mt-2 d-flex flex-wrap align-items-center gap-2">
+        <button type="submit" formaction="{% url 'voir_factures_services' %}" formtarget="_blank" class="btn btn-success">
+            <i class="fa fa-eye"></i> Voir la facture
+        </button>
+
+        <button type="button" id="btn-imprimer-services" class="btn btn-secondary">
+            <i class="fa fa-print"></i> Imprimer
+        </button>
+
+        <!-- ⬇️ Nouveau : Télécharger PDF -->
+        {% comment %} <button type="submit"
+                formaction="{% url 'telecharger_facture_service_pdf' %}"
+                formtarget="_blank"
+                class="btn btn-outline-secondary">
+            <i class="fa fa-file-pdf"></i> Télécharger PDF
+        </button> {% endcomment %}
+
+        <!-- 🔽 Select Type de facture -->
+        <div class="ms-2 d-flex align-items-center gap-2">
+            <label for="type-facture" class="mb-0 fw-bold">Type :</label>
+            <select name="type_facture" id="type-facture" class="form-select" style="width:auto;">
+                <option value="FACTURE PROFORMA" {% if type_facture == "FACTURE PROFORMA" or not type_facture %}selected{% endif %}>FACTURE PROFORMA</option>
+                <option value="FACTURE" {% if type_facture == "FACTURE" %}selected{% endif %}>FACTURE</option>
+            </select>
+        </div>
+    </div>
+
+</form>
+{% else %}
+    <div class="alert alert-info">Aucune commande trouvée pour ces critères.</div>
+{% endif %}
+
+<script>
+// -- Auto-sélection du type en fonction du statut (au changement de sélection)
+document.querySelectorAll("input[name='commande_id']").forEach(radio => {
+    radio.addEventListener("change", function () {
+        const statut = this.dataset.statut || "";
+        const typeSelect = document.getElementById("type-facture");
+        if (!typeSelect) return;
+
+        if (statut === "Payée") {
+            // Par défaut FACTURE pour 'Payée'
+            typeSelect.value = "FACTURE";
+        } else {
+            // Sinon PROFORMA
+            typeSelect.value = "FACTURE PROFORMA";
+        }
+    });
+});
+
+// -- Validation côté client au submit (Voir / Télécharger PDF)
+document.getElementById("factures-form-services")?.addEventListener("submit", function (e) {
+    const form = e.currentTarget;
+    const selected = form.querySelector("input[name='commande_id']:checked");
+    if (!selected) {
+        e.preventDefault();
+        alert("Veuillez sélectionner une commande.");
+        return;
+    }
+    const statut = selected.dataset.statut || "";
+    const typeSelect = document.getElementById("type-facture");
+    const typeValue = typeSelect ? typeSelect.value : "FACTURE PROFORMA";
+
+    if (typeValue === "FACTURE" && statut !== "Payée") {
+        e.preventDefault();
+        alert("Type FACTURE non autorisé : la commande sélectionnée n'est pas Payée.");
+        return;
+    }
+});
+
+// -- Validation côté client pour Imprimer (form dynamique)
+document.getElementById("btn-imprimer-services")?.addEventListener("click", function () {
+    const form = document.getElementById("factures-form-services");
+    const selected = form.querySelector("input[name='commande_id']:checked");
+
+    if (!selected) {
+        alert("Veuillez sélectionner une commande.");
+        return;
+    }
+
+    const statut = selected.dataset.statut || "";
+    const typeSelect = document.getElementById("type-facture");
+    const typeValue = typeSelect ? typeSelect.value : "FACTURE PROFORMA";
+
+    if (typeValue === "FACTURE" && statut !== "Payée") {
+        alert("FACTURE non autorisé : la commande sélectionnée n'est pas encore payée.");
+        return;
+    }
+
+    const newForm = document.createElement("form");
+    newForm.method = "POST";
+    newForm.action = "{% url 'imprimer_factures_services' %}";
+    newForm.target = "_blank";
+
+    const csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (csrf) {
+        const clone = csrf.cloneNode();
+        clone.type = "hidden";
+        clone.name = "csrfmiddlewaretoken";
+        clone.value = csrf.value;
+        newForm.appendChild(clone);
+    }
+
+    // id sélectionné (unique)
+    const idInput = document.createElement("input");
+    idInput.type = "hidden";
+    idInput.name = "commande_id";
+    idInput.value = selected.value;
+    newForm.appendChild(idInput);
+
+    // type de facture
+    const typeHidden = document.createElement("input");
+    typeHidden.type = "hidden";
+    typeHidden.name = "type_facture";
+    typeHidden.value = typeValue;
+    newForm.appendChild(typeHidden);
+
+    document.body.appendChild(newForm);
+    newForm.submit();
+    newForm.remove();
+});
+</script>

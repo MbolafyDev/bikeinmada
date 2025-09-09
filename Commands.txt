@@ -1,0 +1,83 @@
+Here's a practical overview of essential Git commands you'll use to:
+- Push code to GitHub
+- Pull code to your local server
+- Manage branches, commits, and remotes
+
+🔧 Basic Git Setup (One-time per system)
+
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+
+📥 Cloning a Repo (Getting code from GitHub to your local/server)
+git clone https://github.com/username/repo-name.git
+
+📂 Making Changes Locally
+Navigate into the project:
+cd repo-name
+
+Check status of changes
+git status
+
+Add changed files to staging
+git add filename      # For one file
+git add .             # All changes in the directory
+
+Commit changes with a message :
+git commit -m "Meaningful commit message"
+
+⬆️ Pushing Changes to GitHub
+git push origin branch-name
+Usually:
+git push origin main     # For main branch
+git push origin dev      # For development branch
+
+🔄 Pulling Latest Changes from GitHub
+git pull origin branch-name
+Example:
+git pull origin main
+🌿 Working with Branches
+
+Create a new branch:
+git checkout -b new-feature
+
+Switch to a branch:
+git checkout main
+
+Push a new branch to GitHub
+git push -u origin new-feature
+
+🔀 Merging Branches (Local Merge)
+git checkout main
+git merge new-feature
+
+🚫 Ignoring Files
+Edit .gitignore to ignore files/folders (e.g. environment files, logs):
+
+node_modules/
+.env
+*.log
+
+🔐 Setting Up SSH for GitHub (Optional, secure)
+Generate SSH key:
+ssh-keygen -t ed25519 -C "you@example.com"
+Add the key to GitHub → Settings → SSH and GPG keys.
+
+📁 Git Remote Commands
+Check remotes:
+git remote -v
+
+Add a remote:
+git remote add origin https://github.com/username/repo-name.git
+
+Change remote URL:
+git remote set-url origin new-url 
+
+# Venv activation
+# Windows 
+venv\Scripts\activate
+
+# Mac / Linux 
+source venv/bin/activate
+
+#Use dev environment
+$env:ENV="dev"; python manage.py runserver

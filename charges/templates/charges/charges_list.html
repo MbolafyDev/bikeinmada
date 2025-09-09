@@ -1,0 +1,219 @@
+{# templates/charges/charges_list.html #}
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block title %}Journal des charges{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+  <h2 class="text-center mb-4">Journal des charges et opérations diverses</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <!-- Barre d’actions -->
+  <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-success my-1" data-bs-toggle="modal" data-bs-target="#modalCharge" {% if not is_admin %}disabled{% endif %}>
+        <i class="fa fa-plus"></i> Enregistrer une opération
+      </button>
+      <a class="btn btn-outline-success d-none d-lg-block my-1" href="{% url 'paiement_frais_livraisons' %}">
+        <i class="fa fa-plus"></i> Enregistrer les frais de livraisons
+      </a>
+    </div>
+
+    <!-- Toggle d’affichage (>= lg) -->
+    <div class="view-toggle d-none d-lg-flex gap-1"
+         data-storage-key="zr_display_charges"
+         data-target-url="{% url 'charges_list_partial' %}"
+         data-target="#charges-list-wrapper">
+      <button type="button"
+              class="btn btn-outline-success {% if display_mode == 'table' %}active{% endif %}"
+              data-mode="table" title="Mode Tableau">
+        <i class="fa fa-table"></i>
+      </button>
+      <button type="button"
+              class="btn btn-outline-success {% if display_mode == 'cards' %}active{% endif %}"
+              data-mode="cards" title="Mode Cartes">
+        <i class="fa fa-credit-card"></i>
+      </button>
+    </div>
+
+    <!-- Bouton filtre visible seulement sur mobile/tablette -->
+    <button class="btn btn-outline-success d-lg-none" type="button"
+            data-bs-toggle="collapse" data-bs-target="#filtersCollapse"
+            aria-expanded="false" aria-controls="filtersCollapse">
+      <i class="fa fa-filter"></i>
+    </button>
+  </div>
+
+  <div class="d-lg-none my-2">
+    <a class="btn btn-outline-success" href="{% url 'paiement_frais_livraisons' %}">
+      <i class="fa fa-plus"></i> Enregistrer les frais de livraisons
+    </a>
+  </div>
+
+  <!-- Filtres -->
+  <div id="filtersCollapse" class="collapse d-lg-block">
+    <form id="chargesFilterForm" method="get"
+          class="row g-2 mb-3"
+          hx-get="{% url 'charges_list_partial' %}"
+          hx-target="#charges-list-wrapper"
+          hx-trigger="change delay:300ms, submit"
+          hx-push-url="true">
+
+      <!-- Date -->
+      <div class="col-md-6 col-lg-3">
+        <label for="date_filter" class="form-label fw-bold d-none d-lg-block">Date</label>
+        <div class="input-group">
+          <span class="input-group-text d-lg-none"><i class="fa fa-calendar"></i></span>
+          <input type="date" name="date_filter" id="date_filter"
+                 class="form-control" value="{{ filters.date_filter }}">
+        </div>
+      </div>
+
+      <!-- Libellé -->
+      <div class="col-md-6 col-lg-3">
+        <label for="libelle" class="form-label fw-bold d-none d-lg-block">Libellé</label>
+        <div class="input-group">
+          <span class="input-group-text d-lg-none"><i class="fa fa-tag"></i></span>
+          <input type="text" name="libelle" id="libelle"
+                 class="form-control" placeholder="Rechercher" value="{{ filters.libelle }}">
+        </div>
+      </div>
+
+      <!-- Page -->
+      <div class="col-md-4 col-lg-2">
+        <label for="page_filter" class="form-label fw-bold d-none d-lg-block">Page</label>
+        <div class="input-group">
+          <span class="input-group-text d-lg-none"><i class="fa fa-shop"></i></span>
+          <select name="page_filter" id="page_filter" class="form-select">
+            <option value="">Toutes les pages</option>
+            <option value="none" {% if filters.page_filter == "none" %}selected{% endif %}>Aucune page</option>
+            {% for p in pages %}
+              <option value="{{ p.id }}" {% if p.id|stringformat:"s" == filters.page_filter %}selected{% endif %}>
+                {{ p.nom }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Paiement -->
+      <div class="col-md-4 col-lg-2">
+        <label for="paiement" class="form-label fw-bold d-none d-lg-block">Paiement</label>
+        <div class="input-group">
+          <span class="input-group-text d-lg-none"><i class="fa fa-wallet"></i></span>
+          <select name="paiement" id="paiement" class="form-select">
+            <option value="">Tous les paiements</option>
+            {% for caisse in caisses %}
+              <option value="{{ caisse.id }}" {% if caisse.id|stringformat:"s" == filters.paiement %}selected{% endif %}>
+                {{ caisse.nom }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Bouton -->
+      <div class="col-md-4 col-lg-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-outline-success w-100">
+          <i class="fa fa-filter"></i> Filtrer
+        </button>
+      </div>
+
+      {# Champs cachés pour préserver le mode & la page #}
+      <input type="hidden" name="display" id="display_input" value="{{ display_mode }}">
+      <input type="hidden" name="page" id="page_input" value="{{ page_obj.number }}">
+    </form>
+  </div>
+
+  <!-- Wrapper HTMX (bascule table/cartes) -->
+  <div id="charges-list-wrapper"
+       hx-get="{% url 'charges_list_partial' %}?{{ request.GET.urlencode }}"
+       hx-target="#charges-list-wrapper"
+       hx-swap="outerHTML"
+       hx-trigger="load">
+    {% include "charges/includes/charges_list_wrapper.html" %}
+  </div>
+
+  {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+  {# 🔴 Zone modals FIXE : disponible offline et hors swap #}
+  <div id="charges-modals">
+    {% for charge in charges %}
+      {% include "charges/includes/modal_edition_charge.html" with charge=charge %}
+      {% include "charges/includes/modal_suppression_charge.html" with charge=charge %}
+      {% include "charges/includes/modal_restauration_charge.html" with charge=charge %}
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modal d’ajout -->
+{% include "charges/includes/modal_ajout_charge.html" %}
+
+<style>
+  .view-toggle .btn { padding:.375rem .6rem; }
+  .view-toggle .btn.active { pointer-events:none; }
+</style>
+
+<script>
+  (function () {
+    const toggle = document.querySelector('.view-toggle');
+    const form = document.getElementById('chargesFilterForm');
+    const displayInput = document.getElementById('display_input');
+
+    if (!toggle || !form || !displayInput) return;
+
+    const getUrlPage = () => (new URLSearchParams(location.search)).get('page') || '';
+    const getOrMakePageInput = () => {
+      let el = document.getElementById('page_input');
+      if (!el) {
+        el = document.createElement('input');
+        el.type = 'hidden'; el.name = 'page'; el.id = 'page_input';
+        form.appendChild(el);
+      }
+      return el;
+    };
+
+    // Clic sur bascule
+    toggle.addEventListener('click', function (e) {
+      const btn = e.target.closest('button[data-mode]');
+      if (!btn) return;
+
+      const mode = btn.dataset.mode;
+      toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const storageKey = toggle.dataset.storageKey || 'display_charges';
+      localStorage.setItem(storageKey, mode);
+
+      displayInput.value = mode;
+      const pageInput = getOrMakePageInput();
+      pageInput.value = getUrlPage(); // conserve la page courante
+
+      if (form.requestSubmit) form.requestSubmit(); else form.submit();
+    });
+
+    // Si un filtre change → revenir page 1
+    ['date_filter','libelle','page_filter','paiement'].forEach(name => {
+      const el = document.getElementById(name);
+      if (!el) return;
+      el.addEventListener('change', () => {
+        const pageInput = getOrMakePageInput();
+        pageInput.value = '';
+      });
+    });
+
+    // Après swap HTMX, resynchroniser page_input (utile après pagination)
+    if (window.htmx) {
+      htmx.on('htmx:afterSwap', function (evt) {
+        if (evt.target && evt.target.id === 'charges-list-wrapper') {
+          const pageInput = getOrMakePageInput();
+          pageInput.value = getUrlPage();
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}

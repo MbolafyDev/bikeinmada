@@ -1,0 +1,154 @@
+{# templates/ventes/facturation_commandes.html #}
+{% extends 'base.html' %}
+{% load nombre %}
+
+{% block title %}Facturation des commandes{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+
+  <h2 class="mb-3 text-center">Facturation des commandes</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+    <div class="d-flex align-items-center mb-2">
+        <!-- Toggle (≥ lg) -->
+        <div class="view-toggle d-none d-lg-flex gap-1 ms-auto"
+            data-storage-key="zr_display_facturation"
+            data-target-url="{% url 'facturation_commandes_partial' %}"
+            data-target="#facturation-table-wrapper">
+            <button type="button"
+                    class="btn btn-outline-primary {% if display_mode == 'table' %}active{% endif %}"
+                    data-mode="table" title="Mode Tableau">
+            <i class="fa fa-table"></i>
+            </button>
+            <button type="button"
+                    class="btn btn-outline-primary {% if display_mode == 'cards' %}active{% endif %}"
+                    data-mode="cards" title="Mode Cartes">
+            <i class="fa fa-credit-card"></i>
+            </button>
+        </div>
+    </div>
+
+  <!-- Filtres -->
+  <form id="facturationFiltersForm" method="get" class="row g-3 mb-3"
+        hx-get="{% url 'facturation_commandes_partial' %}"
+        hx-target="#facturation-table-wrapper"
+        hx-push-url="true"
+        hx-trigger="change delay:200ms, submit">
+
+    <!-- Date livraison -->
+    <div class="col-md-5">
+      <label for="date" class="form-label fw-bold d-none d-lg-block">Date de livraison</label>
+      <div class="input-group">
+        <span class="input-group-text d-lg-none"><i class="fa fa-calendar"></i></span>
+        <input type="date" name="date" id="date" class="form-control" value="{{ selected_date }}">
+      </div>
+    </div>
+
+    <!-- Statut livraison -->
+    <div class="col-md-5">
+      <label for="statut_livraison" class="form-label fw-bold d-none d-lg-block">Statut livraison</label>
+      <div class="input-group">
+        <span class="input-group-text d-lg-none"><i class="fa fa-bicycle"></i></span>
+        <select name="statut_livraison" id="statut_livraison" class="form-select">
+          <option value="">Tous les livraisons</option>
+          <option value="En attente" {% if selected_statut == "En attente" %}selected{% endif %}>En attente</option>
+          <option value="Planifiée" {% if selected_statut == "Planifiée" %}selected{% endif %}>Planifiée</option>
+          <option value="Livrée" {% if selected_statut == "Livrée" %}selected{% endif %}>Livrée</option>
+          <option value="Annulée" {% if selected_statut == "Annulée" %}selected{% endif %}>Annulée</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Bouton -->
+    <div class="col-md-2 d-flex align-items-end">
+      <button type="submit" class="btn btn-outline-primary w-100">
+        <i class="fa fa-filter"></i> Filtrer
+      </button>
+    </div>
+
+    <!-- Champs cachés pour préserver mode & page -->
+    <input type="hidden" name="display" id="display_input" value="{{ display_mode }}">
+    <input type="hidden" name="page" id="page_input" value="{{ page_obj.number }}">
+  </form>
+
+  <!-- Wrapper HTMX (bascule table/cartes) -->
+  <div id="facturation-table-wrapper"
+       hx-get="{% url 'facturation_commandes_partial' %}?{{ request.GET.urlencode }}"
+       hx-target="#facturation-table-wrapper"
+       hx-swap="outerHTML"
+       hx-trigger="load">
+    {% include "ventes/includes/facturation_list_wrapper.html" %}
+  </div>
+
+  <!-- Pagination -->
+  {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+</div>
+
+<style>
+  .view-toggle .btn { padding:.375rem .6rem; }
+  .view-toggle .btn.active { pointer-events:none; }
+</style>
+
+<script>
+(function() {
+  const toggle = document.querySelector('.view-toggle');
+  const form = document.getElementById('facturationFiltersForm');
+  const displayInput = document.getElementById('display_input');
+
+  if (!toggle || !form || !displayInput) return;
+
+  const getUrlPage = () => (new URLSearchParams(location.search)).get('page') || '';
+  const getOrMakePageInput = () => {
+    let el = document.getElementById('page_input');
+    if (!el) {
+      el = document.createElement('input');
+      el.type = 'hidden'; el.name = 'page'; el.id = 'page_input';
+      form.appendChild(el);
+    }
+    return el;
+  };
+
+  // Clic toggle => mémoriser & conserver la page
+  toggle.addEventListener('click', function(e) {
+    const btn = e.target.closest('button[data-mode]');
+    if (!btn) return;
+    const mode = btn.dataset.mode;
+
+    toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const storageKey = toggle.dataset.storageKey || 'display_facturation';
+    localStorage.setItem(storageKey, mode);
+
+    displayInput.value = mode;
+    const pageInput = getOrMakePageInput();
+    pageInput.value = getUrlPage();
+
+    if (form.requestSubmit) form.requestSubmit(); else form.submit();
+  });
+
+  // Changement d’un filtre => retour page 1
+  ['date','statut_livraison'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', () => {
+      const pageInput = getOrMakePageInput();
+      pageInput.value = '';
+    });
+  });
+
+  // Après swap, resynchroniser page_input (utile après pagination)
+  if (window.htmx) {
+    htmx.on('htmx:afterSwap', function(evt) {
+      if (evt.target && evt.target.id === 'facturation-table-wrapper') {
+        const pageInput = getOrMakePageInput();
+        pageInput.value = getUrlPage();
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

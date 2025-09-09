@@ -1,0 +1,38 @@
+{# templates/clients/includes/client_table.html #}
+{% if clients %}
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-success">
+        <tr>
+          <th>Nom</th>
+          <th>Lieu</th>
+          <th>Précision lieu</th>
+          <th>Contact</th>
+          <th class="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for client in clients %}
+        <tr {% if client.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+          <td>{{ client.nom }}</td>
+          <td>{{ client.lieu.lieu }}</td>
+          <td>{{ client.precision_lieu }}</td>
+          <td>{{ client.contact }}</td>
+          <td class="text-center" style="white-space: nowrap">
+            <button class="btn btn-sm btn-outline-success me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ client.id }}">
+              <i class="fa fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger"
+                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ client.id }}"
+                    {% if not is_admin or client.statut_publication == 'supprimé' %}disabled{% endif %}>
+              <i class="fa fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="alert alert-info text-center">Aucun client enregistré.</div>
+{% endif %}

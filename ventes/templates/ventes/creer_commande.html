@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Création de commande{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+  
+  <h2 class="text-center mt-4">Créer une commande</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <div class="mt-4">
+    <form method="post">
+      {% csrf_token %}
+
+      <!-- Informations client -->
+      <div class="card mb-4">
+        <div class="card-header bg-success text-white">Informations sur le client</div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="nom" class="form-label">Nom *</label>
+              <input type="text" class="form-control" name="nom" id="nom" required>
+            </div>
+            <div class="col-md-6">
+              <label for="contact" class="form-label">Contact *</label>
+              <input type="text" class="form-control" name="contact" id="contact" required>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="lieu" class="form-label">Lieu *</label>
+              <select name="lieu" id="lieu" class="form-control" required>
+                  <option value="" disabled selected>Choisir un lieu</option>
+                  {% for l in lieux %}
+                      <option value="{{ l.id }}" data-frais="{{ l.frais }}">{{ l.lieu }}</option>
+                  {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="precision_lieu" class="form-label">Précision lieu</label>
+              <input type="text" class="form-control" name="precision_lieu" id="precision_lieu">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Informations sur la livraison -->
+      <div class="card mb-4">
+          <div class="card-header bg-secondary text-white ">Informations sur la livraison</div>
+            <div class="card-body">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="date_livraison" class="form-label">Date de livraison</label>
+                    <input type="date" class="form-control" name="date_livraison" id="date_livraison" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="remarque" class="form-label">Remarque</label>
+                    <input type="text" class="form-control" name="remarque" id="remarque">
+                  </div>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="frais_livraison" class="form-label">Frais de livraison</label>
+                    <input type="text" class="form-control" name="frais_livraison" id="frais_livraison">
+                  </div>
+                  <div class="col-md-6">
+                    <label for="frais_livreur" class="form-label">Frais livreur</label>
+                    <input type="text" class="form-control" name="frais_livreur" id="frais_livreur">
+                  </div>
+                </div>
+            </div>
+      </div>
+
+      <!-- Lignes de commande -->
+      <div class="card mb-4">
+        <div class="card-header bg-info text-white  d-flex justify-content-between align-items-center">
+          Informations sur la commande 
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <label for="date_commande" class="form-label">Date de commande</label>
+              <input type="date" class="form-control" name="date_commande" id="date_commande" value="{{ date_du_jour }}" required>
+            </div>
+            <div class="col-md-6 mb-4">
+              <label for="page" class="form-label">Page</label>
+              <select name="page" id="page" class="form-select" required>
+                <option value="">-- Choisir une page --</option>
+                {% for p in pages %}
+                  <option value="{{ p.id }}" {% if commande.page.id == p.id %}selected{% endif %}>
+                    {{ p.nom }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div id="lignesCommande">
+            <!-- Lignes insérées dynamiquement -->
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-success my-2" onclick="ajouterLigne()">+ Ajouter un article</button>
+        </div>
+
+        <hr>
+        <!-- Tableau récapitulatif total à payer -->
+        <div class="row mb-3">
+          <div class="col-md-4 offset-md-8">
+            <table class="table table-bordered">
+              <tbody>
+                <tr>
+                  <th>Total des articles</th>
+                  <td class="text-end"><span id="total_articles">0</span> Ar</td>
+                </tr>
+                <tr>
+                  <th>Frais de livraison</th>
+                  <td class="text-end"><span id="total_frais_livraison">0</span> Ar</td>
+                </tr>
+                <tr>
+                  <th>Total à payer</th>
+                  <td class="fw-bold text-end"><span id="total_a_payer">0</span> Ar</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <!-- Boutons actions -->
+      <div class="text-center">
+        <a href="{% url 'liste_commandes' %}" class="btn btn-outline-success">← Retour à la liste</a>
+        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Récupération des articles passés depuis le contexte Django
+  let articles = {{ articles_json|safe }};
+  let ligneIndex = 0;
+
+  function ajouterLigne() {
+    const container = document.getElementById("lignesCommande");
+    const div = document.createElement("div");
+    div.classList.add("row", "mb-3");
+    const index = ligneIndex++;
+    div.innerHTML = `
+      <div class="col-lg-3">
+        <label class="form-label">Article</label>
+        <select name="article" class="form-select" required onchange="mettreAJourPrix(this)">
+          <option value="">-- Choisir --</option>
+          ${articles.map(article => `
+            <option value="${article.id}" data-prix="${article.prix_vente}" data-livraison="${article.livraison}" data-stock="${article.stock}">
+              ${article.nom}
+            </option>
+          `).join('')}
+        </select>
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label">P.U</label>
+        <input type="number" name="pu" class="form-control" step="100" onchange="calculerTotal(this)">
+      </div>
+      <div class="col-lg-1">
+        <label class="form-label">Qté</label>
+        <input type="number" name="quantite" class="form-control" value="1" onchange="calculerTotal(this)">
+      </div>
+      <div class="col-lg-1">
+        <label class="form-label">Stock</label>
+        <div name="stock_display" class="form-control-plaintext fw-bold text-center">-</div>
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label">Livraison</label> 
+        <input type="text" name="livraison" class="form-control" readonly>
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label">Montant</label>
+        <input type="number" name="montant" class="form-control" readonly>
+      </div>
+      <div class="col-lg-1 mt-md-1 d-flex align-items-end">
+        <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.row').remove(); verifierLivraisonGratuite();">✖</button>
+      </div>
+    `;
+    container.appendChild(div);
+
+    mettreAJourTotaux();
+
+  }
+
+  function mettreAJourPrix(select) {
+    const option = select.selectedOptions[0];
+    const pu = option.getAttribute("data-prix");
+    const frais = option.getAttribute("data-livraison");
+    const stock = parseInt(option.getAttribute("data-stock"));
+    const row = select.closest(".row");
+
+    row.querySelector('input[name="pu"]').value = pu;
+    row.querySelector('input[name="livraison"]').value = frais;
+
+    const stockDisplay = row.querySelector('[name="stock_display"]');
+    stockDisplay.textContent = stock;
+
+    stockDisplay.classList.remove("text-success", "text-danger");
+    if (stock > 0) {
+      stockDisplay.classList.add("text-success");
+    } else {
+      stockDisplay.classList.add("text-danger");
+    }
+
+    calculerTotal(row.querySelector('input[name="quantite"]'));
+    verifierLivraisonGratuite();
+
+  }
+
+  function verifierLivraisonGratuite() {
+    let gratuite = false;
+    const fraisLivraisonInput = document.getElementById("frais_livraison");
+    const lieuSelect = document.getElementById("lieu");
+    const defaultFrais = lieuSelect.selectedOptions[0]?.getAttribute("data-frais") || 0;
+
+    document.querySelectorAll('select[name="article"]').forEach(select => {
+      const livraison = select.selectedOptions[0]?.getAttribute("data-livraison");
+      if (livraison && livraison.trim().toLowerCase() === "gratuite") {
+        gratuite = true;
+      }
+    });
+
+    if (gratuite) {
+      fraisLivraisonInput.value = 0;
+    } else {
+      fraisLivraisonInput.value = defaultFrais;
+    }
+
+    mettreAJourTotaux();
+
+  }
+
+  function calculerTotal(element) {
+    const row = element.closest(".row");
+    const puInput = row.querySelector('input[name="pu"]');
+    const quantiteInput = row.querySelector('input[name="quantite"]');
+    const montantInput = row.querySelector('input[name="montant"]');
+
+    const pu = parseFloat(puInput.value) || 0;
+    const quantite = parseInt(quantiteInput.value) || 0;
+
+    const montant = pu * quantite;
+    montantInput.value = montant;
+
+    mettreAJourTotaux();
+
+  }
+
+  // Format input
+  function formatIntPoint(value) {
+    return (value || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  }
+
+  // Calcul récapitulatif total à payer
+  function mettreAJourTotaux() {
+    let totalArticles = 0;
+
+    document.querySelectorAll('input[name="montant"]').forEach(input => {
+      totalArticles += parseFloat(input.value) || 0;
+    });
+
+    const fraisLivraison = parseFloat(document.getElementById("frais_livraison").value) || 0;
+    const totalAPayer = totalArticles + fraisLivraison;
+
+    document.getElementById("total_articles").textContent = formatIntPoint(totalArticles);
+    document.getElementById("total_frais_livraison").textContent = formatIntPoint(fraisLivraison);
+    document.getElementById("total_a_payer").textContent = formatIntPoint(totalAPayer);
+  }
+
+  // Ajoute une ligne par défaut au chargement
+  document.addEventListener("DOMContentLoaded", () => {
+    ajouterLigne();
+
+    const lieuSelect = document.getElementById("lieu");
+    const fraisLivreurInput = document.getElementById("frais_livreur");
+    const fraisLivraisonInput = document.getElementById("frais_livraison");
+
+    lieuSelect.addEventListener("change", function () {
+      const selectedOption = this.selectedOptions[0];
+      const frais = selectedOption.getAttribute("data-frais");
+      if (frais !== null) {
+        fraisLivreurInput.value = frais;
+        fraisLivraisonInput.value = frais;
+        verifierLivraisonGratuite(); // Mise à jour si changement de lieu
+      }
+    });
+  });
+</script>
+
+{% endblock %}

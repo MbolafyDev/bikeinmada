@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% load nombre %}
+
+{% block title %}Liste des Versements{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+  <h2 class="text-center">Journal des versements</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#modalVersement" {% if not is_admin %}disabled{% endif %}>
+    <i class="fa fa-plus"></i> Enregistrer un versement
+  </button>
+
+  <!-- Formulaire de filtre -->
+  <form method="get" class="row g-3 mb-4">
+    <div class="row">
+      <div class="col-md-3">
+        <label for="date_debut" class="form-label">Du</label>
+        <input type="date" name="date_debut" id="date_debut" class="form-control" value="{{ date_debut|default:today|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-3">
+        <label for="date_fin" class="form-label">Au</label>
+        <input type="date" name="date_fin" id="date_fin" class="form-control" value="{{ date_fin|default:today|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-2">
+        <label for="caisse" class="form-label">Caisse</label>
+        <select name="caisse" id="caisse" class="form-control">
+          <option value="">Toutes</option>
+          {% for c in caisses %}
+            <option value="{{ c.id }}" {% if c.id|stringformat:"s" == selected_caisse %}selected{% endif %}>{{ c.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="page" class="form-label">Page</label>
+        <select name="page" id="page" class="form-control">
+          <option value="">Toutes</option>
+          {% for p in pages %}
+            <option value="{{ p.id }}" {% if p.id|stringformat:"s" == selected_page %}selected{% endif %}>{{ p.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-outline-success w-100">
+          <i class="fa fa-filter"></i> Filtrer
+        </button>
+      </div>
+    </div>
+  </form>
+
+  {% if versements %}
+
+    <!-- Affichage en tableau pour grands écrans -->
+    <div class="table-responsive d-none d-lg-block">
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-success">
+          <tr>
+            <th>Date</th>
+            <th>Montant</th>
+            <th>Paiement</th>
+            <th>Page</th>
+            <th>Remarque</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in versements %}
+          <tr {% if v.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+            <td>{{ v.date|date:"d/m/Y" }}</td>
+            <td class="text-end">{{ v.montant|intpoint }}</td>
+            <td>{{ v.caisse.nom }}</td>
+            <td>{% if v.page %}{{ v.page.nom }}{% else %}-{% endif %}</td>
+            <td>{{ v.remarque }}</td>
+            <td>
+            <div class="text-center">
+              <!-- Modifier -->
+              <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalModifierVersement{{ v.id }}" {% if not is_admin or v.statut_publication == 'supprimé' %}disabled{% endif %}>
+                <i class="fa fa-edit"></i>
+              </button>
+
+              <!-- Supprimer -->
+              <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalSupprimerVersement{{ v.id }}" {% if not is_admin or v.statut_publication == 'supprimé' %}disabled{% endif %}>
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+    <!-- Affichage en cartes pour petits/moyens écrans -->
+    <div class="d-lg-none">
+      <div class="row row-cols-1 g-3">
+        {% for v in versements %}
+        <div class="col-md-6">
+          <div class="card shadow-sm" {% if v.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+            <div class="card-body">
+              <h6 class="card-title mb-1 text-success">Versement du {{ v.date|date:"d/m/Y" }}</h6>
+              <p class="mb-1"><strong>Montant:</strong> {{ v.montant|intpoint }} Ar</p>
+              <p class="mb-1"><strong>Paiement:</strong> {{ v.caisse.nom }}</p>
+              <p class="mb-1"><strong>Page:</strong> {% if v.page %}{{ v.page.nom }}{% else %}-{% endif %}</p>
+              <p class="mb-2"><strong>Remarque:</strong> {{ v.remarque|default:"-" }}</p>
+            </div>
+            <div class="card-footer d-flex justify-content-end gap-2">
+                <!-- Modifier -->
+                <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalModifierVersement{{ v.id }}" {% if not is_admin or v.statut_publication == 'supprimé' %}disabled{% endif %}>
+                  <i class="fa fa-edit"></i>
+                </button>
+                <!-- Supprimer -->
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalSupprimerVersement{{ v.id }}" {% if not is_admin or v.statut_publication == 'supprimé' %}disabled{% endif %}>
+                  <i class="fa fa-trash"></i>
+                </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  {% else %}
+    <div class="alert alert-info">Aucun versement trouvé pour les filtres sélectionnés.</div>
+  {% endif %}
+
+</div>
+
+<!-- Modal d'ajout de versement -->
+<div class="modal fade" id="modalVersement" tabindex="-1" aria-labelledby="modalAjoutLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'ajouter_versement' %}" class="modal-content">
+      {% csrf_token %}
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalAjoutLabel">Enregistrer un versement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Date</label>
+          <input type="date" name="date" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Caisse</label>
+          <select name="caisse" class="form-control" required>
+            {% for c in caisses %}
+              <option value="{{ c.id }}">{{ c.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Page</label>
+          <select name="page" class="form-control">
+            <option value="">---</option>
+            {% for p in pages %}
+              <option value="{{ p.id }}">{{ p.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Montant</label>
+          <input type="number" name="montant" class="form-control" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Remarque</label>
+          <textarea name="remarque" class="form-control"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-success">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  {% for v in versements %}
+<!-- Modal Modifier -->
+<div class="modal fade" id="modalModifierVersement{{ v.id }}" tabindex="-1" aria-labelledby="modalModifierLabel{{ v.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'modifier_versement' v.id %}" class="modal-content">
+      {% csrf_token %}
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalModifierLabel{{ v.id }}">Modifier le versement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Date</label>
+          <input type="date" name="date" class="form-control" value="{{ v.date|date:'Y-m-d' }}">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Caisse</label>
+          <select name="caisse" class="form-control">
+            {% for c in caisses %}
+              <option value="{{ c.id }}" {% if c.id == v.caisse.id %}selected{% endif %}>{{ c.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Page</label>
+          <select name="page" class="form-control">
+            <option value="">---</option>
+            {% for p in pages %}
+              <option value="{{ p.id }}" {% if v.page and p.id == v.page.id %}selected{% endif %}>{{ p.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Montant</label>
+          <input type="number" name="montant" class="form-control" value="{{ v.montant }}">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Remarque</label>
+          <textarea name="remarque" class="form-control">{{ v.remarque }}</textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-success">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Supprimer -->
+<div class="modal fade" id="modalSupprimerVersement{{ v.id }}" tabindex="-1" aria-labelledby="modalSupprimerLabel{{ v.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'supprimer_versement' v.id %}" class="modal-content">
+      {% csrf_token %}
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalSupprimerLabel{{ v.id }}">Supprimer le versement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        Voulez-vous vraiment supprimer ce versement du <strong>{{ v.date|date:"d/m/Y" }}</strong> de <strong>{{ v.montant|intpoint }} Ar</strong> ?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-danger">Supprimer</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

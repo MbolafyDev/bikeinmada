@@ -1,0 +1,50 @@
+{# stocks/includes/etat_stock_cards.html #}
+{% load static %}
+{% load nombre %}
+
+{% if data %}
+  <div class="row">
+    {% for ligne in data %}
+      <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title text-success text-center mb-3">{{ ligne.article.nom }}</h5>
+
+            <div class="row g-2 align-items-start">
+              <div class="col-4">
+                <div class="thumb-120">
+                  {% if ligne.article.image %}
+                    <img src="{{ ligne.article.image.url }}" alt="{{ ligne.article.nom }}" loading="lazy">
+                  {% else %}
+                    <img src="{% static 'images/zarastore.png' %}" alt="{{ ligne.article.nom }}" loading="lazy">
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-8">
+                <p class="mb-1"><strong>Entrées :</strong> {{ ligne.entrees }}</p>
+                <p class="mb-1"><strong>Sorties :</strong> {{ ligne.sorties }}</p>
+                <p class="mb-1"><strong>Inventaire :</strong> {{ ligne.ajustements|default:"-" }}</p>
+                <p class="mb-1"><strong>Stock final :</strong> {{ ligne.stock_final }}</p>
+                {% if is_admin %}
+                  <p class="mb-0"><strong>P.U :</strong> {{ ligne.pu|intpoint }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          {% if is_admin %}
+          <div class="card-footer text-end">
+            <span class="fw-bold">Valeur :</span> {{ ligne.valeur|intpoint }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if is_admin %}
+    <div class="text-end fw-bold mt-2">Total : {{ total_valeur|intpoint }}</div>
+  {% endif %}
+{% else %}
+  <div class="alert alert-info text-center">Aucune donnée de stock disponible.</div>
+{% endif %}

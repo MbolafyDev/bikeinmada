@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Détails de la commande{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+
+    <h2 class="text-center mt-4">Détail de la commande</h2>
+
+    <div class="mb-2">
+        <a class="btn btn-success" href="{% url 'commande_create' %}">
+            <i class="fa fa-plus"></i> Enregistrer une commande
+        </a>
+    </div>
+
+    {% include "includes/messages_alert.html" %}
+
+    <!-- Informations générales -->
+    <div class="card mt-4 mb-4">
+        <div class="card-header bg-success text-white">Informations sur la commande</div>
+        <div class="card-body">
+            <p><strong>Numéro de facture :</strong> {{ commande.numero_facture }}</p>
+            <p><strong>Date de la commande :</strong> {{ commande.date_commande|date:"d/m/Y" }}</p>
+            <p><strong>Date de livraison :</strong> {{ commande.date_livraison|date:"d/m/Y" }}</p>
+            <p><strong>Remarque :</strong> {{ commande.remarque }}</p>
+            <p><strong>Page :</strong> {{ commande.page }}</p>
+        </div>
+    </div>
+
+    <!-- Informations client -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">Informations sur le client</div>
+        <div class="card-body">
+            <p><strong>Nom :</strong> {{ commande.client.nom }}</p>
+            <p><strong>Lieu :</strong> {{ commande.client.lieu.lieu }} {% if commande.client.precision_lieu %} ({{commande.client.precision_lieu }}) {% endif %} </p>
+            <p><strong>Contact :</strong> {{ commande.client.contact }}</p>
+        </div>
+    </div>
+
+    <!-- Lignes de commande -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">Articles commandés</div>
+
+        <!-- ✅ TABLEAU pour grands écrans -->
+        <div class="table-responsive d-none d-lg-block">
+            <table class="table table-bordered table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Article</th>
+                        <th>PU</th>
+                        <th>Quantité</th>
+                        <th>Montant</th>
+                        {% comment %} <th>Frais de livraison</th> {% endcomment %}
+                        {% comment %} <th>Total</th> {% endcomment %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ligne in lignes %}
+                    <tr>
+                        <td>{{ ligne.article.nom }}</td>
+                        <td class="text-end">{{ ligne.prix_unitaire }}</td>
+                        <td class="text-center">{{ ligne.quantite }}</td>
+                        <td class="text-end">{{ ligne.montant }}</td>
+                        {% comment %} <td class="text-end">{{ ligne.frais_livraison }}</td> {% endcomment %}
+                        {% comment %} <td class="text-end"><strong>{{ ligne.total }}</strong></td> {% endcomment %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-light">
+                        <td colspan="3" class="text-end"><strong>Total commande :</strong></td>
+                        <td class="text-end"><strong>{{ commande.total_commande }}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- ✅ CARTES pour petits écrans -->
+        <div class="d-lg-none p-3">
+            {% for ligne in lignes %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ ligne.article.nom }}</h5>
+                    <p class="card-text mb-1"><strong>PU :</strong> {{ ligne.prix_unitaire }}</p>
+                    <p class="card-text mb-1"><strong>Quantité :</strong> {{ ligne.quantite }}</p>
+                    <p class="card-text mb-1"><strong>Montant :</strong> {{ ligne.montant }}</p>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="text-end fw-bold">
+                Total commande : {{ commande.total_commande }}
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Boutons actions -->
+    <div class="text-center">
+        <form action="{% url 'commande_edit' commande.id %}" method="get" class="d-inline">
+            <button type="submit"
+                    class="btn btn-success"
+                    title="Modifier"
+                    {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-edit"></i> Modifier
+            </button>
+        </form>
+        <a href="{% url 'liste_commandes' %}" class="btn btn-outline-success">← Retour à la liste</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block title %}Commandes de services{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+    
+    <h2 class="text-center mb-4">Liste de commandes de services</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <div class="mb-2">
+        <a class="btn btn-success mb-2" href="{% url 'creer_commande_service' %}">
+            <i class="fa fa-plus"></i> Enregistrer une commande
+        </a>
+        <a class="btn btn-outline-success mb-2" href="{% url 'encaissement_services' %}"
+                {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-money-bill"></i> Encaissement
+        </a>
+        <a class="btn btn-outline-success mb-2" href="{% url 'facturation_commandes_services' %}"
+                {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-print"></i> Facturation
+        </a>
+    </div>
+
+    <div class="row m-1">
+        <form method="get" action="{% url 'liste_commandes_services' %}" class="row g-2 mb-2">
+            <div class="col-md-6 col-lg-2">
+                <label for="date_commande" class="form-label fw-bold">Date de commande</label>
+                <input type="date" name="date_commande" id="date_commande" class="form-control"
+                    value="{{ filtre_date_commande }}">
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label for="service_id" class="form-label fw-bold">Service</label>
+                <select name="service_id" id="service_id" class="form-select">
+                    <option value="">Tous</option>
+                    {% for s in services %}
+                        <option value="{{ s.id }}" {% if filtre_service_id == s.id|stringformat:"s" %}selected{% endif %}>{{ s.reference }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <label for="client_id" class="form-label fw-bold">Client</label>
+                <select name="client_id" id="client_id" class="form-select">
+                    <option value="">Tous</option>
+                    {% for c in clients %}
+                        <option value="{{ c.id }}" {% if filtre_client_id == c.id|stringformat:"s" %}selected{% endif %}>
+                            {{ c.raison_sociale }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-2">
+                <label for="statut" class="form-label fw-bold">Statut</label>
+                <select name="statut" id="statut" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="En attente" {% if filtre_statut == "En attente" %}selected{% endif %}>En attente</option>
+                    <option value="Payée" {% if filtre_statut == "Payée" %}selected{% endif %}>Payée</option>
+                    <option value="Supprimée" {% if filtre_statut == "Supprimée" %}selected{% endif %}>Supprimée</option>
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-success w-100">
+                    <i class="fa fa-filter"></i> Filtrer
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if commandes %}
+    {# ---------- Vue TABLEAU (md et +) ---------- #}
+    <div class="table-responsive d-none d-lg-block">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>Date</th>
+                    <th>Facture</th>
+                    <th>Client</th>
+                    <th>Service</th>
+                    <th>Statut</th>
+                    <th class="text-end">Montant</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for commande in commandes %}
+                <tr {% if commande.statut_vente == 'Supprimée' %}style="text-decoration: line-through;"{% endif %}>
+                    <td>{{ commande.date_commande|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if commande.vente.numero_facture %}{{ commande.vente.numero_facture }}{% else %}{{ commande.numero_proforma }}{% endif %}
+                    </td>
+                    <td>{{ commande.client.raison_sociale }}</td>
+                    <td>
+                        <ul class="mb-0">
+                            {% for ligne in commande.lignes_commandes.all %}
+                            <li>{{ ligne.service.reference }} ({{ ligne.quantite }})</li>
+                            {% endfor %}
+                        </ul>
+                    </td> 
+                    <td>{{ commande.statut_vente }}</td>
+                    <td class="text-end">{{ commande.montant_commande|intpoint }}</td>
+                    <td class="text-center" style="white-space: nowrap;">
+                        <button type="button" class="btn btn-sm btn-outline-success"
+                                data-id="{{ commande.id }}"
+                                onclick="openCommandeModal(this)" title="Voir">
+                            <i class="fa fa-eye"></i>
+                        </button>
+                        <a href="{% url 'modifier_commande_service' commande.id %}" class="btn btn-sm btn-outline-success" title="Modifier">
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteCommandeModal"
+                                data-id="{{ commande.id }}"
+                                data-numero="{{ commande.numero_facture }}"
+                                {% if commande.actions_desactivees %}disabled{% endif %}>
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-success fw-bold">
+                <tr>
+                    <td colspan="5" class="text-end">Total :</td>
+                    <td class="text-end">{{ total_montant|intpoint }}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    {# ---------- Vue CARTES (mobile) ---------- #}
+    <div class="d-lg-none">
+        <div class="row g-2">
+            {% for commande in commandes %}
+            <div class="col-md-6">
+                <div class="card h-100 {% if commande.statut_vente == 'Supprimée' %}opacity-75{% endif %}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small text-muted">Date</div>
+                            <div class="fw-semibold">{{ commande.date_commande|date:"d/m/Y" }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="small text-muted">Facture</div>
+                            <div class="fw-semibold">{% if commande.vente.numero_facture %}{{ commande.vente.numero_facture }}{% else %}{{ commande.numero_proforma }}{% endif %}</div>
+                        </div>
+                    </div>
+                    <div class="card-body py-2">
+                        <div class="mb-1">
+                            <div class="small text-muted">Client</div>
+                            <div class="fw-semibold">{{ commande.client.raison_sociale }}</div>
+                        </div>
+
+                        <div class="mb-1">
+                            <div class="small text-muted">Services</div>
+                            <ul class="mb-0 ps-3">
+                                {% for ligne in commande.lignes_commandes.all %}
+                                    <li>{{ ligne.service.reference }} ({{ ligne.quantite }})</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div>
+                                {% with s=commande.statut_vente %}
+                                    {% if s == 'Payée' %}
+                                        <span class="badge bg-success">{{ s }}</span>
+                                    {% elif s == 'En attente' %}
+                                        <span class="badge bg-warning text-dark">{{ s }}</span>
+                                    {% elif s == 'Supprimée' or s == 'Annulée' %}
+                                        <span class="badge bg-danger">{{ s }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ s }}</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                            <div class="fw-bold">{{ commande.montant_commande|intpoint }}</div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex gap-2 justify-content-end">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-success"
+                                data-id="{{ commande.id }}"
+                                onclick="openCommandeModal(this)" title="Voir">
+                            <i class="fa fa-eye"></i>
+                        </button>
+                        <a href="{% url 'modifier_commande_service' commande.id %}"
+                           class="btn btn-sm btn-outline-success" title="Modifier">
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteCommandeModal"
+                                data-id="{{ commande.id }}"
+                                data-numero="{{ commande.numero_facture }}"
+                                {% if not is_admin %}disabled{% endif %}>
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="card mt-2">
+            <div class="card-body py-2 d-flex justify-content-between">
+                <span class="fw-semibold">Total</span>
+                <span class="fw-bold">{{ total_montant|intpoint }}</span>
+            </div>
+        </div>
+    </div>
+    {% else %}
+        <div class="alert alert-info text-center">Aucune commande de service trouvée.</div>
+    {% endif %}
+
+    {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+    <!-- Modal confirmation suppression -->
+    <div class="modal fade" id="deleteCommandeModal" tabindex="-1" aria-labelledby="deleteCommandeLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" id="deleteCommandeForm">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteCommandeLabel">Confirmer la suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        Êtes-vous sûr de vouloir supprimer la commande de service n° <strong id="commandeNum"></strong> ?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour détail commande -->
+    <div class="modal fade" id="commandeDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content" id="commandeDetailContent">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteModal = document.getElementById('deleteCommandeModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const commandeId = button.getAttribute('data-id');
+            const commandeNum = button.getAttribute('data-numero');
+            const form = document.getElementById('deleteCommandeForm');
+            const numLabel = document.getElementById('commandeNum');
+
+            if (commandeId && form) {
+                const urlTplDelete = "{% url 'supprimer_commande_service' 0 %}";
+                form.action = urlTplDelete.replace('/0/', `/${commandeId}/`);
+            }
+            numLabel.textContent = commandeNum;
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('form[action$="{% url 'liste_commandes_services' %}"]');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const base = form.getAttribute('action');
+            const fd = new FormData(form);
+            const params = new URLSearchParams();
+
+            for (const [k, v] of fd.entries()) {
+                if (v !== null && String(v).trim() !== '') params.append(k, v);
+            }
+            window.location.href = params.toString() ? `${base}?${params}` : base;
+        });
+    });
+
+    function openCommandeModal(button) {
+        const commandeId = button.getAttribute('data-id');
+        const urlTpl = "{% url 'detail_commande_service_modal' 0 %}";
+        const url = urlTpl.replace('/0/', `/${commandeId}/`);
+
+        const modalContent = document.getElementById('commandeDetailContent');
+        modalContent.innerHTML = `
+        <div class="modal-header">
+            <h5 class="modal-title">Chargement…</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body text-center py-5">
+            <div class="spinner-border" role="status" aria-hidden="true"></div>
+        </div>
+        `;
+        const commandeModal = new bootstrap.Modal(document.getElementById('commandeDetailModal'));
+        commandeModal.show();
+
+        fetch(url)
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(data => { modalContent.innerHTML = data.html; })
+        .catch(() => {
+            modalContent.innerHTML = `
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Erreur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">Erreur de chargement des détails.</div>
+            <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button></div>
+            `;
+        });
+    }
+</script>
+{% endblock %}

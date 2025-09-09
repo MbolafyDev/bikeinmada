@@ -1,0 +1,250 @@
+{# ventes/journal_encaissement.html #}
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block extra_css_and_scripts %}
+    <style>
+    .thumb-120{
+        height:120px;background:#fff;display:flex;align-items:center;justify-content:center;
+        overflow:hidden;border-radius:.375rem
+    }
+    .thumb-120 img{max-height:100%;max-width:100%;object-fit:contain;object-position:center;display:block;background:#fff}
+    .article-list{overflow-x:hidden;list-style:disc;padding-left:1.25rem;margin-bottom:0}
+    .article-line-inner{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.5rem}
+    .article-name{flex:1 1 auto;min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+</style>
+{% endblock %}
+
+{% block title %}Journal des encaissement de ventes{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+
+  <h2 class="text-center">Journal des encaissement de ventes</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <!-- Barre d’actions -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <a class="btn btn-primary" href="{% url 'encaissement_ventes' %}" {% if not is_admin %}disabled{% endif %}>
+      <i class="fa fa-plus"></i> Encaisser une ou des vente(s)
+    </a>
+
+    <div class="d-flex align-items-center gap-2">
+      <!-- Toggle d’affichage (>= lg) -->
+      <div class="view-toggle-ventes d-none d-lg-flex gap-1"
+           data-storage-key="zr_display_ventes">
+        <button type="button"
+                class="btn btn-outline-primary {% if display_mode == 'table' %}active{% endif %}"
+                data-mode="table" title="Mode Tableau">
+          <i class="fa fa-table"></i>
+        </button>
+        <button type="button"
+                class="btn btn-outline-primary {% if display_mode == 'cards' %}active{% endif %}"
+                data-mode="cards" title="Mode Cartes">
+          <i class="fa fa-credit-card"></i>
+        </button>
+      </div>
+
+      <!-- Bouton filtre (mobile) -->
+      <button class="btn btn-outline-primary d-lg-none" type="button"
+              data-bs-toggle="collapse" data-bs-target="#filtersCollapse"
+              aria-expanded="false" aria-controls="filtersCollapse">
+        <i class="fa fa-filter"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div id="filtersCollapse" class="collapse d-lg-block">
+    <div class="row m-1">
+      <form id="ventesFiltersForm" method="get" class="row g-2 mb-2"
+            hx-get="{% url 'journal_encaissement_ventes_partial' %}"
+            hx-target="#ventes-table-wrapper"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+            hx-trigger="change delay:300ms, submit">
+
+        <!-- Date livraison -->
+        <div class="col-md-6 col-lg-3">
+          <label for="date_livraison" class="form-label fw-bold d-none d-lg-block">Date livraison</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-bicycle"></i></span>
+            <input type="date" name="date_livraison" id="date_livraison" class="form-control" value="{{ date_livraison }}">
+          </div>
+        </div>
+
+        <!-- Date encaissement -->
+        <div class="col-md-6 col-lg-3">
+          <label for="date_encaissement" class="form-label fw-bold d-none d-lg-block">Date encaissement</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-wallet"></i></span>
+            <input type="date" name="date_encaissement" id="date_encaissement" class="form-control" value="{{ date_encaissement }}">
+          </div>
+        </div>
+
+        <!-- Page -->
+        <div class="col-md-4 col-lg-2">
+          <label for="page_id_filter" class="form-label fw-bold d-none d-lg-block">Page</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-shop"></i></span>
+            <select name="page_id_filter" id="page_id_filter" class="form-select">
+              <option value="">Toutes les pages</option>
+              {% for p in pages %}
+                <option value="{{ p.id }}" {% if filtre_page == p.id|stringformat:"s" %}selected{% endif %}>{{ p.nom }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Paiement -->
+        <div class="col-md-4 col-lg-2">
+          <label for="paiement" class="form-label fw-bold d-none d-lg-block">Paiement</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-coins"></i></span>
+            <select name="paiement" id="paiement" class="form-select">
+              <option value="">Tous les paiements</option>
+              {% for p in paiements %}
+                <option value="{{ p.id }}" {% if paiement_id == p.id|stringformat:"s" %}selected{% endif %}>{{ p.nom }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Bouton -->
+        <div class="col-md-4 col-lg-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-outline-primary w-100">
+            <i class="fa fa-filter"></i> Filtrer
+          </button>
+        </div>
+
+        <!-- cachés -->
+        <input type="hidden" name="display" id="ventes_display_input" value="{{ display_mode }}">
+        <input type="hidden" name="page" id="ventes_page_input" value="{{ page_obj.number }}">
+      </form>
+    </div>
+  </div>
+
+  <!-- Zone dynamique -->
+  <div id="ventes-table-wrapper"
+       hx-get="{% url 'journal_encaissement_ventes_partial' %}?{{ request.GET.urlencode }}"
+       hx-target="#ventes-table-wrapper"
+       hx-swap="outerHTML"
+       hx-trigger="load">
+    {% include "ventes/includes/encaissement_list_wrapper.html" %}
+  </div>
+
+  <!-- Pagination -->
+  {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+  <!-- Modals offline (garder comme avant, une seule fois dans la page) -->
+  {% for vente in ventes %}
+    {% include "ventes/includes/modal_modification_suppression_vente.html" with vente=vente %}
+  {% endfor %}
+</div>
+
+<script>
+  // Gestion du toggle d'affichage + conservation pagination
+  (function() {
+    const toggle = document.querySelector('.view-toggle-ventes');
+    const form = document.getElementById('ventesFiltersForm');
+
+    if (!toggle || !form) return;
+
+    const displayInput = document.getElementById('ventes_display_input');
+    const pageInput    = document.getElementById('ventes_page_input');
+
+    const storageKey   = toggle.dataset.storageKey || 'display_ventes';
+    const getUrlPage   = () => (new URLSearchParams(location.search)).get('page') || '';
+
+    const htmxSubmit = () => {
+      if (form.requestSubmit) form.requestSubmit();
+      else form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    };
+
+    toggle.addEventListener('click', function(e) {
+      const btn = e.target.closest('button[data-mode]');
+      if (!btn) return;
+
+      const mode = btn.dataset.mode;
+
+      // UI
+      toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // mémoriser + MAJ champs
+      localStorage.setItem(storageKey, mode);
+      displayInput.value = mode;
+      pageInput.value = getUrlPage();  // garder page courante
+
+      htmxSubmit();
+    });
+
+    // Changement de filtres -> retour page 1
+    ['date_livraison','date_encaissement','page_id_filter','paiement'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('change', () => { pageInput.value = ''; });
+    });
+
+    // Après swap, resynchroniser page cachée avec l'URL
+    if (window.htmx) {
+      htmx.on('htmx:afterSwap', function (evt) {
+        if (evt.target && evt.target.id === 'ventes-table-wrapper') {
+          pageInput.value = getUrlPage();
+        }
+      });
+    }
+  })();
+
+    // --- Surbrillance bleue de l'article correspondant à la slide active ---
+    document.addEventListener('slid.bs.carousel', function (e) {
+        var carouselEl = e.target;
+        var listSelector = carouselEl.dataset.listTarget;
+        if (!listSelector) return;
+
+        var listEl = document.querySelector(listSelector);
+        if (!listEl) return;
+
+        var count = parseInt(listEl.dataset.count || '0', 10);
+        if (count <= 1) return; // pas de mise en bleu si un seul article
+
+        var activeItem = e.relatedTarget || carouselEl.querySelector('.carousel-item.active');
+        if (!activeItem) return;
+
+        var idx = activeItem.getAttribute('data-index');
+
+        // Retire l'état actif
+        listEl.querySelectorAll('.item-text').forEach(function (el) {
+        el.classList.remove('text-primary','fw-semibold');
+        });
+
+        // Active l'élément correspondant et le garde visible
+        var target = listEl.querySelector('li[data-index="'+ idx +'"] .item-text');
+        if (target) {
+        target.classList.add('text-primary','fw-semibold');
+        var li = target.closest('li');
+        if (li && li.scrollIntoView) {
+            li.scrollIntoView({behavior:'smooth', block:'nearest'});
+        }
+        }
+    });
+
+    // --- Clic sur un item -> aller à la slide correspondante ---
+    document.addEventListener('click', function (e) {
+        var li = e.target.closest('ul[data-role="liste-articles"] li[data-index]');
+        if (!li) return;
+
+        var ul = li.closest('ul[data-role="liste-articles"]');
+        var card = ul.closest('.card');
+        var carouselEl = card && card.querySelector('.carousel');
+        if (!carouselEl) return;
+
+        var idx = parseInt(li.getAttribute('data-index'), 10) || 0;
+        var instance = bootstrap.Carousel.getOrCreateInstance(carouselEl);
+        instance.to(idx);
+    });
+
+</script>
+{% endblock %}

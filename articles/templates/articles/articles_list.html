@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block title %}Liste des articles{% endblock %}
+
+{% block extra_css_and_scripts %}
+<style>
+  /* Vignettes 120px pour les cartes */
+  .thumb-120{
+    height:120px; background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; border-radius:.375rem;
+  }
+  .thumb-120 img{ max-height:100%; max-width:100%; object-fit:contain; display:block; background:#fff; }
+
+  /* Toggle */
+  .view-toggle .btn { padding:.375rem .6rem; }
+  .view-toggle .btn.active { pointer-events:none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+
+  <h2 class="text-center">Liste des articles</h2>
+  {% include "includes/messages_alert.html" %}
+
+  <!-- Barre d’actions -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="d-flex">
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal" {% if not is_admin %}disabled{% endif %}>
+        <i class="fa fa-plus"></i> Ajouter un article
+      </button>
+      <a class="btn btn-outline-primary ms-2" href="{% url 'service_list' %}">Services</a>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <!-- Bascule d’affichage (icônes à droite, >= lg) -->
+      <div class="view-toggle d-none d-lg-flex gap-1"
+           data-storage-key="zr_display_articles"
+           data-target-url="{% url 'article_list_partial' %}"
+           data-target="#articles-list-wrapper">
+        <button type="button"
+                class="btn btn-outline-primary {% if display_mode == 'table' %}active{% endif %}"
+                data-mode="table" title="Mode Tableau">
+          <i class="fa fa-table"></i>
+        </button>
+        <button type="button"
+                class="btn btn-outline-primary {% if display_mode == 'cards' %}active{% endif %}"
+                data-mode="cards" title="Mode Cartes">
+          <i class="fa fa-credit-card"></i>
+        </button>
+      </div>
+
+      <!-- Bouton filtre (mobile/tablette) -->
+      <button class="btn btn-outline-primary d-lg-none" type="button"
+              data-bs-toggle="collapse" data-bs-target="#filtersCollapse"
+              aria-expanded="false" aria-controls="filtersCollapse">
+        <i class="fa fa-filter"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Formulaire de filtre -->
+  <div id="filtersCollapse" class="collapse d-lg-block">
+    <form id="filtersForm" method="get"
+          class="row g-2 mb-3"
+          hx-get="{% url 'article_list_partial' %}"
+          hx-target="#articles-list-wrapper"
+          hx-trigger="change delay:300ms, submit"
+          hx-push-url="true">
+      <div class="col-md-6 col-lg-3">
+        <input type="text" name="q" class="form-control" placeholder="Rechercher par nom" value="{{ query }}">
+      </div>
+      <div class="col-md-3 col-lg-2">
+        <input type="number" name="prix_min" class="form-control" step="100" placeholder="Prix >=" value="{{ prix_min }}">
+      </div>
+      <div class="col-md-3 col-lg-2">
+        <input type="number" name="prix_max" class="form-control" step="100" placeholder="Prix <=" value="{{ prix_max }}">
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <select name="livraison" class="form-select">
+          <option value="">Livraison (toutes)</option>
+          <option value="Gratuite" {% if livraison_filter == 'Gratuite' %}selected{% endif %}>Gratuite</option>
+          <option value="Payante" {% if livraison_filter == 'Payante' %}selected{% endif %}>Payante</option>
+        </select>
+      </div>
+      <div class="col-md-6 col-lg-2">
+        <button type="submit" class="btn btn-outline-primary w-100"><i class="fa fa-filter"></i> Filtrer</button>
+      </div>
+
+      <!-- Champs cachés: conservent le mode + page courante -->
+      <input type="hidden" name="display" id="display_input" value="{{ display_mode }}">
+      <input type="hidden" name="page" id="page_input" value="{{ page_obj.number }}">
+    </form>
+  </div>
+
+  <!-- Zone dynamique (wrapper choisit table/cards) -->
+  <div id="articles-list-wrapper"
+       hx-get="{% url 'article_list_partial' %}?{{ request.GET.urlencode }}"
+       hx-trigger="load"
+       hx-target="this"
+       hx-swap="outerHTML">
+    {% include "articles/includes/articles_list_wrapper.html" %}
+  </div>
+
+  {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+</div>
+
+<!-- Modal création (inchangé) -->
+{% include "articles/includes/articles_create_modal.html" %}
+
+{# articles/includes/articles_modals.html #}
+{% for article in articles %}
+  {% include "articles/includes/articles_edit_modal.html" with article=article %}
+  {% include "articles/includes/articles_delete_modal.html" with article=article %}
+  {% include "articles/includes/articles_restore_modal.html" with article=article %}
+{% endfor %}
+
+<script>
+  // --- Gestion du toggle (mémorisation + conservation de la page) ---
+  (function() {
+    const toggle = document.querySelector('.view-toggle');
+    const form = document.getElementById('filtersForm');
+    const displayInput = document.getElementById('display_input');
+
+    if (!toggle || !form || !displayInput) return;
+
+    const getUrlPage = () => (new URLSearchParams(location.search)).get('page') || '';
+    const getOrMakePageInput = () => {
+      let el = document.getElementById('page_input');
+      if (!el) {
+        el = document.createElement('input');
+        el.type = 'hidden'; el.name = 'page'; el.id = 'page_input';
+        form.appendChild(el);
+      }
+      return el;
+    };
+
+    // Clic bascule
+    toggle.addEventListener('click', function(e) {
+      const btn = e.target.closest('button[data-mode]');
+      if (!btn) return;
+
+      const mode = btn.dataset.mode;
+      // UI
+      toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Memo localStorage
+      const storageKey = toggle.dataset.storageKey || 'display_mode';
+      localStorage.setItem(storageKey, mode);
+
+      // Met à jour le form
+      displayInput.value = mode;
+      const pageInput = getOrMakePageInput();
+      pageInput.value = getUrlPage(); // conserve page courante
+
+      if (form.requestSubmit) form.requestSubmit(); else form.submit();
+    });
+
+    // Changement de filtre => retour page 1
+    ['q','prix_min','prix_max','livraison'].forEach(idOrName => {
+      const el = form.querySelector(`[name="${idOrName}"]`);
+      if (!el) return;
+      el.addEventListener('change', () => {
+        const pageInput = getOrMakePageInput();
+        pageInput.value = '';
+      });
+    });
+
+    // Après swap HTMX, resync page hidden avec l’URL
+    if (window.htmx) {
+      htmx.on('htmx:afterSwap', function (evt) {
+        if (evt.target && evt.target.id === 'articles-list-wrapper') {
+          const pageInput = getOrMakePageInput();
+          pageInput.value = getUrlPage();
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}

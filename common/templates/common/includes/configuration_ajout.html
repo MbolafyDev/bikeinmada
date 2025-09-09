@@ -1,0 +1,90 @@
+<!-- Modal ajout Page -->
+<div class="modal fade" id="modalPage" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'ajouter_page' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter une page</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Nom</label>
+                    <input type="text" name="nom" class="form-control mb-2" required>
+
+                    <label class="form-label">Type</label>  {# ➕ select type #}
+                    <select name="type" class="form-select mb-2" required>
+                        {% for key, label in type_choices %}
+                            <option value="{{ key }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="form-label">Contact</label>
+                    <input type="text" name="contact" class="form-control mb-2" required>
+
+                    <label class="form-label">Lien</label>
+                    <input type="url" name="lien" class="form-control mb-2">
+
+                    <label class="form-label">Logo</label>
+                    <input type="file" name="logo" class="form-control">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal ajout Caisse -->
+<div class="modal fade" id="modalCaisse" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'ajouter_caisse' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter une caisse</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label>Nom</label>
+                    <input type="text" name="nom" class="form-control mb-2" required>
+                    <label>Responsable</label>
+                    <input type="text" name="responsable" class="form-control mb-2" required>
+                    <label>Solde initial</label>
+                    <input type="number" name="solde_initial" class="form-control" value="0" min="0">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal ajout Plan -->
+<div class="modal fade" id="modalPlan" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'ajouter_plan' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un compte</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label>Numéro</label>
+                    <input type="text" name="compte_numero" class="form-control mb-2" required>
+                    <label>Libellé</label>
+                    <input type="text" name="libelle" class="form-control" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

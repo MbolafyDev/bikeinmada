@@ -1,0 +1,147 @@
+<!-- Pagination -->
+<div class="mt-2">
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Pagination">
+        <ul class="pagination justify-content-center">
+
+            {# Premier (<<) #}
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page=1{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+                       hx-get="?page=1{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+                       hx-target="#commandes-table-wrapper"
+                       hx-push-url="true"
+                       hx-swap="outerHTML">
+                        <i class="fas fa-angle-double-left" title="Premier"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-double-left" title="Premier"></i></span>
+                </li>
+            {% endif %}
+
+            {# Précédent (<) #}
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.previous_page_number }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+                       hx-get="?page={{ page_obj.previous_page_number }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+                       hx-target="#commandes-table-wrapper"
+                       hx-push-url="true"
+                       hx-swap="outerHTML">
+                        <i class="fas fa-angle-left" title="Précédent"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-left" title="Précédent"></i></span>
+                </li>
+            {% endif %}
+
+            {# Pages avec ellipses #}
+            {% with total=page_obj.paginator.num_pages current=page_obj.number %}
+    
+    {# PAGE 1 - seulement si ce n’est pas la page courante #}
+    {% if current <= 3 and current != 1 %}
+        <li class="page-item">
+            <a class="page-link"
+               href="?page=1{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+               hx-get="?page=1{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+               hx-target="#commandes-table-wrapper"
+               hx-push-url="true"
+               hx-swap="outerHTML">1</a>
+        </li>
+    {% elif current > 3 %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+    {% endif %}
+
+    {# PAGE COURANTE - 1 #}
+    {% if current|add:'-1' > 1 %}
+        <li class="page-item">
+            <a class="page-link"
+               href="?page={{ current|add:'-1' }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+               hx-get="?page={{ current|add:'-1' }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+               hx-target="#commandes-table-wrapper"
+               hx-push-url="true"
+               hx-swap="outerHTML">{{ current|add:'-1' }}</a>
+        </li>
+    {% endif %}
+
+    {# PAGE COURANTE - toujours affichée #}
+    <li class="page-item active">
+        <span class="page-link">{{ current }}</span>
+    </li>
+
+    {# PAGE COURANTE + 1 #}
+    {% if current|add:'1' < total %}
+        <li class="page-item">
+            <a class="page-link"
+               href="?page={{ current|add:'1' }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+               hx-get="?page={{ current|add:'1' }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+               hx-target="#commandes-table-wrapper"
+               hx-push-url="true"
+               hx-swap="outerHTML">{{ current|add:'1' }}</a>
+        </li>
+    {% endif %}
+
+    {# Ellipsis avant la dernière page #}
+    {% if current < total|add:'-2' %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+    {% endif %}
+
+    {# DERNIÈRE PAGE - seulement si ce n’est pas la page courante #}
+    {% if current >= total|add:'-2' and current != total %}
+        <li class="page-item">
+            <a class="page-link"
+               href="?page={{ total }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+               hx-get="?page={{ total }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+               hx-target="#commandes-table-wrapper"
+               hx-push-url="true"
+               hx-swap="outerHTML">{{ total }}</a>
+        </li>
+    {% endif %}
+{% endwith %}
+
+
+            {# Suivant (>) #}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.next_page_number }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+                       hx-get="?page={{ page_obj.next_page_number }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+                       hx-target="#commandes-table-wrapper"
+                       hx-push-url="true"
+                       hx-swap="outerHTML">
+                        <i class="fas fa-angle-right" title="Suivant"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-right" title="Suivant"></i></span>
+                </li>
+            {% endif %}
+
+            {# Dernier (>>) #}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.paginator.num_pages }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+                       hx-get="?page={{ page_obj.paginator.num_pages }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}"
+                       hx-target="#commandes-table-wrapper"
+                       hx-push-url="true"
+                       hx-swap="outerHTML">
+                        <i class="fas fa-angle-double-right" title="Dernier"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-double-right" title="Dernier"></i></span>
+                </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+    {% endif %}
+</div>

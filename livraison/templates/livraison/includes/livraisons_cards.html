@@ -1,0 +1,27 @@
+{% load nombre %}
+
+<div class="row">
+  {% for commande in commandes %}
+  <div class="col-md-6 col-lg-4 col-xl-3 mb-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title text-success">Livraison le {{ commande.date_livraison|date:"d/m/Y" }}</h5>
+        <p class="mb-1"><strong>Client :</strong> {{ commande.client.nom }}</p>
+        <p class="mb-1"><strong>Lieu :</strong> {{ commande.client.lieu.lieu }}</p>
+        <p class="mb-1"><strong>Contact :</strong> {{ commande.client.contact }}</p>
+        <p class="mb-1"><strong>Statut :</strong> {{ commande.statut_livraison }}</p>
+        <p class="mb-1"><strong>Total à payer :</strong> {{ commande.total_commande|intpoint }} Ar</p>
+        <p class="mb-1"><strong>Livreur :</strong> {{ commande.livreur.nom }}</p>
+        <p class="mb-0"><strong>Frais livreur :</strong> {{ commande.frais_livreur|intpoint }} Ar</p>
+      </div>
+      <div class="card-footer d-flex justify-content-end">
+        <button class="btn btn-sm btn-outline-success"
+                data-bs-toggle="modal" data-bs-target="#editModal{{ commande.id }}"
+                {% if not is_admin %}disabled{% endif %}>
+          <i class="fa fa-edit"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>

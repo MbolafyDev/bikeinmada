@@ -1,0 +1,29 @@
+{# templates/clients/includes/client_cards.html #}
+{% if clients %}
+  <div class="row">
+    {% for client in clients %}
+      <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+        <div class="card h-100 shadow-sm {% if client.statut_publication == 'supprimé' %}opacity-50{% endif %}">
+          <div class="card-body">
+            <h5 class="card-title text-success">{{ client.nom }}</h5>
+            <p class="card-text mb-1"><strong>Lieu :</strong> {{ client.lieu.lieu }}</p>
+            <p class="card-text mb-1"><strong>Précision :</strong> {{ client.precision_lieu }}</p>
+            <p class="card-text mb-0"><strong>Contact :</strong> {{ client.contact }}</p>
+          </div>
+          <div class="card-footer text-end">
+            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editModal{{ client.id }}">
+              <i class="fa fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger"
+                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ client.id }}"
+                    {% if not is_admin or client.statut_publication == 'supprimé' %}disabled{% endif %}>
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-info text-center">Aucun client enregistré.</div>
+{% endif %}

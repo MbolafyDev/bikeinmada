@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Liste des entreprises{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+    <h2 class="text-center mb-2">Liste des entreprises</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <div class="d-flex justify-content mb-2">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addEntrepriseModal">
+            <i class="fa fa-plus"></i> Ajouter une entreprise
+        </button>
+    </div>
+
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-3">
+            <input type="text" name="raison_sociale" class="form-control" placeholder="Raison sociale"
+                value="{{ raison_sociale_query }}">
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="activite" class="form-control" placeholder="Activité"
+                value="{{ activite_query }}">
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="contact" class="form-control" placeholder="Contact"
+                value="{{ contact_query }}">
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-outline-success w-100">
+                <i class="fa fa-search"></i> Rechercher
+            </button>
+        </div>
+    </form>
+
+    {% if entreprises %}
+        <!-- TABLEAU -->
+        <div class="table-responsive d-none d-lg-block">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-success">
+                    <tr>
+                        <th>Raison sociale</th>
+                        <th>Activité</th>
+                        <th>Contact</th>
+                        <th>Adresse</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entreprise in entreprises %}
+                    <tr {% if entreprise.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+                        <td>{{ entreprise.raison_sociale }}</td>
+                        <td>{{ entreprise.activite_produits|default_if_none:"" }}</td>
+                        <td>{{ entreprise.telephone|default_if_none:"" }}{% if entreprise.email %} <br> {{ entreprise.email }}{% endif %}</td>
+                        <td>{{ entreprise.adresse|default_if_none:"" }}</td>
+                        <td class="text-center" style="white-space: nowrap">
+                            <button class="btn btn-sm btn-outline-success me-1" data-bs-toggle="modal" data-bs-target="#detailsModal{{ entreprise.id }}">
+                                <i class="fa fa-eye"></i>
+                            </button>                            
+                            <button class="btn btn-sm btn-outline-success me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ entreprise.id }}">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ entreprise.id }}" {% if not is_admin %}disabled{% endif %}>
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>                            
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- CARTES -->
+        <div class="d-lg-none">
+            <div class="row">
+                {% for entreprise in entreprises %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">{{ entreprise.raison_sociale }}</h5>
+                            <p class="card-text mb-1"><strong>Activité:</strong> {{ entreprise.activite_produits }}</p>
+                            <p class="card-text mb-1"><strong>Contact:</strong> {{ entreprise.telephone }}{% if entreprise.email %} / {{ entreprise.email }}{% endif %}</p>
+                            <p class="card-text"><strong>Adresse:</strong> {{ entreprise.adresse }}</p>
+                        </div>
+                        <div class="card-footer text-end">
+                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editModal{{ entreprise.id }}">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ entreprise.id }}" {% if not is_admin %}disabled{% endif %}>
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    {% else %}
+        <div class="alert alert-info text-center">Aucune entreprise enregistrée.</div>
+    {% endif %}
+
+    {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+</div>
+
+{% for entreprise in entreprises %}
+    {% include "clients/includes/modal_details_entreprise.html" %}
+    {% include "clients/includes/modal_edit_entreprise.html" %}
+    {% include "clients/includes/modal_delete_entreprise.html" %}
+{% endfor %}
+
+<!-- Modal d'ajout -->
+{% include "clients/includes/modal_add_entreprise.html" %}
+
+{% endblock %}

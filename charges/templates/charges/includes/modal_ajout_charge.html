@@ -1,0 +1,119 @@
+<!-- Modal ajouter une charge -->
+<div class="modal fade" id="modalCharge" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <form method="post" action="{% url 'ajouter_charge' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Ajouter une ou des opération(s)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="date" class="form-label">Date</label>
+              <input type="date" name="date" class="form-control" value="{{ today }}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="page" class="form-label">Page</label>
+              <select name="page" class="form-control">
+                <option value="">Aucun</option>
+                {% for page in pages %}
+                  <option value="{{ page.id }}">{{ page.nom }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <input type="hidden" id="total_lignes" name="total_lignes" value="0">
+
+          <h5>Lignes d'opérations</h5>
+          <div id="lignesCharges"></div>
+          <button type="button" class="btn btn-sm btn-outline-success my-2" onclick="ajouterLigneCharge()">+ Ajouter une ligne</button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+let ligneCount = 0;
+
+function ajouterLigneCharge() {
+  const container = document.getElementById("lignesCharges");
+  const index = ligneCount++;
+
+  const ligneHTML = `
+    <div class="row g-2 mb-2 align-items-center" id="ligne-${index}">
+      <div class="col-lg-2">
+        <select name="libelle_${index}" class="form-control" required>
+          <option value="">Libellé</option>
+          {% for p in plans %}
+            <option value="{{ p.id }}">{{ p.compte_numero }} - {{ p.libelle }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-2">
+        <input type="number" name="pu_${index}" class="form-control pu" step="100" placeholder="P.U" required oninput="calculerMontant(${index})">
+      </div>
+      <div class="col-lg-1">
+        <input type="number" name="quantite_${index}" class="form-control quantite" placeholder="Qté" required oninput="calculerMontant(${index})">
+      </div>
+      <div class="col-lg-2">
+        <input type="number" name="montant_${index}" class="form-control montant" placeholder="Montant" readonly>
+      </div>
+      <div class="col-lg-2">
+        <input type="text" name="remarque_${index}" class="form-control" placeholder="Remarque">
+      </div>
+      <div class="col-lg-2">
+        <select name="paiement_${index}" class="form-control" required>
+          <option value="">Paiement</option>
+          {% for c in caisses %}
+            <option value="{{ c.id }}">{{ c.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-1 d-flex align-items-end">
+        <button type="button" class="btn btn-danger btn-sm" onclick="supprimerLigne(${index})">✖</button>
+      </div>
+    </div>
+  `;
+  container.insertAdjacentHTML("beforeend", ligneHTML);
+  document.getElementById("total_lignes").value = document.querySelectorAll("#lignesCharges > .row").length;
+}
+
+function calculerMontant(index) {
+  const pu = document.querySelector(`input[name="pu_${index}"]`);
+  const quantite = document.querySelector(`input[name="quantite_${index}"]`);
+  const montant = document.querySelector(`input[name="montant_${index}"]`);
+
+  if (pu && quantite && montant) {
+    const total = (parseInt(pu.value || 0) * parseInt(quantite.value || 0));
+    montant.value = isNaN(total) ? '' : total;
+  }
+}
+
+function supprimerLigne(index) {
+  const ligne = document.getElementById(`ligne-${index}`);
+  if (ligne) {
+    ligne.remove();
+    document.getElementById("total_lignes").value = document.querySelectorAll("#lignesCharges > .row").length;
+  }
+}
+
+// Ajouter une ligne vide automatiquement quand le modal s'ouvre
+document.addEventListener("DOMContentLoaded", () => {
+  const modalCharge = document.getElementById('modalCharge');
+  modalCharge.addEventListener('shown.bs.modal', () => {
+    // Réinitialiser les lignes et le compteur
+    document.getElementById("lignesCharges").innerHTML = "";
+    ligneCount = 0;
+    document.getElementById("total_lignes").value = "0";
+    ajouterLigneCharge();
+  });
+});
+</script>

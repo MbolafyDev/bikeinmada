@@ -1,0 +1,48 @@
+<!-- Modal de suppression -->
+<div class="modal fade" id="deleteAchatModal" tabindex="-1" aria-labelledby="deleteAchatLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" id="deleteAchatForm">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteAchatLabel">Confirmer la suppression</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          Êtes-vous sûr de vouloir supprimer l'achat relatif à la facture <strong id="achatNum"></strong> ?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger">Supprimer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de suppression définitive -->
+<div class="modal fade" id="deleteDefAchatModal" tabindex="-1" aria-labelledby="deleteDefAchatLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" id="deleteDefAchatForm">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteDefAchatLabel">Confirmer la suppression définitive</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          Veuillez confirmer la suppression définitive de l'achat relatif à la facture <strong id="achatNumDef"></strong>
+          <p class="text-danger mt-2">Cette action est irréversible !</p>
+          <div class="mt-3">
+            <label for="password-def" class="form-label fw-bold">Mot de passe :</label>
+            <input type="password" id="password-def" class="form-control" name="password" required placeholder="Confirmez avec votre mot de passe">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger">Supprimer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

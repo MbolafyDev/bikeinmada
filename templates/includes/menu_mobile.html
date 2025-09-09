@@ -1,0 +1,101 @@
+<div class="offcanvas-header">
+  <h5 class="offcanvas-title" id="offcanvasMenuLabel">Menu</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+</div>
+
+<div class="offcanvas-body ps-3"> {# padding start = padding-left #}
+  <ul class="navbar-nav">
+
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'liste_commandes' %}active{% endif %}" href="{% url 'liste_commandes' %}">
+        <i class="fa fa-list-squares me-2"></i> Commandes
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'liste_livraisons' %}active{% endif %}" href="{% url 'liste_livraisons' %}">
+        <i class="fa fa-bicycle me-2"></i> Livraisons
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'liste_encaissement_ventes' %}active{% endif %}" href="{% url 'liste_encaissement_ventes' %}">
+        <i class="fa fa-shopping-cart me-2"></i> Encaissement
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'facturation' %}active{% endif %}" href="{% url 'facturation' %}">
+        <i class="fa fa-file-invoice me-2"></i> Facturation
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'achats_list' %}active{% endif %}" href="{% url 'achats_list' %}">
+        <i class="fa fa-basket-shopping me-2"></i> Achats
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'charges_list' %}active{% endif %}" href="{% url 'charges_list' %}">
+        <i class="fa fa-money-bill-wave me-2"></i> Charges
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'etat_caisses' %}active{% endif %}" href="{% url 'etat_caisses' %}">
+        <i class="fa fa-coins me-2"></i> Caisses
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'etat_stock' %}active{% endif %}" href="{% url 'etat_stock' %}">
+        <i class="fa fa-boxes-stacked me-2"></i> Stock
+      </a>
+    </li>
+    {% comment %} <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'inventaire_list' %}active{% endif %}" href="{% url 'inventaire_list' %}">
+        <i class="fa fa-list-alt me-2"></i> Inventaire
+      </a>
+    </li> {% endcomment %}
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'clients_list' %}active{% endif %}" href="{% url 'clients_list' %}">
+        <i class="fa fa-user-group me-2"></i> Clients
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'article_list' %}active{% endif %}" href="{% url 'article_list' %}">
+        <i class="fa fa-box-open me-2"></i> Articles
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'liste_commandes_services' %}active{% endif %}" href="{% url 'liste_commandes_services' %}">
+        <i class="fa fa-puzzle-piece me-2"></i> Services
+      </a>
+    </li>
+
+    <!-- Statistiques (Collapsible) -->
+    <li class="nav-item">
+    <a class="nav-link d-flex justify-content-between align-items-center {% if request.resolver_match.url_name in 'rapport_vente compte_de_resultat bilan' %}active{% endif %}" 
+        data-bs-toggle="collapse" href="#collapseStats" role="button" aria-expanded="false" aria-controls="collapseStats">
+        <span><i class="fa fa-chart-bar me-2"></i> Statistiques &#x25BE;</span>
+    </a>
+    <div class="collapse {% if request.resolver_match.url_name in 'rapport_vente compte_de_resultat bilan' %}show{% endif %}" id="collapseStats">
+        <ul class="list-unstyled ps-3">
+        <li><a class="nav-link" href="{% url 'rapport_vente' %}">Rapport de ventes</a></li>
+        <li><a class="nav-link" href="{% url 'compte_de_resultat' %}">Compte de résultat</a></li>
+        <li><a class="nav-link" href="{% url 'bilan' %}">Bilan</a></li>
+        </ul>
+    </div>
+    </li>
+
+    <!-- Paramètres (Collapsible) -->
+    <li class="nav-item">
+    <a class="nav-link d-flex justify-content-between align-items-center {% if request.resolver_match.url_name in 'profil configuration' %}active{% endif %}" 
+        data-bs-toggle="collapse" href="#collapseSettings" role="button" aria-expanded="false" aria-controls="collapseSettings">
+        <span><i class="fa fa-gear me-2"></i> Paramètres &#x25BE;</span>
+    </a>
+    <div class="collapse {% if request.resolver_match.url_name in 'profil configuration' %}show{% endif %}" id="collapseSettings">
+        <ul class="list-unstyled ps-3">
+        <li><a class="nav-link" href="{% url 'profil' %}">Profil</a></li>
+        <li><a class="nav-link" href="{% url 'configuration' %}">Configuration</a></li>
+        </ul>
+    </div>
+    </li>
+
+
+  </ul>
+</div>

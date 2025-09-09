@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier la commande service{% endblock %}
+
+{% block content %}
+<div class="container mb-4">
+  <h2 class="mt-4">
+    Modifier la commande
+    <span class="text-secondary">
+      ({% if commande.vente.numero_facture %}{{ commande.vente.numero_facture }}{% else %}{{ commande.numero_proforma }}{% endif %})
+    </span>
+  </h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Informations client (lecture seule pour le flow modification) -->
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">Informations sur le client</div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Client</label>
+            <div class="form-control bg-light">
+              {{ commande.client.raison_sociale }}
+            </div>
+          </div>
+          <div class="col-md-6 d-flex align-items-end">
+            <a href="{% url 'detail_commande_service' commande.id %}" class="ms-auto">Voir la commande</a>
+          </div>
+        </div>
+
+        <!-- Grille 3 x 2 -->
+        <div class="row g-3">
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">NIF</div>
+              <div class="mt-1">{{ commande.client.nif|default_if_none:"—" }}</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">STAT</div>
+              <div class="mt-1">{{ commande.client.stat|default_if_none:"—" }}</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">RCS</div>
+              <div class="mt-1">{{ commande.client.rcs|default_if_none:"—" }}</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">Adresse</div>
+              <div class="mt-1">{{ commande.client.adresse|default_if_none:"—" }}</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">Téléphone</div>
+              <div class="mt-1">{{ commande.client.telephone|default_if_none:"—" }}</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">Email</div>
+              <div class="mt-1">{{ commande.client.email|default_if_none:"—" }}</div>
+            </div>
+          </div>
+        </div>
+        <!-- /Grille client -->
+      </div>
+    </div>
+
+    <!-- Informations commande -->
+    <div class="card mb-4">
+      <div class="card-header bg-secondary text-white">Informations sur la commande</div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="date_commande" class="form-label">Date de commande</label>
+            <input
+              type="date"
+              class="form-control"
+              name="date_commande"
+              id="date_commande"
+              value="{{ commande.date_commande|date:'Y-m-d' }}"
+              required
+            >
+          </div>
+          <div class="col-md-6">
+            <label for="page" class="form-label">Page</label>
+            <select name="page" id="page" class="form-select" required>
+              <option value="">-- Choisir une page --</option>
+              {% for p in pages %}
+                <option value="{{ p.id }}" {% if commande.page_id == p.id %}selected{% endif %}>
+                  {{ p.nom }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="remarque" class="form-label">Remarque</label>
+          <textarea name="remarque" id="remarque" class="form-control" rows="3">{{ commande.remarque|default_if_none:'' }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lignes de commande de service -->
+    <div class="card mb-4">
+      <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+        Lignes de commande
+      </div>
+      <div class="card-body">
+        <div id="lignesCommande">
+          {% for ligne in lignes %}
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Service</label>
+              <select name="service" class="form-select" required onchange="mettreAJourTarif(this)">
+                <option value="">-- Choisir --</option>
+                {% for s in services %}
+                  <option value="{{ s.id }}" data-tarif="{{ s.tarif }}" {% if s.id == ligne.service_id %}selected{% endif %}>
+                    {{ s.reference }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Tarif</label>
+              <input type="number" name="tarif" class="form-control" required step="100" value="{{ ligne.tarif }}">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Quantité</label>
+              <input type="number" name="quantite" class="form-control" value="{{ ligne.quantite }}" required min="1" onchange="mettreAJourMontant(this)">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Montant</label>
+              <input type="text" name="montant" class="form-control" readonly>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.row').remove(); mettreAJourTotalGeneral();">✖</button>
+            </div>
+          </div>
+          {% empty %}
+          <!-- Si aucune ligne, JS ajoutera une ligne par défaut -->
+          {% endfor %}
+        </div>
+        
+        <button type="button" class="btn btn-sm btn-outline-success my-2" onclick="ajouterLigne()">+ Ajouter un service</button>
+
+        <div class="text-end mt-3">
+          <strong>Total général :</strong>
+          <span id="totalGeneral">0 Ar</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boutons actions -->
+    <div class="text-center">
+      <a href="{% url 'liste_commandes_services' %}" class="btn btn-outline-success">← Retour à la liste</a>
+      <button type="submit" class="btn btn-success">
+        <i class="fa fa-save"></i> Enregistrer
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // ===== Données services pour ajout dynamique =====
+  // Idéalement fourni par la vue : [{'id':..,'nom':..,'tarif':..}, ...]
+  // Fallback: on le reconstruit à partir du DOM si non fourni.
+  let servicesData = [];
+  {% if services_json %}
+    servicesData = {{ services_json|safe }};
+  {% else %}
+    // reconstruit depuis le premier select existant s'il y en a
+    document.addEventListener("DOMContentLoaded", () => {
+      const firstSelect = document.querySelector('#lignesCommande select[name="service"]');
+      if (firstSelect) {
+        servicesData = Array.from(firstSelect.options)
+          .filter(opt => opt.value)
+          .map(opt => ({ id: opt.value, nom: opt.textContent.trim(), tarif: opt.dataset.tarif || 0 }));
+      }
+    });
+  {% endif %}
+
+  // ===== Helpers =====
+  function formatIntPoint(value) {
+    return (value || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  }
+
+  function mettreAJourTarif(select) {
+    const option = select.selectedOptions[0];
+    const tarif = parseInt(option.getAttribute("data-tarif"));
+    const row = select.closest(".row");
+    row.querySelector('input[name="tarif"]').value = isNaN(tarif) ? 0 : tarif;
+    mettreAJourMontant(row.querySelector('input[name="quantite"]'));
+  }
+
+  function mettreAJourMontant(input) {
+    const row = input.closest(".row");
+    const tarif = parseInt(row.querySelector('input[name="tarif"]').value) || 0;
+    const quantite = parseInt(row.querySelector('input[name="quantite"]').value) || 0;
+    const montant = tarif * quantite;
+    row.querySelector('input[name="montant"]').value = formatIntPoint(montant) + " Ar";
+    mettreAJourTotalGeneral();
+  }
+
+  function mettreAJourTotalGeneral() {
+    let total = 0;
+    document.querySelectorAll('#lignesCommande .row').forEach(row => {
+      const tarif = parseInt(row.querySelector('input[name="tarif"]').value) || 0;
+      const quantite = parseInt(row.querySelector('input[name="quantite"]').value) || 0;
+      total += tarif * quantite;
+    });
+    document.getElementById("totalGeneral").textContent = formatIntPoint(total) + " Ar";
+  }
+
+  // ===== Ajout dynamique de ligne =====
+  function ajouterLigne() {
+    const container = document.getElementById("lignesCommande");
+    const div = document.createElement("div");
+    div.classList.add("row", "mb-3");
+
+    const optionsHtml = (servicesData || []).map(s => `
+      <option value="${s.id}" data-tarif="${s.tarif}">${s.nom}</option>
+    `).join('');
+
+    div.innerHTML = `
+      <div class="col-md-4">
+        <label class="form-label">Service</label>
+        <select name="service" class="form-select" required onchange="mettreAJourTarif(this)">
+          <option value="">-- Choisir --</option>
+          ${optionsHtml}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Tarif</label>
+        <input type="number" name="tarif" class="form-control" required step="100" onchange="mettreAJourMontant(this)">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Quantité</label>
+        <input type="number" name="quantite" class="form-control" value="1" required min="1" onchange="mettreAJourMontant(this)">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Montant</label>
+        <input type="text" name="montant" class="form-control" readonly>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.row').remove(); mettreAJourTotalGeneral();">✖</button>
+      </div>
+    `;
+
+    container.appendChild(div);
+    // initialise montant de la nouvelle ligne
+    mettreAJourMontant(div.querySelector('input[name="quantite"]'));
+  }
+
+  // ===== Initialisation =====
+  document.addEventListener("DOMContentLoaded", () => {
+    // Calcul des montants sur les lignes existantes
+    document.querySelectorAll('#lignesCommande .row').forEach(row => {
+      // si un service est déjà sélectionné, assure la cohérence tarif
+      const select = row.querySelector('select[name="service"]');
+      if (select && select.value) {
+        mettreAJourTarif(select);
+      } else {
+        mettreAJourMontant(row.querySelector('input[name="quantite"]'));
+      }
+    });
+
+    // S'il n'y a aucune ligne côté serveur, on en ajoute une
+    if (!document.querySelector('#lignesCommande .row')) {
+      ajouterLigne();
+    } else {
+      mettreAJourTotalGeneral();
+    }
+  });
+</script>
+
+{% endblock %}

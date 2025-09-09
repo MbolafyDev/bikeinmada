@@ -1,0 +1,104 @@
+<!-- includes/modal_add_entreprise.html -->
+<div class="modal fade" id="addEntrepriseModal" tabindex="-1" aria-labelledby="addEntrepriseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <form method="post" action="{% url 'entreprise_create' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter une entreprise</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">Raison sociale</label>
+                            <input type="text" class="form-control" name="raison_sociale" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date de début</label>
+                            <input type="date" class="form-control" name="date_debut">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Page Facebook</label>
+                            <input type="text" class="form-control" name="page_facebook">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Lien page</label>
+                            <input type="url" class="form-control" name="lien_page">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Activité / Produits</label>
+                            <input type="text" class="form-control" name="activite_produits">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Personne de contact</label>
+                            <input type="text" class="form-control" name="personne_de_contact">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Lien profil</label>
+                            <input type="url" class="form-control" name="lien_profil">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">NIF</label>
+                            <input type="text" class="form-control" name="nif">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">STAT</label>
+                            <input type="text" class="form-control" name="stat">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">RCS</label>
+                            <input type="text" class="form-control" name="rcs">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Adresse</label>
+                            <textarea class="form-control" name="adresse" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Téléphone</label>
+                            <input type="text" class="form-control" name="telephone">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fokontany</label>
+                            <input type="text" class="form-control" name="fokontany">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Commune</label>
+                            <input type="text" class="form-control" name="commune">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Région</label>
+                            <input type="text" class="form-control" name="region">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">N° CIN</label>
+                            <input type="text" class="form-control" name="cin_numero">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Date CIN</label>
+                            <input type="date" class="form-control" name="date_cin">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Lieu CIN</label>
+                            <input type="text" class="form-control" name="lieu_cin">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Remarque</label>
+                            <textarea class="form-control" name="remarque" rows="2"></textarea>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer mt-3">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Connectez-vous à votre compte sur Zara Store
+{% endblock title %}
+
+{% block content %}
+<div class="row mt-2 p-2 justify-content-center">
+    <div class="col-md-8 col-lg-6 bg-white mx-2 p-2 text-center border border-light rounded">
+
+        <h5 class="text-success my-3 text-success">Accédez à votre espace personnel</h5>
+        <form class="align-items-center" method="post">
+            {% csrf_token %}
+
+            <!-- Display form errors -->
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if messages %}
+                <div class="messages text-success">
+                    {% for message in messages %}
+                        <p class="{{ message.tags }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <input type="text" name="username" id="id_username" class="form-control text-center" placeholder="Nom d'utilisateur" required>
+                <!-- Display username field errors -->
+                {% if form.username.errors %}
+                <div class="text-danger">
+                    {% for error in form.username.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="mb-3 position-relative">
+                <input type="password" 
+                    name="password" 
+                    id="id_password" 
+                    class="form-control text-center" 
+                    placeholder="Mot de passe" 
+                    required>
+                <button type="button" 
+                        class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-2 text-secondary" 
+                        onclick="togglePassword()">
+                    <i class="fa fa-eye" id="toggleIcon"></i>
+                </button>
+            </div>
+            <div class="">
+                <button type="submit" class="btn btn-success">Se connecter <i class="fa fa-sign-in"></i></button>
+            </div>
+        </form>
+        <br>
+        <p>Mot de passe oublié ? <a href="{% url 'password_reset' %}" class="text-success">Réinitialiser</a></p>
+        <p><a href="{% url 'signup' %}" class="text-success">Créer un compte</a></p>
+    </div>
+</div>
+<script>
+function togglePassword() {
+    const passwordField = document.getElementById("id_password");
+    const icon = document.getElementById("toggleIcon");
+
+    if (passwordField.type === "password") {
+        passwordField.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    } else {
+        passwordField.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+}
+</script>
+{% endblock content %}
+

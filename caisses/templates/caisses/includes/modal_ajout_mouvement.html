@@ -1,0 +1,46 @@
+<!-- Modal d'ajout de mouvement -->
+<div class="modal fade" id="modalMouvement" tabindex="-1" aria-labelledby="modalAjoutLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'ajouter_mouvement' %}" class="modal-content">
+      {% csrf_token %}
+      <div class="modal-header">
+        <h5 class="modal-title">Nouveau mouvement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Date</label>
+          <input type="date" name="date" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Caisse débité</label>
+          <select name="caisse_debit" class="form-control" required>
+            {% for c in caisses %}
+              <option value="{{ c.id }}">{{ c.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Caisse crédité</label>
+          <select name="caisse_credit" class="form-control" required>
+            {% for c in caisses %}
+              <option value="{{ c.id }}">{{ c.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Montant</label>
+          <input type="number" name="montant" class="form-control" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Référence</label>
+          <textarea name="reference" class="form-control"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button class="btn btn-success" type="submit">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>

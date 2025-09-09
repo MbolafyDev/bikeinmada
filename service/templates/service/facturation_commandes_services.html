@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load nombre %}
+
+{% block title %}Facturation des commandes de service{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+
+    <h2 class="mb-3 text-center">Facturation des commandes de service</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <form method="get" class="row g-3 mb-4"
+        hx-get="{% url 'facturation_commandes_services_partial' %}"
+        hx-target="#facturation-table-wrapper"
+        hx-push-url="true"
+        hx-trigger="change delay:200ms, submit">
+
+        <div class="col-md-4">
+            <label for="date_commande" class="form-label fw-bold">Date de commande</label>
+            <input type="date" name="date_commande" id="date_commande" class="form-control" value="{{ selected_date }}">
+        </div>
+
+        <div class="col-md-4">
+            <label for="statut_vente" class="form-label fw-bold">Statut encaissement</label>
+            <select name="statut_vente" id="statut_vente" class="form-select">
+                <option value="">Tous</option>
+                {% for s in statuts_vente %}
+                    <option value="{{ s }}" {% if selected_statut == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-outline-success w-100">
+                <i class="fa fa-filter"></i> Filtrer
+            </button>
+        </div>
+    </form>
+
+    {# Wrapper rempli par la partial au chargement et lors des filtres #}
+    <div id="facturation-table-wrapper"
+         hx-get="{% url 'facturation_commandes_services_partial' %}?{{ request.GET.urlencode }}"
+         hx-target="#facturation-table-wrapper"
+         hx-swap="outerHTML"
+         hx-trigger="load">
+        {% include "service/includes/facturation_services_table.html" %}
+    </div>
+
+    {# Pagination globale (même modèle que tes ventes) #}
+    {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+    <!-- Bouton retour -->
+    <div class="text-center mt-4">
+        <a href="{% url 'liste_commandes_services' %}" class="btn btn-outline-success">← Retour à la liste des commandes</a>
+    </div>
+
+</div>
+{% endblock %}

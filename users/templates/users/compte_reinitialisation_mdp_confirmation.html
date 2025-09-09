@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Modifier le mot de passe de votre compte Zara Store
+{% endblock title %}
+
+{% block content %}
+<div class="row mt-2 p-2 justify-content-center">
+    <div class="col-md-8 col-lg-6 bg-white p-3 text-center border border-light rounded">
+        <h5 class="text-success">Modifier votre mot de passe</h5>
+        <p>Veuillez saisir un nouveau mot de passe pour votre compte.</p>
+        
+        <form class="align-items-center" method="post" action="">
+            {% csrf_token %}
+            <div class="mb-3">
+                <input type="password" name="{{ form.new_password1.name }}" id="{{ form.new_password1.id_for_label }}" 
+                       class="form-control text-center" placeholder="Nouveau mot de passe" 
+                       value="{{ form.new_password1.value|default:'' }}" required>
+                {% for error in form.new_password1.errors %}
+                    <div class="text-danger mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                <input type="password" name="{{ form.new_password2.name }}" id="{{ form.new_password2.id_for_label }}" 
+                       class="form-control text-center" placeholder="Confirmer le mot de passe" 
+                       value="{{ form.new_password2.value|default:'' }}" required>
+                {% for error in form.new_password2.errors %}
+                    <div class="text-danger mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="">
+                <button type="submit" class="btn btn-success">Modifier le mot de passe <i class="bi-key"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}

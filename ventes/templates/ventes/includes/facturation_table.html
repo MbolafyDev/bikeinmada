@@ -1,0 +1,72 @@
+{# templates/ventes/includes/facturation_table.html #}
+{% load nombre %}
+
+<form id="factures-form" method="post" action="{% url 'voir_factures' %}" target="_blank">
+  {% csrf_token %}
+  <div class="table-responsive mb-3">
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-success">
+        <tr>
+          <th><input type="checkbox" id="select-all"></th>
+          <th>Date</th>
+          <th>Numéro</th>
+          <th>Client</th>
+          <th>Lieu</th>
+          <th>Contact</th>
+          <th class="text-end">Total</th>
+          <th>Statut livraison</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for commande in commandes %}
+          <tr>
+            <td><input type="checkbox" name="commandes" value="{{ commande.id }}"></td>
+            <td>{{ commande.date_livraison|date:"d/m/Y" }}</td>
+            <td>{{ commande.numero_facture }}</td>
+            <td>{{ commande.client.nom }}</td>
+            <td>{{ commande.client.lieu.lieu }}</td>
+            <td>{{ commande.client.contact }}</td>
+            <td class="text-end">{{ commande.total_commande|intpoint }}</td>
+            <td>{{ commande.statut_livraison }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-2 d-flex flex-wrap gap-2">
+    <button type="submit" formaction="{% url 'voir_factures' %}" formtarget="_blank" class="btn btn-success">
+      <i class="fa fa-eye"></i> Voir les factures
+    </button>
+    <button type="button" id="btn-imprimer" class="btn btn-secondary">
+      <i class="fa fa-print"></i> Imprimer
+    </button>
+  </div>
+</form>
+
+<script>
+document.getElementById("select-all")?.addEventListener("change", function() {
+  document.querySelectorAll("input[name='commandes']").forEach(cb => cb.checked = this.checked);
+});
+document.getElementById("btn-imprimer")?.addEventListener("click", function () {
+  const form = document.getElementById("factures-form");
+  const checked = form.querySelectorAll("input[name='commandes']:checked");
+  if (checked.length === 0) { alert("Veuillez sélectionner au moins une commande."); return; }
+
+  const newForm = document.createElement("form");
+  newForm.method = "POST";
+  newForm.action = "{% url 'imprimer_factures' %}";
+  newForm.target = "_blank";
+
+  const csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
+  if (csrf) newForm.appendChild(csrf.cloneNode());
+
+  checked.forEach(cb => {
+    const input = document.createElement("input");
+    input.type = "hidden"; input.name = "commandes"; input.value = cb.value;
+    newForm.appendChild(input);
+  });
+
+  document.body.appendChild(newForm); newForm.submit(); document.body.removeChild(newForm);
+});
+</script>

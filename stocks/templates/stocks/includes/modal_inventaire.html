@@ -1,0 +1,174 @@
+<!-- ✅ Modal de saisie d'inventaire -->
+<div class="modal fade" id="inventaireModal" tabindex="-1" aria-labelledby="inventaireModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'ajuster_inventaire' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="inventaireModalLabel">Nouvel ajustement d’inventaire</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="id_date" class="form-label">Date</label>
+            <input type="date" name="date" id="id_date" class="form-control" value="{{ today }}">
+          </div>
+          <div class="mb-3">
+            <label for="id_article" class="form-label">Article</label>
+            {{ form.article }}
+          </div>
+          <div class="mb-3">
+            <label for="id_ajustement" class="form-label">Différence d'inventaire</label>
+            {{ form.ajustement }}
+          </div>
+          <div class="mb-3">
+            <label for="id_remarque" class="form-label">Remarque</label>
+            {{ form.remarque }}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Modals en dehors des vues table/carte -->
+{% for inv in inventaires %}
+  <!-- Modal modifier -->
+  <div class="modal fade" id="editModal{{ inv.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ inv.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post" action="{% url 'inventaire_edit' inv.id %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="editModalLabel{{ inv.id }}">Modifier l’ajustement</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Date</label>
+              <input type="date" name="date" class="form-control" value="{{ inv.date|date:'Y-m-d' }}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Article</label>
+              <input type="texte" name="article" class="form-control" value="{{ inv.article }}" readonly> 
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Ajustement</label>
+              <input type="number" name="ajustement" class="form-control" value="{{ inv.ajustement }}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Remarque</label>
+              <textarea name="remarque" class="form-control" rows="3">{{ inv.remarque }}</textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-success">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal supprimer -->
+  <div class="modal fade" id="deleteModal{{ inv.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ inv.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post" action="{% url 'inventaire_delete' inv.id %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel{{ inv.id }}">Supprimer l’ajustement</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <p>Confirmer la suppression de l'ajustement suivant :</p>
+            <ul>
+              <li><strong>Date :</strong> {{ inv.date }}</li>
+              <li><strong>Article :</strong> {{ inv.article.nom }}</li>
+              <li><strong>Ajustement :</strong> {{ inv.ajustement }}</li>
+              <li><strong>Remarque :</strong> {{ inv.remarque|default:"-" }}</li>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-danger">Supprimer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+<!-- Modal suppression définitive avec confirmation mot de passe -->
+{% for inv in inventaires %}
+  <div class="modal fade" id="deleteDefModal{{ inv.id }}" tabindex="-1" aria-labelledby="deleteDefModalLabel{{ inv.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post" action="{% url 'inventaire_delete_definitive' inv.id %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteDefinitiveModalLabel{{ inv.id }}">Suppression définitive de l’ajustement</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <p>Cette action est irréversible. Confirmez la suppression définitive de l'ajustement suivant :</p>
+            <ul>
+              <li><strong>Date :</strong> {{ inv.date }}</li>
+              <li><strong>Article :</strong> {{ inv.article.nom }}</li>
+              <li><strong>Ajustement :</strong> {{ inv.ajustement }}</li>
+              <li><strong>Remarque :</strong> {{ inv.remarque|default:"-" }}</li>
+            </ul>
+            <div class="mb-3">
+              <label for="password{{ inv.id }}" class="form-label fw-bold">Mot de passe :</label>
+              <input type="password" name="password" id="password{{ inv.id }}" class="form-control" required placeholder="Entrez votre mot de passe pour confirmer">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-danger">Supprimer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+<!-- Modal restauration -->
+{% for inv in inventaires %}
+  <div class="modal fade" id="restoreModal{{ inv.id }}" tabindex="-1" aria-labelledby="restoreModalLabel{{ inv.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post" action="{% url 'inventaire_restore' inv.id %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="restoreModalLabel{{ inv.id }}">Restaurer l’ajustement</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <p>Confirmez la restauration de l'ajustement suivant :</p>
+            <ul>
+              <li><strong>Date :</strong> {{ inv.date }}</li>
+              <li><strong>Article :</strong> {{ inv.article.nom }}</li>
+              <li><strong>Ajustement :</strong> {{ inv.ajustement }}</li>
+              <li><strong>Remarque :</strong> {{ inv.remarque|default:"-" }}</li>
+            </ul>
+
+            <!-- Champ mot de passe -->
+            <div class="mb-3">
+              <label for="passwordRestore{{ inv.id }}" class="form-label fw-bold">Mot de passe :</label>
+              <input type="password" class="form-control" id="passwordRestore{{ inv.id }}" name="password" placeholder="Entrez votre mot de passe pour confirmer" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-success">Restaurer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endfor %}

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block title %}Liste des services{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+
+    <h2 class="text-center">Liste des services</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <div class="d-flex justify-content mb-2">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal" {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-plus"></i> Ajouter un service
+        </button>
+    </div>
+
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-6 col-lg-4">
+            <input type="text" name="q" class="form-control" placeholder="Rechercher par nom" value="{{ query }}">
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <input type="number" name="tarif_min" class="form-control" step="100" placeholder="Tarif >=" value="{{ tarif_min }}">
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <input type="number" name="tarif_max" class="form-control" step="100" placeholder="Tarif <=" value="{{ tarif_max }}">
+        </div>
+        <div class="col-md-6 col-lg-2">
+            <button type="submit" class="btn btn-outline-primary w-100"><i class="fa fa-filter"></i> Filtrer</button>
+        </div>
+    </form>
+
+    {% if services %}
+    <!-- TABLEAU -->
+    <div class="d-none d-lg-block">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Nom</th>
+                        <th>Référence</th>
+                        <th>Tarif</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                    <tr {% if service.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+                        <td>{{ service.nom }}</td>
+                        <td>{{ service.reference }}</td>
+                        <td class="text-end">{{ service.tarif|intpoint }}</td>
+                        <td class="text-center" style="white-space: nowrap">
+                            <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ service.id }}" {% if not is_admin or service.statut_publication == 'supprimé' %}disabled{% endif %}>
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ service.id }}" {% if not is_admin or service.statut_publication == 'supprimé' %}disabled{% endif %}>
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- CARTES pour mobile -->
+    <div class="d-lg-none">
+        <div class="row">
+            {% for service in services %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm" {% if service.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ service.nom }}</h5>
+                        <p class="card-text mb-1"><strong>Référence:</strong> {{ service.reference }}</p>
+                        <p class="card-text mb-2"><strong>Tarif:</strong> {{ service.tarif|intpoint }} Ar</p>
+                    </div>
+                    <div class="card-footer text-end">
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ service.id }}" {% if not is_admin or service.statut_publication == 'supprimé' %}disabled{% endif %}>
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ service.id }}" {% if not is_admin or service.statut_publication == 'supprimé' %}disabled{% endif %}>
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% for service in services %}
+        {% include "articles/includes/services_edit_modal.html" with service=service %}
+        {% include "articles/includes/services_delete_modal.html" with service=service %}
+    {% endfor %}
+
+    {% else %}
+    <div class="alert alert-info text-center">Aucun service enregistré.</div>
+    {% endif %}
+
+    {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+</div>
+
+<!-- Modal création -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" action="{% url 'service_create' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createModalLabel">Ajouter un service</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="nom" name="nom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reference" class="form-label">Référence</label>
+                        <input type="text" class="form-control" id="reference" name="reference">
+                    </div>
+                    <div class="mb-3">
+                        <label for="tarif" class="form-label">Tarif</label>
+                        <input type="number" class="form-control" id="tarif" name="tarif" step="100">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Ajouter le service</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

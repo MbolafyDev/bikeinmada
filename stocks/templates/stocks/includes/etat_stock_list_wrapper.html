@@ -1,0 +1,16 @@
+{# stocks/includes/etat_stock_list_wrapper.html #}
+{% load nombre %}
+
+{# ≥ lg : bascule selon display_mode #}
+<div class="d-none d-lg-block">
+  {% if display_mode == 'cards' %}
+    {% include "stocks/includes/etat_stock_cards.html" %}
+  {% else %}
+    {% include "stocks/includes/etat_stock_table.html" %}
+  {% endif %}
+</div>
+
+{# < lg : toujours cartes #}
+<div class="d-lg-none">
+  {% include "stocks/includes/etat_stock_cards.html" %}
+</div>

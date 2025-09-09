@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load nombre %}
+{% load custom_filters %}
+
+{% block title %}Mouvements de caisse{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-center">Mouvements de caisse</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#modalMouvement" {% if not is_admin %}disabled{% endif %}>
+    <i class="fa fa-plus"></i> Enregistrer un mouvement
+  </button>
+
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-md-3">
+      <label class="form-label">Caisse</label>
+      <select class="form-select" name="caisse">
+        <option value="">Toutes</option>
+        {% for c in caisses %}
+          <option value="{{ c.id }}" {% if c.id|stringformat:"s" == selected_caisse %}selected{% endif %}>{{ c.nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Du</label>
+      <input type="date" name="date_debut" class="form-control" value="{{ date_debut }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Au</label>
+      <input type="date" name="date_fin" class="form-control" value="{{ date_fin }}">
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+      <button type="submit" class="btn btn-secondary w-100">Filtrer</button>
+    </div>
+  </form>
+
+  {% if mouvements %}
+    <!-- Affichage en tableau (écran large) -->
+    <div class="table-responsive d-none d-lg-block">
+      <table class="table table-bordered table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Date</th>
+            <th>Débit</th>
+            <th>Crédit</th>
+            <th>Montant</th>
+            <th>Référence</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in mouvements %}
+          <tr {% if m.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+            <td>{{ m.date|date:"d/m/Y" }}</td>
+            <td>{{ m.caisse_debit.nom }}</td>
+            <td>{{ m.caisse_credit.nom }}</td>
+            <td class="text-end">{{ m.montant|intpoint }}</td>
+            <td>{{ m.reference }}</td>
+            <td class="text-center">
+              <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalModifierMouvement{{ m.id }}" {% if not is_admin or m.statut_publication == 'supprimé' %}disabled{% endif %}>
+                <i class="fa fa-edit"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalSupprimerMouvement{{ m.id }}" {% if not is_admin or m.statut_publication == 'supprimé' %}disabled{% endif %}>
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Affichage en cartes (petits/moyens écrans) -->
+    <div class="d-lg-none">
+      <div class="row row-cols-1 g-3">
+        {% for m in mouvements %}
+        <div class="col">
+          <div class="card shadow-sm" {% if m.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+            <div class="card-body">
+              <h6 class="card-title text-success">Mouvement du {{ m.date|date:"d/m/Y" }}</h6>
+              <p class="mb-1"><strong>Débit:</strong> {{ m.caisse_debit.nom }}</p>
+              <p class="mb-1"><strong>Crédit:</strong> {{ m.caisse_credit.nom }}</p>
+              <p class="mb-1"><strong>Montant:</strong> {{ m.montant|intpoint }} Ar</p>
+              <p class="mb-1"><strong>Référence:</strong> {{ m.reference|default:"-" }}</p>
+            </div>
+            <div class="card-footer d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalModifierMouvement{{ m.id }}" {% if not is_admin or m.statut_publication == 'supprimé' %}disabled{% endif %}>
+                <i class="fa fa-edit"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalSupprimerMouvement{{ m.id }}" {% if not is_admin or m.statut_publication == 'supprimé' %}disabled{% endif %}>
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info">Aucun mouvement trouvé pour les filtres sélectionnés.</div>
+  {% endif %}
+</div>
+
+{% include "caisses/includes/modal_ajout_mouvement.html" %}
+
+<!-- Modals de modification -->
+{% for m in mouvements %}
+<div class="modal fade" id="modalModifierMouvement{{ m.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'modifier_mouvement' m.id %}" class="modal-content">
+      {% csrf_token %}
+      <div class="modal-header">
+        <h5 class="modal-title">Modifier mouvement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Date</label>
+          <input type="date" name="date" class="form-control" value="{{ m.date|date:'Y-m-d' }}" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Caisse débité</label>
+          <select name="caisse_debit" class="form-control" required>
+            {% for c in caisses %}
+              <option value="{{ c.id }}" {% if c.id == m.caisse_debit.id %}selected{% endif %}>{{ c.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Caisse crédité</label>
+          <select name="caisse_credit" class="form-control" required>
+            {% for c in caisses %}
+              <option value="{{ c.id }}" {% if c.id == m.caisse_credit.id %}selected{% endif %}>{{ c.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Montant</label>
+          <input type="number" name="montant" class="form-control" value="{{ m.montant }}" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Référence</label>
+          <textarea name="reference" class="form-control">{{ m.reference }}</textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-success">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Modals de suppression -->
+{% for m in mouvements %}
+<div class="modal fade" id="modalSupprimerMouvement{{ m.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'supprimer_mouvement' m.id %}" class="modal-content">
+      {% csrf_token %}
+      <div class="modal-header">
+        <h5 class="modal-title">Supprimer le mouvement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Supprimer le mouvement du <strong>{{ m.date|date:"d/m/Y" }}</strong> de <strong>{{ m.montant|intpoint }}</strong> ?
+      </div>
+      <div class="modal-footer">
+        <div d-flex justify-content-end>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger">Supprimer</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

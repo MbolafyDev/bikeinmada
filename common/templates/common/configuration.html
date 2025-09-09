@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block title %}Configuration{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+    <h2 class="text-center mb-2">Configuration</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <!-- 🔹 Pages -->
+    <div class="mb-3">
+        <h4>Boutique | Page</h4>
+        <button class="btn btn-primary my-2" data-bs-toggle="modal" data-bs-target="#modalPage" {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-plus"></i> Ajouter une page
+        </button>
+        {% if pages %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Logo</th>
+                        <th>Nom</th>
+                        <th>Type</th>  {# ➕ nouvelle colonne #}
+                        <th>Contact</th>
+                        <th>Lien</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pages %}
+                    <tr>
+                        <td class="text-center">
+                            {% if p.logo %}
+                                <img src="{{ p.logo.url }}" alt="Logo de {{ p.nom }}" style="height: 40px;">
+                            {% else %}
+                                <span class="text-muted">Aucun</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ p.nom }}</td>
+                        <td>{{ p.get_type_display }}</td> {# ➕ affichage lisible des choices #}
+                        <td>{{ p.contact }}</td>
+                        <td>{% if p.lien %}<a href="{{ p.lien }}" target="_blank">Lien</a>{% endif %}</td>
+                        <td class="text-end" style="white-space: nowrap">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editPageModal{{ p.id }}"
+                                    {% if not is_admin %}disabled{% endif %}>
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeletePageModal{{ p.id }}" {% if not is_admin %}disabled{% endif %}>
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal modifier Page -->
+                    <div class="modal fade" id="editPageModal{{ p.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="post" action="{% url 'modifier_page' p.id %}" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Modifier Page</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <label class="form-label">Nom</label>
+                                        <input type="text" name="nom" class="form-control mb-2" value="{{ p.nom }}" required>
+
+                                        <label class="form-label">Type</label> {# ➕ select type #}
+                                        <select name="type" class="form-select mb-2" required>
+                                            {% for key, label in type_choices %}
+                                                <option value="{{ key }}" {% if p.type == key %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+
+                                        <label class="form-label">Contact</label>
+                                        <input type="text" name="contact" class="form-control mb-2" value="{{ p.contact }}" required>
+
+                                        <label class="form-label">Lien</label>
+                                        <input type="url" name="lien" class="form-control mb-2" value="{{ p.lien }}">
+
+                                        <label class="form-label">Logo</label>
+                                        {% if p.logo %}
+                                            <img src="{{ p.logo.url }}" alt="Logo actuel" style="height: 50px;" class="mb-2 d-block">
+                                        {% endif %}
+                                        <input type="file" name="logo" class="form-control mb-2">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal confirmation suppression Page -->
+                    <div class="modal fade" id="confirmDeletePageModal{{ p.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <form method="post" action="{% url 'supprimer_page' p.id %}">
+                                    {% csrf_token %}
+                                    <div class="modal-header">
+                                        <h5 class="modal-title text-danger">Confirmation de suppression</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Voulez-vous vraiment supprimer la page <strong>{{ p.nom }}</strong> ?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">Aucune page enregistrée.</div>
+        {% endif %}
+    </div>
+
+    <!-- 🔹 Caisses -->
+    <div class="mb-3">
+        <h4>Caisses</h4>
+        <button class="btn btn-primary my-2" data-bs-toggle="modal" data-bs-target="#modalCaisse" {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-plus"></i> Ajouter une caisse
+        </button>
+        {% if caisses %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Nom</th>
+                        <th>Responsable</th>
+                        <th>Solde initial</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in caisses %}
+                    <tr>
+                        <td>{{ c.nom }}</td>
+                        <td>{{ c.responsable }}</td>
+                        <td class="text-end">{{ c.solde_initial|intpoint }} Ar</td>
+                        <td class="text-end" style="white-space: nowrap">
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editCaisseModal{{ c.id }}" {% if not is_admin %}disabled{% endif %}>
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteCaisseModal{{ c.id }}" {% if not is_admin %}disabled{% endif %}>
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal modifier Caisse -->
+                    <div class="modal fade" id="editCaisseModal{{ c.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="post" action="{% url 'modifier_caisse' c.id %}">
+                                    {% csrf_token %}
+                                    <div class="modal-header"><h5 class="modal-title">Modifier Caisse</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <label>Nom</label>
+                                        <input type="text" name="nom" class="form-control mb-2" value="{{ c.nom }}" required>
+                                        <label>Responsable</label>
+                                        <input type="text" name="responsable" class="form-control mb-2" value="{{ c.responsable }}" required>
+                                        <label>Solde initial</label>
+                                        <input type="number" name="solde_initial" class="form-control" value="{{ c.solde_initial }}">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal confirmation suppression Caisse -->
+                    <div class="modal fade" id="confirmDeleteCaisseModal{{ c.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <form method="post" action="{% url 'supprimer_caisse' c.id %}">
+                                    {% csrf_token %}
+                                    <div class="modal-header"><h5 class="modal-title text-danger">Confirmation de suppression</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Voulez-vous vraiment supprimer la caisse <strong>{{ c.nom }}</strong> ?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">Aucune caisse enregistrée.</div>
+        {% endif %}
+    </div>
+
+    <!-- 🔹 Plan des comptes -->
+    <div class="mb-3">
+        <h4>Plan des comptes</h4>
+        <button class="btn btn-primary my-2" data-bs-toggle="modal" data-bs-target="#modalPlan" {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-plus"></i> Ajouter un compte
+        </button>
+        {% if plans %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Numéro</th>
+                        <th>Libellé</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plans %}
+                    <tr>
+                        <td>{{ plan.compte_numero }}</td>
+                        <td>{{ plan.libelle }}</td>
+                        <td class="text-end" style="white-space: nowrap">
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPlanModal{{ plan.id }}" {% if not is_admin %}disabled{% endif %}>
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeletePlanModal{{ plan.id }}" {% if not is_admin %}disabled{% endif %}>
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal modifier Plan -->
+                    <div class="modal fade" id="editPlanModal{{ plan.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="post" action="{% url 'modifier_plan' plan.id %}">
+                                    {% csrf_token %}
+                                    <div class="modal-header"><h5 class="modal-title">Modifier Compte</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <label>Numéro</label>
+                                        <input type="text" name="compte_numero" class="form-control mb-2" value="{{ plan.compte_numero }}" required>
+                                        <label>Libellé</label>
+                                        <input type="text" name="libelle" class="form-control" value="{{ plan.libelle }}" required>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal confirmation suppression Plan -->
+                    <div class="modal fade" id="confirmDeletePlanModal{{ plan.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <form method="post" action="{% url 'supprimer_plan' plan.id %}">
+                                    {% csrf_token %}
+                                    <div class="modal-header"><h5 class="modal-title text-danger">Confirmation de suppression</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Voulez-vous vraiment supprimer le compte <strong>{{ plan.compte_numero }} - {{ plan.libelle }}</strong> ?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">Aucun compte enregistré.</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 🔹 Modals Ajouter -->
+{% include "common/includes/configuration_ajout.html" %}
+{% endblock %}

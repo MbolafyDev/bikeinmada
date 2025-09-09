@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier l'achat{% endblock %}
+
+{% block content %}
+<div class="container mt-2 mb-4">
+  <h2 class="mb-4">Modifier l'achat</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Informations générales sur l'achat -->
+    <div class="card mb-4">
+      <div class="card-header">Détails de l'achat</div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="date" class="form-label">Date</label>
+            <input type="date" class="form-control" name="date" id="date" value="{{ date }}" required>
+          </div>
+          <div class="col-md-6">
+            <label for="num_facture" class="form-label">N° Facture</label>
+            <input type="text" class="form-control" name="num_facture" id="num_facture" value="{{ num_facture }}" required>
+          </div>
+        </div>
+        <div class=" row mb-3">
+          <div class="col-md-6">
+            <label for="paiement" class="form-label">Mode de paiement</label>
+            <select name="paiement" class="form-control mb-2" required>
+                {% for c in caisses %}
+                <option value="{{ c.id }}" {% if achat.paiement.id == c.id %}selected{% endif %}>{{ c.nom }}</option>
+                {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="remarque" class="form-label">Remarque</label>
+            <input type="text" class="form-control" name="remarque" id="remarque" value="{{ remarque }}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lignes d'achat -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        Articles achetés
+      </div>
+      <div class="card-body">
+        <div id="lignesAchat">
+          {% for ligne in achat.lignes_achats.all %}
+          <div class="row mb-3">
+            <div class="col-md-3">
+              <label class="form-label">Article</label>
+              <select name="article" class="form-select" required onchange="mettreAJourPrix(this)">
+                <option value="">-- Choisir --</option>
+                {% for article in articles %}
+                <option value="{{ article.id }}" data-prix="{{ article.prix_achat }}"
+                  {% if article.id == ligne.article.id %}selected{% endif %}>
+                  {{ article.nom }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">P.U</label>
+              <input type="number" name="pu" class="form-control" step="100" value="{{ ligne.pu }}" onchange="calculerTotal(this)">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Qté</label>
+              <input type="number" name="quantite" class="form-control" value="{{ ligne.quantite }}" onchange="calculerTotal(this)">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Total</label>
+              <input type="number" name="total" class="form-control" value="{{ ligne.montant }}">
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+              <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.row').remove()">✖</button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <button type="button" class="btn btn-sm btn-outline-primary" onclick="ajouterLigne()">+ Ajouter un article</button>
+
+      </div>
+    </div>
+
+      <!-- Boutons actions -->
+      <div class="text-center">
+        <a href="{% url 'achats_list' %}" class="btn btn-outline-primary">← Retour à la liste</a>
+        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+      </div>
+  </form>
+</div>
+
+<script>
+  let articles = {{ articles_json|safe }};
+
+  function ajouterLigne() {
+    const container = document.getElementById("lignesAchat");
+    const div = document.createElement("div");
+    div.classList.add("row", "mb-3");
+    div.innerHTML = `
+      <div class="col-md-3">
+        <label class="form-label">Article</label>
+        <select name="article" class="form-select" required onchange="mettreAJourPrix(this)">
+          <option value="">-- Choisir --</option>
+          ${articles.map(article => `
+            <option value="${article.id}" data-prix="${article.prix_achat}">${article.nom}</option>
+          `).join('')}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">P.U</label>
+        <input type="number" name="pu" class="form-control" step="100" onchange="calculerTotal(this)">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Qté</label>
+        <input type="number" name="quantite" class="form-control" value="1" onchange="calculerTotal(this)">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Total</label>
+        <input type="number" name="total" class="form-control" readonly>
+      </div>
+      <div class="col-md-1 d-flex align-items-end">
+        <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.row').remove()">✖</button>
+      </div>
+    `;
+    container.appendChild(div);
+  }
+
+  function mettreAJourPrix(select) {
+    const option = select.selectedOptions[0];
+    const pu = option.getAttribute("data-prix");
+    const row = select.closest(".row");
+    row.querySelector('input[name="pu"]').value = pu;
+    calculerTotal(row.querySelector('input[name="quantite"]'));
+  }
+
+  function calculerTotal(input) {
+    const row = input.closest(".row");
+    const pu = parseInt(row.querySelector('input[name="pu"]').value) || 0;
+    const qte = parseInt(row.querySelector('input[name="quantite"]').value) || 1;
+    const total = pu * qte;
+    row.querySelector('input[name="total"]').value = total;
+  }
+</script>
+{% endblock %}

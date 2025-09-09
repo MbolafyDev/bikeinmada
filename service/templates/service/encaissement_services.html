@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block title %}Encaissement de services{% endblock %}
+
+{% block content %}
+<div class="container mb-2 mt-4">
+
+    <h2 class="mb-4 text-center">Encaisser une commande de service</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <!-- 🔎 Filtres -->
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label for="date_commande" class="form-label fw-bold">Date de commande</label>
+            <input type="date" id="date_commande" name="date_commande" class="form-control"
+                   value="{{ selected_date }}">
+        </div>
+        <div class="col-md-4">
+            <label for="statut_vente" class="form-label fw-bold">Statut encaissement</label>
+            <select id="statut_vente" name="statut_vente" class="form-select">
+                <option value="En attente" {% if selected_statut_vente == "En attente" %}selected{% endif %}>En attente</option>
+                <option value="Payée" {% if selected_statut_vente == "Payée" %}selected{% endif %}>Payée</option>
+                <option value="Supprimée" {% if selected_statut_vente == "Supprimée" %}selected{% endif %}>Supprimée</option>
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-outline-success w-100">
+                <i class="fa fa-filter"></i> Filtrer
+            </button>
+        </div>
+    </form>
+
+    {% if commandes %}
+    <form id="encaissement-form" method="post" action="{% url 'encaissement_service_unitaire' %}">
+        {% csrf_token %}
+        <input type="hidden" name="extra_querystring" value="{{ extra_querystring }}">
+
+        <!-- ✅ TABLEAU pour grand écran (≥ lg) -->
+        <div class="table-responsive d-none d-lg-block">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-success">
+                    <tr>
+                        <th></th>
+                        <th>Date</th>
+                        <th>Réf</th>
+                        <th>Client</th>
+                        <th>Services</th>
+                        <th>Statut</th>
+                        <th class="text-end">Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                    <tr {% if commande.statut_vente == 'Supprimée' %}style="text-decoration: line-through;"{% endif %}>
+                        <td class="text-center">
+                            {% if commande.statut_vente == 'Payée' or commande.statut_vente == 'Supprimée' or commande.vente %}
+                                <input class="form-check-input" type="radio" disabled>
+                            {% else %}
+                                <input class="form-check-input select-one" type="radio" name="commande_id" value="{{ commande.id }}">
+                            {% endif %}
+                        </td>
+                        <td>{{ commande.date_commande|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if commande.vente.numero_facture %}{{ commande.vente.numero_facture }}{% else %}{{ commande.numero_proforma }}{% endif %}
+                        </td>
+                        <td>{{ commande.client.raison_sociale }}</td>
+                        <td>
+                            <ul class="mb-0">
+                                {% for ligne in commande.lignes_commandes.all %}
+                                    <li>{{ ligne.service.reference }} ({{ ligne.quantite }})</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            {% if commande.statut_vente == 'Payée' %}
+                                <span class="badge bg-success">Payée</span>
+                            {% elif commande.statut_vente == 'Supprimée' %}
+                                <span class="badge bg-danger">Supprimée</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">{{ commande.statut_vente }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">{{ commande.montant_commande|intpoint }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-success">
+                    <tr>
+                        <th colspan="6" class="text-end">Total général :</th>
+                        <th class="text-end">{{ total_montant|intpoint }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- 📱🧩 CARTES pour < lg (md: 2 colonnes, sm/xs: 1 colonne) -->
+        <div class="d-lg-none">
+            <div class="row g-2">
+                {% for commande in commandes %}
+                <div class="col-12 col-md-6">
+                {% if commande.statut_vente == 'Payée' or commande.statut_vente == 'Supprimée' or commande.vente %}
+                <div class="card h-100 shadow-sm border-secondary" data-selectable="false">
+                {% else %}
+                <div class="card h-100 shadow-sm selectable-card" data-selectable="true">
+                {% endif %}
+
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small text-muted">Date</div>
+                            <div class="fw-semibold">{{ commande.date_commande|date:"d/m/Y" }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="small text-muted">Réf</div>
+                            <div class="fw-semibold">
+                                {% if commande.numero_proforma %}{{ commande.numero_proforma }}{% else %}#{{ commande.id }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="me-2">
+                                <div class="small text-muted">Client</div>
+                                <div class="fw-semibold text-truncate" title="{{ commande.client.raison_sociale }}">
+                                    {{ commande.client.raison_sociale }}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="small text-muted">Montant</div>
+                                <div class="fw-bold">{{ commande.montant_commande|intpoint }}</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <div class="small text-muted">Articles / Services</div>
+                            <ul class="mb-0 ps-3 small">
+                                {% for ligne in commande.lignes_commandes.all %}
+                                    <li>{{ ligne.service.nom }} ({{ ligne.quantite }})</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if commande.statut_vente == 'Payée' %}
+                                    <span class="badge bg-success">Payée</span>
+                                {% elif commande.statut_vente == 'Supprimée' %}
+                                    <span class="badge bg-danger">Supprimée</span>
+                                {% elif commande.statut_vente == 'En attente' %}
+                                    <span class="badge bg-secondary">En attente</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">{{ commande.statut_vente }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                {% if commande.statut_vente == 'Payée' or commande.statut_vente == 'Supprimée' or commande.vente %}
+                                    <input class="form-check-input" type="radio" disabled>
+                                {% else %}
+                                    <input class="form-check-input select-one"
+                                        type="radio"
+                                        name="commande_id"
+                                        id="c-{{ commande.id }}"
+                                        value="{{ commande.id }}">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if commande.statut_vente != 'Payée' and commande.statut_vente != 'Supprimée' and not commande.vente %}
+                        <label for="c-{{ commande.id }}" class="stretched-link"></label>
+                    {% endif %}
+                </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Total (cartes) -->
+            <div class="card mt-2">
+                <div class="card-body py-2 d-flex justify-content-between">
+                    <span class="fw-semibold">Total général</span>
+                    <span class="fw-bold">{{ total_montant|intpoint }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination (commune aux deux vues) -->
+        {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+        <!-- 🧾 Paiement (ligne à 4 colonnes) -->
+        <div class="row mb-3 mt-3">
+            <div class="col-md-3">
+                <label for="paiement" class="form-label fw-bold">Mode de paiement :</label>
+                <select name="paiement" id="paiement" class="form-select" required>
+                    <option value="">-- Choisir une caisse --</option>
+                    {% for caisse in caisses %}
+                        <option value="{{ caisse.id }}">{{ caisse.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="date_encaissement" class="form-label fw-bold">Date d'encaissement :</label>
+                <input type="date" name="date_encaissement" id="date_encaissement"
+                       class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+            </div>
+            <div class="col-md-3">
+                <label for="reference" class="form-label fw-bold">Référence du paiement :</label>
+                <input type="text" name="reference" id="reference" class="form-control"
+                       placeholder="Ex : TXN-123 / MoMo / Réf banque">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button id="submit-btn" type="submit" class="btn btn-success w-100" {% if not is_admin %}disabled{% endif %}>
+                    <i class="fa fa-check"></i> Valider l'encaissement
+                </button>
+            </div>
+        </div>
+    </form>
+    {% else %}
+        <div class="alert alert-info">Aucune commande de service à encaisser.</div>
+    {% endif %}
+
+    <!-- Bouton retour -->
+    <div class="text-center mt-4">
+        <a href="{% url 'liste_commandes_services' %}" class="btn btn-outline-success">← Retour à la liste des commandes</a>
+    </div>
+
+</div>
+
+<style>
+/* Permettre de cliquer n'importe où sur la carte pour cocher la radio (via .stretched-link) */
+.selectable-card { position: relative; }
+.selectable-card .stretched-link { position: absolute; inset: 0; z-index: 1; }
+.selectable-card .form-check-input { position: relative; z-index: 2; }
+/* Un petit hover pour les cartes sélectionnables */
+.selectable-card[data-selectable="true"]:hover { box-shadow: 0 0.25rem 0.8rem rgba(0,0,0,.08); }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("encaissement-form");
+    const radios = form ? form.querySelectorAll(".select-one") : [];
+
+    // Un seul choix à la fois (sécurité supplémentaire côté UI)
+    radios.forEach(r => {
+        r.addEventListener("change", () => {
+            radios.forEach(other => { if (other !== r) other.checked = false; });
+        });
+    });
+
+    form.addEventListener("submit", function (e) {
+        const selected = document.querySelector("input[name='commande_id']:checked");
+        if (!selected) {
+            e.preventDefault();
+            alert("Veuillez sélectionner une commande à encaisser.");
+        }
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{# articles/includes/article_cards.html #}
+{% load static %}
+{% load nombre %}
+
+{% if articles %}
+  <div class="row">
+    {% for article in articles %}
+      <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+        <div class="card h-100 shadow-sm {% if article.statut_publication == 'supprimé' %}opacity-50{% endif %}">
+          <div class="card-body">
+            <h5 class="card-title text-primary text-center mb-3">{{ article.nom }}</h5>
+            <div class="row g-2 align-items-start">
+              <div class="col-4">
+                <div class="thumb-120">
+                  {% if article.image %}
+                    <img src="{{ article.image.url }}" alt="{{ article.nom }}" loading="lazy">
+                  {% else %}
+                    <img src="{% static 'images/zarastore.png' %}" alt="{{ article.nom }}" loading="lazy">
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-8">
+                <p class="mb-1"><strong>Réf :</strong> {{ article.reference|default:"-" }}</p>
+                <p class="mb-1"><strong>P.A :</strong> {{ article.prix_achat|intpoint }} Ar</p>
+                <p class="mb-1"><strong>P.V :</strong> {{ article.prix_vente|intpoint }} Ar</p>
+                <p class="mb-0"><strong>Livraison :</strong> {{ article.livraison }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer text-end">
+            <button class="btn btn-sm btn-outline-primary"
+                    data-bs-toggle="modal" data-bs-target="#editModal{{ article.id }}"
+                    {% if not is_admin or article.statut_publication == 'supprimé' %}disabled{% endif %}>
+              <i class="fa fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger"
+                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ article.id }}"
+                    {% if not is_admin or article.statut_publication == 'supprimé' %}disabled{% endif %}>
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+{% else %}
+  <div class="alert alert-info text-center">Aucun article enregistré.</div>
+{% endif %}

@@ -1,0 +1,156 @@
+<li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'liste_commandes' %}active{% endif %}"
+    href="{% url 'liste_commandes' %}"
+    data-title="Commandes"
+  >
+    <i class="fa fa-list-squares"></i>
+  </a>
+</li>
+
+<li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'liste_livraisons' %}active{% endif %}"
+    href="{% url 'liste_livraisons' %}"
+    data-title="Livraisons"
+  >
+    <i class="fa fa-bicycle"></i>
+  </a>
+</li>
+
+<li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'liste_encaissement_ventes' %}active{% endif %}"
+    href="{% url 'liste_encaissement_ventes' %}"
+    data-title="Encaissement"
+  >
+    <i class="fa fa-shopping-cart"></i>
+  </a>
+</li>
+
+<li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'facturation' %}active{% endif %}"
+    href="{% url 'facturation' %}"
+    data-title="Facturation"
+  >
+    <i class="fa fa-file-invoice"></i>
+  </a>
+</li>
+
+<li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'achats_list' %}active{% endif %}"
+    href="{% url 'achats_list' %}"
+    data-title="Achats"
+  >
+    <i class="fa fa-basket-shopping"></i>
+  </a>
+</li>
+
+<li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'charges_list' %}active{% endif %}"
+    href="{% url 'charges_list' %}"
+    data-title="Charges"
+  >
+    <i class="fa fa-file-invoice-dollar"></i>
+  </a>
+</li>
+
+<li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'etat_caisses' %}active{% endif %}"
+    href="{% url 'etat_caisses' %}"
+    data-title="Caisses"
+  >
+    <i class="fa fa-coins"></i>
+  </a>
+</li>
+
+<li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'etat_stock' %}active{% endif %}"
+    href="{% url 'etat_stock' %}"
+    data-title="Stock"
+  >
+    <i class="fa fa-boxes-stacked"></i>
+  </a>
+</li>
+
+{% comment %} <li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'inventaire_list' %}active{% endif %}"
+    href="{% url 'inventaire_list' %}"
+    data-title="Inventaire"
+  >
+    <i class="fa fa-list-alt"></i>
+  </a>
+</li> {% endcomment %}
+
+<li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'clients_list' %}active{% endif %}"
+    href="{% url 'clients_list' %}"
+    data-title="Clients"
+  >
+    <i class="fa fa-user-group"></i>
+  </a>
+</li>
+
+<li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'article_list' %}active{% endif %}"
+    href="{% url 'article_list' %}"
+    data-title="Articles"
+  >
+    <i class="fa fa-box-open"></i>
+  </a>
+</li>
+
+<li class="nav-item">
+  <a
+    class="nav-link {% if request.resolver_match.url_name == 'liste_commandes_services' %}active{% endif %}"
+    href="{% url 'liste_commandes_services' %}"
+    data-title="Services"
+  >
+    <i class="fa fa-puzzle-piece"></i>
+  </a>
+</li>
+
+<li class="nav-item dropdown">
+  <a
+    class="nav-link dropdown-toggle {% if request.resolver_match.url_name in 'rapport_vente compte_de_resultat bilan' %}active{% endif %}"
+    href="#"
+    id="statsDropdown"
+    role="button"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+    data-title="Statistiques"
+  >
+    <i class="fa fa-chart-bar"></i>
+  </a>
+  <ul class="dropdown-menu" aria-labelledby="statsDropdown">
+    <li><a class="dropdown-item" href="{% url 'rapport_vente' %}">Rapport de ventes</a></li>
+    <li><a class="dropdown-item" href="{% url 'compte_de_resultat' %}">Compte de résultat</a></li>
+    <li><a class="dropdown-item" href="{% url 'bilan' %}">Bilan</a></li>
+  </ul>
+</li>
+
+<li class="nav-item dropdown">
+  <a
+    class="nav-link dropdown-toggle {% if request.resolver_match.url_name in 'profil configuration' %}active{% endif %}"
+    href="#"
+    id="settingsDropdown"
+    role="button"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+    data-title="Paramètres"
+  >
+    <i class="fa fa-gear"></i>
+  </a>
+  <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
+    <li><a class="dropdown-item" href="{% url 'profil' %}">Profil</a></li>
+    <li><a class="dropdown-item" href="{% url 'configuration' %}">Configuration</a></li>
+  </ul>
+</li>

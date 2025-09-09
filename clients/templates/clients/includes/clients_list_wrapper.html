@@ -1,0 +1,26 @@
+{# templates/clients/includes/clients_list_wrapper.html #}
+{% load static %}
+
+{% if display_mode == 'table' %}
+  <div class="d-none d-lg-block">
+    {% include "clients/includes/client_table.html" %}
+  </div>
+  <div class="d-lg-none">
+    {% include "clients/includes/client_cards.html" %}
+  </div>
+{% else %}
+  <div class="d-none d-lg-block">
+    {% include "clients/includes/client_cards.html" %}
+  </div>
+  <div class="d-lg-none">
+    {% include "clients/includes/client_cards.html" %}
+  </div>
+{% endif %}
+
+{# 🔁 Mettre à jour la zone modals de la page (OOB) #}
+<div id="clients-modals" hx-swap-oob="true">
+  {% for client in clients %}
+    {% include "clients/includes/modal_edit_client.html" %}
+    {% include "clients/includes/modal_delete_client.html" %}
+  {% endfor %}
+</div>

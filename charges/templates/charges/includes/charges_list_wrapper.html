@@ -1,0 +1,27 @@
+{# templates/charges/includes/charges_list_wrapper.html #}
+{% load nombre %}
+
+{% if display_mode == 'table' %}
+  <div class="d-none d-lg-block">
+    {% include "charges/includes/charges_table.html" %}
+  </div>
+  <div class="d-lg-none">
+    {% include "charges/includes/charges_cards.html" %}
+  </div>
+{% else %}
+  <div class="d-none d-lg-block">
+    {% include "charges/includes/charges_cards.html" %}
+  </div>
+  <div class="d-lg-none">
+    {% include "charges/includes/charges_cards.html" %}
+  </div>
+{% endif %}
+
+{# 🔁 OOB: remplace la zone modals dans la page principale #}
+<div id="charges-modals" hx-swap-oob="true">
+  {% for charge in charges %}
+    {% include "charges/includes/modal_edition_charge.html" with charge=charge %}
+    {% include "charges/includes/modal_suppression_charge.html" with charge=charge %}
+    {% include "charges/includes/modal_restauration_charge.html" with charge=charge %}
+  {% endfor %}
+</div>

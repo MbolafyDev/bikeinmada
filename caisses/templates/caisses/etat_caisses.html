@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% load nombre %}
+
+{% block title %}État des Caisses{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+    <h2 class="text-center">État des caisses</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <div class="mb-2 d-flex flex-wrap justify-content-between gap-2">
+        <div class="btn-group" role="group">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalVersement" {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-plus"></i> Enregistrer un versement
+            </button> &nbsp;
+            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modalMouvement" {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-random"></i> Enregistrer un mouvement
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <a href="{% url 'versements_list' %}" class="btn btn-outline-success">Journal des versements</a> &nbsp;
+            <a href="{% url 'mouvements_list' %}" class="btn btn-outline-secondary">Journal des mouvements</a>
+        </div>
+    </div>
+
+    {% if etats %}
+    <!-- Affichage tableau (grand écran) -->
+    <div class="d-none d-lg-block mt-4">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>Caisse</th>
+                    <th>Solde initial</th>
+                    <th>Ventes</th>
+                    <th>Achats</th>
+                    <th>Charges</th>
+                    <th>Versements</th>
+                    <th>Mouvements</th>
+                    <th>Solde</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for etat in etats %}
+                <tr>
+                    <td>{{ etat.caisse.nom }}</td>
+                    <td class="text-end">{{ etat.solde_initial|intpoint }}</td>
+                    <td class="text-end">{{ etat.entrees|intpoint }}</td>
+                    <td class="text-end">{{ etat.achats|intpoint }}</td>
+                    <td class="text-end">{{ etat.charges_caisses|intpoint }}</td>
+                    <td class="text-end">{{ etat.versements|intpoint }}</td>
+                    <td class="text-end">{{ etat.mouvement|intpoint }}</td>
+                    <td class="text-end"><strong>{{ etat.solde_final|intpoint }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-success">
+                <tr>
+                    <th>Total</th>
+                    <th class="text-end">{{ totaux.solde_initial|intpoint }}</th>
+                    <th class="text-end">{{ totaux.entrees|intpoint }}</th>
+                    <th class="text-end">{{ totaux.achats|intpoint }}</th>
+                    <th class="text-end">{{ totaux.charges_caisses|intpoint }}</th>
+                    <th class="text-end">{{ totaux.versements|intpoint }}</th>
+                    <th class="text-end">{{ totaux.mouvements|intpoint }}</th>
+                    <th class="text-end">{{ totaux.solde_final|intpoint }}</th>
+                </tr>
+            </tfoot>
+        </table>
+
+        <h2 class="mt-5 text-center">Récapitulatif par Page</h2>
+
+        <div class="table-responsive mt-3">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-success">
+                    <tr>
+                        <th>Page</th>
+                        <th>Ventes</th>
+                        <th>Achats</th>
+                        <th>Charges</th>
+                        <th>Marge</th>
+                        <th>Versements</th>
+                        <th>Solde</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for recap in recap_pages %}
+                    {% if recap.page != 'TOTAL' %}
+                    <tr>
+                        <td>{{ recap.page }}</td>
+                        <td class="text-end">{{ recap.chiffre_affaire|intpoint }}</td>
+                        <td class="text-end">{{ recap.cout_achats|intpoint }}</td>
+                        <td class="text-end">{{ recap.charges_pages|intpoint }}</td>
+                        <td class="text-end">{{ recap.marge|intpoint }}</td>
+                        <td class="text-end">{{ recap.versements|intpoint }}</td>
+                        <td class="text-end">
+                            {% if recap.reste < 0 %}
+                                <span class="text-danger">{{ recap.reste|intpoint }}</span>
+                            {% else %}
+                                {{ recap.reste|intpoint }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-success">
+                    {% for recap in recap_pages %}
+                    {% if recap.page == 'TOTAL' %}
+                    <tr class="fw-bold">
+                        <td>Total</td>
+                        <td class="text-end">{{ recap.chiffre_affaire|intpoint }}</td>
+                        <td class="text-end">{{ recap.cout_achats|intpoint }}</td>
+                        <td class="text-end">{{ recap.charges_pages|intpoint }}</td>
+                        <td class="text-end">{{ recap.marge|intpoint }}</td>
+                        <td class="text-end">{{ recap.versements|intpoint }}</td>
+                        <td class="text-end">
+                            {% if recap.reste < 0 %}
+                                <span class="text-danger">{{ recap.reste|intpoint }}</span>
+                            {% else %}
+                                {{ recap.reste|intpoint }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tfoot>
+
+            </table>
+        </div>    
+        
+        {% comment %} <h2 class="mt-5 text-center">Caisse - solde par page</h2>
+
+        <div class="table-responsive mt-3">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-success">
+                    <tr>
+                        <th>Page</th>
+                        <th>Solde</th>
+                        <th>Écart</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for recap in recap_pages %}
+                        {% if recap.page != 'TOTAL' %}
+                        <tr>
+                            <td>{{ recap.page }}</td>
+                            <td class="text-end">{{ recap.reste|intpoint }}</td>
+                            <td class="text-end {% if recap.ecart < 0 %}text-danger{% endif %}">
+                                {{ recap.ecart|intpoint }}
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div> {% endcomment %}
+
+        {# --------------------------- RÉPARTITION CHARGES PAR MOIS --------------------------- #}
+        {% if repartition_charges %}
+        <h2 class="mt-5 text-center">Répartition des charges non affectées</h2>
+
+        <div class="table-responsive mt-3">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-success">
+                <tr class="fw-bold">
+                <td class="align-middle text-center">Mois</td>
+                {% for p in pages %}
+                <td class="text-center">{{ p.nom }}</td>
+                {% endfor %}
+                <td class="align-middle text-center">Total mois</td>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for row in repartition_charges %}
+            <tr>
+                <td>{{ row.mois|date:"Y‑m" }}</td>
+
+                {# montants par page #}
+                {% for p in pages %}
+                <td class="text-end">
+                    {{ row.parts|get_item:p.id|default:0|intpoint }}
+                </td>
+                {% endfor %}
+
+                <td class="text-end">{{ row.total|intpoint }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+
+            <tfoot class="table-success">
+            <tr class="fw-bold">
+                <td>Total cumulé</td>
+
+                {% for p in pages %}
+                <td class="text-end">{{ repartition_totaux|get_item:p.id|default:0|intpoint }}</td>
+                {% endfor %}
+
+                <td class="text-end">{{ repartition_total|intpoint }}</td>
+            </tr>
+            </tfoot>
+        </table>
+        </div>
+        {% endif %}
+              
+    </div> 
+
+    <!-- Affichage cartes (mobile/tablette) -->
+    <div class="d-lg-none">
+        <div class="row">
+            {% for etat in etats %}
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ etat.caisse.nom }}</h5>
+                        <p class="card-text mb-1"><strong>Solde initial :</strong> {{ etat.solde_initial|intpoint }}</p>
+                        <p class="card-text mb-1"><strong>Ventes :</strong> {{ etat.entrees|intpoint }}</p>
+                        <p class="card-text mb-1"><strong>Achats :</strong> {{ etat.achats|intpoint }}</p>
+                        <p class="card-text mb-1"><strong>Charges :</strong> {{ etat.charges_caisses|intpoint }}</p>
+                        <p class="card-text mb-1"><strong>Versements :</strong> {{ etat.versements|intpoint }}</p>
+                        <p class="card-text mb-1"><strong>Mouvements :</strong> {{ etat.mouvement|intpoint }}</p>
+                    </div>
+                    <div class="card-footer">
+                        <p class="card-text mb-1"><strong>Solde :</strong> <span class="text-success">{{ etat.solde_final|intpoint }}</span></p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Totaux -->
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm border-success">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">Totaux</h5>
+                        <p class="card-text mb-1"><strong>Solde initial :</strong> {{ totaux.solde_initial|intpoint }}</p>
+                        <p class="card-text mb-1"><strong>Ventes :</strong> {{ totaux.entrees|intpoint }}</p>
+                        <p class="card-text mb-1"><strong>Achats :</strong> {{ totaux.achats|intpoint }}</p>
+                        <p class="card-text mb-1"><strong>Charges :</strong> {{ totaux.charges|intpoint }}</p>
+                        <p class="card-text mb-1"><strong>Versements :</strong> {{ totaux.versements|intpoint }}</p>
+                    </div>
+                    <div class="card-footer">
+                        <p class="card-text mb-1"><strong>Solde :</strong> <span class="text-success">{{ totaux.solde_final|intpoint }}</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cartes récapitulatif par page -->
+        {% if recap_pages %}
+        <div class="row mt-4">
+            <h4 class="text-center">Récapitulatif par Page</h4>
+            {% for recap in recap_pages %}
+                {% if recap.page != 'TOTAL' %}
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h6 class="card-title text-success">{{ recap.page }}</h6>
+                            <p class="card-text mb-1"><strong>Ventes :</strong> {{ recap.chiffre_affaire|intpoint }}</p>
+                            <p class="card-text mb-1"><strong>Achats :</strong> {{ recap.cout_achats|intpoint }}</p>
+                            <p class="card-text mb-1"><strong>Charges :</strong> {{ recap.charges_pages|intpoint }}</p>
+                            <p class="card-text mb-1"><strong>Versements :</strong> {{ recap.versements|intpoint }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <p class="card-text mb-1">
+                                <strong>Solde :</strong>
+                                {% if recap.reste < 0 %}
+                                    <span class="text-danger">{{ recap.reste|intpoint }}</span>
+                                {% else %}
+                                    {{ recap.reste|intpoint }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            <!-- Carte TOTAL -->
+            {% for recap in recap_pages %}
+                {% if recap.page == 'TOTAL' %}
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm border-success">
+                        <div class="card-body">
+                            <h6 class="card-title text-success">Total</h6>
+                            <p class="card-text mb-1"><strong>Ventes :</strong> {{ recap.chiffre_affaire|intpoint }}</p>
+                            <p class="card-text mb-1"><strong>Achats :</strong> {{ recap.cout_achats|intpoint }}</p>
+                            <p class="card-text mb-1"><strong>Charges :</strong> {{ recap.charges_pages|intpoint }}</p>
+                            <p class="card-text mb-1"><strong>Versements :</strong> {{ recap.versements|intpoint }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <p class="card-text mb-1">
+                                <strong>Solde :</strong>
+                                {% if recap.reste < 0 %}
+                                    <span class="text-danger">{{ recap.reste|intpoint }}</span>
+                                {% else %}
+                                    {{ recap.reste|intpoint }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+    </div>
+
+    {% else %}
+    <div class="alert alert-info">Aucune donnée de caisse disponible.</div>
+    {% endif %}
+
+</div>
+
+{% include "caisses/includes/modal_ajout_versement.html" %}
+{% include "caisses/includes/modal_ajout_mouvement.html" %}
+
+{% endblock %}

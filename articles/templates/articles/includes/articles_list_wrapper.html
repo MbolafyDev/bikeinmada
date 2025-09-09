@@ -1,0 +1,21 @@
+{# articles/includes/articles_list_wrapper.html #}
+{% load static %}
+
+{% if display_mode == 'cards' %}
+  {# Forcer cartes en >= lg #}
+  <div class="d-none d-lg-block">
+    {% include "articles/includes/article_cards.html" %}
+  </div>
+  {# et de toute façon, en < lg on montre aussi les cartes #}
+  <div class="d-lg-none">
+    {% include "articles/includes/article_cards.html" %}
+  </div>
+{% else %}
+  {# display_mode == 'table' : table en >= lg, cartes en < lg #}
+  <div class="d-none d-lg-block">
+    {% include "articles/includes/article_table.html" %}
+  </div>
+  <div class="d-lg-none">
+    {% include "articles/includes/article_cards.html" %}
+  </div>
+{% endif %}

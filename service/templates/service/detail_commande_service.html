@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Détails de la commande de service{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+
+    <h2 class="text-center mt-4">Détails de la commande de service</h2>
+
+    <div class="mb-2">
+        <a class="btn btn-success" href="{% url 'creer_commande_service' %}">
+            <i class="fa fa-plus"></i> Enregistrer une commande
+        </a>
+    </div>
+
+    {% include "includes/messages_alert.html" %}
+
+    <!-- Informations générales -->
+    <div class="card mt-4 mb-4">
+        <div class="card-header bg-success text-white">Informations sur la commande</div>
+        <div class="card-body">
+            <p><strong>Numéro de facture :</strong> {% if commande.vente.numero_facture %}{{ commande.vente.numero_facture }}{% else %}{{ commande.numero_proforma }}{% endif %}</p>
+            <p><strong>Date de la commande :</strong> {{ commande.date_commande|date:"d/m/Y" }}</p>
+            <p><strong>Remarque :</strong> {{ commande.remarque|default:"-" }}</p>
+            <p><strong>Page :</strong>
+                {% if commande.page %}
+                    {{ commande.page.nom }}
+                {% else %}
+                    <span class="text-success">—</span>
+                {% endif %}
+            </p>
+            <p><strong>Statut :</strong>
+                {% if commande.statut_vente == "Validée" %}
+                    <span class="badge bg-success">{{ commande.statut_vente }}</span>
+                {% elif commande.statut_vente == "Annulée" %}
+                    <span class="badge bg-danger">{{ commande.statut_vente }}</span>
+                {% elif commande.statut_vente == "Reportée" %}
+                    <span class="badge bg-warning text-dark">{{ commande.statut_vente }}</span>
+                {% else %}
+                    <span class="badge bg-info text-dark">{{ commande.statut_vente|default:"En cours" }}</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Informations client -->
+    <div class="card mb-4">
+    <div class="card-header bg-secondary text-white">Informations sur le client</div>
+    <div class="card-body">
+        {% if commande.client %}
+        <!-- Raison sociale : pleine largeur, une ligne -->
+        <div class="mb-3">
+            <span class="text-success">Nom ou Raison Sociale :</span>
+            <span class="fw-bold">{{ commande.client.raison_sociale|default_if_none:""|default:"" }}</span>
+        </div>
+
+        <!-- Autres infos : 1 colonne en mobile, 2 colonnes ≥ md -->
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+            <div class="col">
+            <div class="text-success">NIF</div>
+            <div>{{ commande.client.nif|default_if_none:""|default:"" }}</div>
+            </div>
+            <div class="col">
+            <div class="text-success">STAT</div>
+            <div>{{ commande.client.stat|default_if_none:""|default:"" }}</div>
+            </div>
+            <div class="col">
+            <div class="text-success">RCS</div>
+            <div>{{ commande.client.rcs|default_if_none:""|default:"" }}</div>
+            </div>
+            <div class="col">
+            <div class="text-success">Adresse</div>
+            <div>{{ commande.client.adresse|default_if_none:""|default:"" }}</div>
+            </div>
+            <div class="col">
+            <div class="text-success">Téléphone</div>
+            <div>{{ commande.client.telephone|default_if_none:""|default:"" }}</div>
+            </div>
+            <div class="col">
+            <div class="text-success">Email</div>
+            <div>{{ commande.client.email|default_if_none:""|default:"" }}</div>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-success mb-0">Aucun client associé.</p>
+        {% endif %}
+    </div>
+    </div>
+
+    <!-- Lignes de commande -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">Services commandés</div>
+
+        <!-- ✅ TABLEAU pour grands écrans -->
+        <div class="table-responsive d-none d-lg-block">
+            <table class="table table-bordered table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>N°</th>
+                        <th>Service</th>
+                        <th class="text-end">Tarif</th>
+                        <th class="text-center">Quantité</th>
+                        <th class="text-end">Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ligne in lignes %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{% if ligne.service %}{{ ligne.service.reference }}{% else %}<span class="text-success">Service supprimé</span>{% endif %}</td>
+                        <td class="text-end">{{ ligne.tarif|floatformat:0|intcomma }}</td>
+                        <td class="text-center">{{ ligne.quantite }}</td>
+                        <td class="text-end">{{ ligne.montant|floatformat:0|intcomma }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-success">Aucune ligne enregistrée.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-light">
+                        <td colspan="4" class="text-end"><strong>Total commande :</strong></td>
+                        <td class="text-end"><strong>{{ montant_commande|floatformat:0|intcomma }}</strong> Ar</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- ✅ CARTES pour petits écrans -->
+        <div class="d-lg-none p-3">
+            {% for ligne in lignes %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{% if ligne.service %}{{ ligne.service.reference }}{% else %}Service supprimé{% endif %}</h5>
+                    <p class="card-text mb-1"><strong>Tarif :</strong> {{ ligne.tarif|floatformat:0|intcomma }}</p>
+                    <p class="card-text mb-1"><strong>Quantité :</strong> {{ ligne.quantite }}</p>
+                    <p class="card-text mb-1"><strong>Montant :</strong> {{ ligne.montant|floatformat:0|intcomma }}</p>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="text-end fw-bold">
+                Total commande : {{ montant_commande|floatformat:0|intcomma }} Ar
+            </div>
+        </div>
+    </div>
+
+    <!-- Boutons actions -->
+    <div class="text-center">
+        <a href="{% url 'modifier_commande_service' commande.id %}" class="btn btn-success"
+           {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-edit"></i> Modifier
+        </a>
+        <a href="{% url 'liste_commandes_services' %}" class="btn btn-outline-success">← Retour à la liste</a>
+    </div>
+</div>
+{% endblock %}

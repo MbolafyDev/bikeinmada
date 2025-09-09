@@ -1,0 +1,25 @@
+<!-- Modal de restauration -->
+<div class="modal fade" id="restoreModal{{ article.id }}" tabindex="-1" aria-labelledby="restoreModalLabel{{ article.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'article_restore' article.id %}">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="restoreModalLabel{{ article.id }}">Restaurer l’article</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p>Confirmez-vous la restauration de l’article <strong>{{ article.nom }}</strong> ?</p>
+          <div class="mt-3">
+            <label for="restore-password{{ article.id }}" class="form-label fw-bold">Mot de passe :</label>
+            <input type="password" id="restore-password{{ article.id }}" name="password" class="form-control" required placeholder="Confirmez avec votre mot de passe">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Restaurer</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

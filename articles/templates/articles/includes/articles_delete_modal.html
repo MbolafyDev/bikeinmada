@@ -1,0 +1,48 @@
+<!-- Modal suppression temporaire -->
+<div class="modal fade" id="deleteModal{{ article.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ article.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'article_delete' article.id %}">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel{{ article.id }}">Supprimer l’article</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p>Confirmez-vous la suppression temporaire de l’article <strong>{{ article.nom }}</strong> ?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger">Supprimer</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal suppression définitive -->
+<div class="modal fade" id="deleteDefModal{{ article.id }}" tabindex="-1" aria-labelledby="deleteDefModalLabel{{ article.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'article_delete_definitive' article.id %}">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Supprimer l'article définitivement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p>Veuillez confirmer la suppression définitive de l’article <strong>{{ article.nom }}</strong>.</p>
+          <p class="text-danger mt-2">Cette action est irréversible !</p>
+          <div class="mt-3">
+            <label for="password{{ article.id }}" class="form-label fw-bold">Mot de passe :</label>
+            <input type="password" class="form-control" id="password{{ article.id }}" name="password" required placeholder="Confirmez avec votre mot de passe">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger">Supprimer</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

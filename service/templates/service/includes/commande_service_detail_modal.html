@@ -1,0 +1,103 @@
+{% load nombre %}
+
+<div class="modal-header">
+    <h5 class="modal-title">Détails de la commande</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+
+    <!-- Informations générales -->
+    <div class="card mb-3">
+        <div class="card-header bg-success text-white">Informations sur la commande</div>
+        <div class="card-body">
+            <p><strong>Facture N° :</strong> {{ commande.numero_facture }}</p>
+            <p><strong>Date commande :</strong> {{ commande.date_commande|date:"d/m/Y" }}</p>
+            {# Présent seulement si ce champ existe dans ton modèle #}
+            {% if commande.date_livraison %}
+                <p><strong>Date livraison :</strong> {{ commande.date_livraison|date:"d/m/Y" }}</p>
+            {% endif %}
+            <p><strong>Remarque :</strong> {{ commande.remarque|default_if_none:"" }}</p>
+            <p><strong>Page :</strong> {% if commande.page %}{{ commande.page.nom }}{% else %}{{ "" }}{% endif %}</p>
+        </div>
+    </div>
+
+    <!-- Informations client -->
+    <div class="card mb-3">
+        <div class="card-header bg-secondary text-white">Informations sur le client</div>
+        <div class="card-body">
+            <p><strong>Nom ou Raison Sociale :</strong> {{ commande.client.raison_sociale|default_if_none:"" }}</p>
+            <p><strong>Adresse :</strong> {{ commande.client.adresse|default_if_none:"" }}</p>
+            <p><strong>Téléphone :</strong> {{ commande.client.telephone|default_if_none:"" }}</p>
+            <p><strong>Email :</strong> {{ commande.client.email|default_if_none:"" }}</p>
+        </div>
+    </div>
+
+    <!-- Services commandés -->
+    <div class="card">
+        <div class="card-header bg-info text-white">Services commandés</div>
+        <div class="card-body">
+
+            <!-- ✅ TABLEAU pour grands écrans -->
+            <div class="table-responsive d-none d-lg-block">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Service</th>
+                            <th class="text-end">Tarif</th>
+                            <th class="text-center">Quantité</th>
+                            <th class="text-end">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ligne in lignes %}
+                        <tr>
+                            <td>
+                                {% if ligne.service %}
+                                    {{ ligne.service.nom }}
+                                {% else %}
+                                    <span class="text-muted">Service supprimé</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">{{ ligne.tarif|intpoint }}</td>
+                            <td class="text-center">{{ ligne.quantite }}</td>
+                            <td class="text-end">{{ ligne.montant|intpoint }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light">
+                            <td colspan="3" class="text-end"><strong>Total commande :</strong></td>
+                            <td class="text-end"><strong>{{ montant_commande|intpoint }} Ar</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- ✅ CARTES pour petits écrans -->
+            <div class="d-lg-none">
+                {% for ligne in lignes %}
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            {% if ligne.service %}{{ ligne.service.nom }}{% else %}Service supprimé{% endif %}
+                        </h6>
+                        <p class="card-text mb-1"><strong>Tarif :</strong> {{ ligne.tarif|intpoint }}</p>
+                        <p class="card-text mb-1"><strong>Quantité :</strong> {{ ligne.quantite }}</p>
+                        <p class="card-text"><strong>Montant :</strong> {{ ligne.montant|intpoint }} Ar</p>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="text-end fw-bold mt-2">
+                    Total commande : {{ montant_commande|intpoint }} Ar
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+</div>

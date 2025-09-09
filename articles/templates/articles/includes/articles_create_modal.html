@@ -1,0 +1,58 @@
+<!-- Modal pour créer un article -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" action="{% url 'article_create' %}" enctype="multipart/form-data"> <!-- 👈 -->
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="createModalLabel">Ajouter un article</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="nom" class="form-label">Nom</label>
+            <input type="text" class="form-control" id="nom" name="nom" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="image" class="form-label">Image (optionnel)</label>
+            <input type="file" class="form-control" id="image" name="image" accept="image/*"
+                    data-preview-target="#preview-create">
+            <div class="form-text">Formats: JPG/PNG/WebP. Max conseillé: 3 Mo.</div>
+
+            <!-- Aperçu live -->
+            <img id="preview-create" class="img-thumbnail mt-2 d-none" style="max-height:150px;" alt="Aperçu image">
+          </div>
+
+          <div class="mb-3">
+            <label for="reference" class="form-label">Référence</label>
+            <input type="text" class="form-control" id="reference" name="reference">
+          </div>
+
+          <div class="mb-3">
+            <label for="prix_achat" class="form-label">Prix d'achat</label>
+            <input type="number" class="form-control" id="prix_achat" step="100" name="prix_achat">
+          </div>
+
+          <div class="mb-3">
+            <label for="prix_vente" class="form-label">Prix de vente</label>
+            <input type="number" class="form-control" id="prix_vente" step="100" name="prix_vente">
+          </div>
+
+          <div class="mb-3">
+            <label for="livraison" class="form-label">Livraison</label>
+            <select class="form-select" id="livraison" name="livraison">
+              <option value="Payante" selected>Payante</option>
+              <option value="Gratuite">Gratuite</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Ajouter l'article</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

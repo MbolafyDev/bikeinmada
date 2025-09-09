@@ -1,0 +1,121 @@
+{# ventes/includes/commande_detail_modal_content.html #}
+{% load nombre %}
+
+<div class="modal fade" id="ouvrirDetailCommande_{{ commande.id }}"
+     tabindex="-1"
+     aria-labelledby="ouvrirDetailCommandeLabel_{{ commande.id }}"
+     aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header bg-light">
+        <h5 class="modal-title" id="ouvrirDetailCommandeLabel_{{ commande.id }}">
+          Détail de la commande
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Informations générales -->
+        <div class="card mb-4">
+          <div class="card-header bg-success text-white">Informations sur la commande</div>
+          <div class="card-body">
+            <p><strong>Facture N° :</strong> {{ commande.numero_facture|default:"-" }}</p>
+            <p><strong>Date commande :</strong> {{ commande.date_commande|date:"d/m/Y" }}</p>
+            <p><strong>Date livraison :</strong> {{ commande.date_livraison|date:"d/m/Y" }}</p>
+            <p><strong>Page :</strong> {{ commande.page }}</p>
+            <p class="card-text mb-2"><strong>Encaissement :</strong> {{ commande.statut_vente }}</p>
+            <p class="card-text mb-2"><strong>Livraison :</strong> {{ commande.statut_livraison }}</p>
+            <p><strong>Remarque :</strong> {{ commande.remarque|default_if_none:"-" }}</p>
+          </div>
+        </div>
+
+        <!-- Informations client -->
+        <div class="card mb-4">
+          <div class="card-header bg-secondary text-white">Informations sur le client</div>
+          <div class="card-body">
+            <p><strong>Nom :</strong> {{ commande.client.nom }}</p>
+            <p><strong>Lieu :</strong>
+              {{ commande.client.lieu.lieu }}
+              {% if commande.client.precision_lieu %} ({{ commande.client.precision_lieu }}){% endif %}
+            </p>
+            <p><strong>Contact :</strong> {{ commande.client.contact }}</p>
+          </div>
+        </div>
+
+        <!-- Lignes / Articles -->
+        <div class="card mb-4">
+          <div class="card-header bg-info text-white">Articles commandés</div>
+
+          <!-- ✅ TABLEAU pour grands écrans -->
+          <div class="table-responsive d-none d-lg-block">
+            <table class="table table-bordered table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Article</th>
+                  <th>PU</th>
+                  <th>Quantité</th>
+                  <th>Montant</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ligne in commande.lignes_commandes.all %}
+                <tr>
+                  <td>{{ ligne.article.nom }}</td>
+                  <td class="text-end">{{ ligne.prix_unitaire|intpoint }}</td>
+                  <td class="text-center">{{ ligne.quantite }}</td>
+                  <td class="text-end">
+                    {# selon ton modèle: "montant" propriété ou méthode. Si méthode -> utiliser "ligne.montant" (sans parenthèses) si tu as un @property, sinon remplace par "ligne.total_ligne" ou calcule PU*Qte #}
+                    {{ ligne.montant|intpoint }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr class="table-light">
+                  <td colspan="3" class="text-end">
+                        <strong>Total montant : </strong><br>
+                        Frais de livraison : <br>
+                        <strong>Total à payer : </strong>
+                    </td>
+                  <td class="text-end">
+                    <strong>{{ commande.montant_commande|intpoint }} Ar</strong><br>
+                    {{ commande.frais_livraison|intpoint }} Ar <br>
+                    <strong>{{ commande.total_commande|intpoint }} Ar</strong>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- ✅ CARTES pour petits écrans -->
+          <div class="d-lg-none p-3">
+            {% for ligne in commande.lignes_commandes.all %}
+            <div class="card mb-3 shadow-sm">
+              <div class="card-body">
+                <h6 class="card-title">{{ ligne.article.nom }}</h6>
+                <p class="mb-1"><strong>PU :</strong> {{ ligne.prix_unitaire|intpoint }}</p>
+                <p class="mb-1"><strong>Quantité :</strong> {{ ligne.quantite }}</p>
+                <p class="mb-0"><strong>Montant :</strong> {{ ligne.montant|intpoint }} Ar</p>
+              </div>
+            </div>
+            {% endfor %}
+            <div class="text-end mt-3">
+                <p class="card-text mb-2"><strong>Total montant :</strong> {{ commande.montant_commande|intpoint }} Ar</p>
+                <p class="card-text mb-2">Frais de livraison : {{ commande.frais_livraison|intpoint }} Ar</p>
+                <p class="card-text mb-2"><strong>Total à payer : :</strong> {{ commande.total_commande|intpoint }} Ar</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <a href="{% url 'commande_edit' commande.id %}" class="btn btn-success">Modifier</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+    </div>
+
+    </div>
+  </div>
+</div>

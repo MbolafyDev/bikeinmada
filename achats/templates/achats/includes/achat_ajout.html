@@ -1,0 +1,46 @@
+<!-- Modal ajouter un achat -->
+<div class="modal fade" id="createAchatModal" tabindex="-1" aria-labelledby="createAchatModalLabel" aria-hidden="true">  
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <form method="post" action="{% url 'achat_add' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="createAchatModalLabel">Ajouter un achat</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="date" class="form-label">Date d'achat</label>
+            <input type="date" class="form-control" name="date" value="{{ today }}" required>
+          </div>
+          <div class="mb-3">
+            <label for="num_facture" class="form-label">Numéro de facture</label>
+            <input type="text" class="form-control" name="num_facture">
+          </div>
+          <div class="mb-3">
+            <label for="paiement" class="form-label">Mode de paiement</label>
+            <select name="paiement" class="form-control mb-2" required>
+                {% for c in caisses %}
+                <option value="{{ c.id }}">{{ c.nom }}</option>
+                {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3 mt-3">
+            <label for="remarque" class="form-label">Remarque</label>
+            <textarea class="form-control" name="remarque" rows="2"></textarea>
+          </div>
+
+          <hr>
+          <h5>Articles achetés</h5>
+          <div id="lignesAchat"></div>
+          <button type="button" class="btn btn-sm btn-outline-primary my-2" onclick="ajouterLigne()">+ Ajouter un article</button>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

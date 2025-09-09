@@ -1,0 +1,184 @@
+{% load static %}
+{% load nombre %}
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Factures</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 16px;
+            background: white;
+            color: #000;
+        }
+
+        .page {
+            max-width: 720px;
+            margin: auto;
+            page-break-after: always;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            color: #000000;
+        }
+
+        tfoot {
+            color: #000000;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+        }
+
+        .text-center { text-align: center; }
+        .text-end { text-align: right; }
+        .fw-bold { font-weight: bold; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1.5rem; }
+        .mt-5 { margin-top: 3rem; }
+
+        .signature {
+            height: 50px;
+        }
+
+        .tampon {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            height: 120px;
+            opacity: 0.8;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .position-relative {
+            position: relative;
+        }
+
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body {% if impression %}onload="window.print()"{% endif %}>
+
+{% for commande in commandes %}
+<div class="page">
+    <div style="display: flex; width: 100%; align-items: center;">
+        <!-- Bloc logo + infos page -->
+        <div style="flex: 3; display: flex; align-items: center; gap: 10px;">
+            {% if commande.page.logo %}
+            <img src="{{ commande.page.logo.url }}" alt="Logo" style="height: 50px;">
+            {% else %}
+            <img src="{% static 'images/zara.png' %}" alt="Logo" style="height: 50px;">
+            {% endif %}
+            <div>
+                <p style="margin: 0; font-size: large; margin-bottom: 5px;"><strong>{{ commande.page.nom }}</strong></p>
+                <p style="margin: 0; font-size: medium;">{{ commande.page.contact }}</p>
+            </div>
+        </div>
+
+        <!-- Bloc "FACTURE" -->
+        <div style="flex: 2;">
+            <h2 style="margin: 0;"><strong>FACTURE</strong></h2>
+        </div>
+    </div>
+
+
+    <div style="display: flex; width: 100%;">
+        <div style="flex: 3;">
+            <p style="padding-bottom: 10px;"><strong>DOIT</strong></p>
+            <p ><strong>Nom :</strong> {{ commande.client.nom }}</p>
+            <p ><strong>Adresse :</strong> {{ commande.client.lieu.lieu }}</p>
+            <p ><strong>Téléphone :</strong> {{ commande.client.contact }}</p>
+        </div>
+        <div style="flex: 2;">
+            <p style="padding-bottom: 10px;">&nbsp;</p>
+            <p ><strong>Facture N° :</strong> {{ commande.numero_facture }}</p>
+            <p><strong>Date :</strong> {{ commande.date_livraison|date:"d/m/Y" }}</p>
+        </div>
+    </div>
+
+    <div class="position-relative mt-4">
+        <img src="{% static 'images/tampon.png' %}" alt="Tampon" class="tampon">
+        <table>
+            <thead style="background-color: {{ commande.page.nom|couleur_page }};">
+                <tr class="text-center">
+                    <th style="width: 5%;">N°</th>
+                    <th>Articles</th>
+                    <th style="width: 20%;">P.U (Ar)</th>
+                    <th style="width: 10%;">Qté</th>
+                    <th style="width: 20%;">Montant (Ar)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ligne in commande.lignes_commandes.all %}
+                <tr>
+                    <td class="text-center">{{ forloop.counter }}</td>
+                    <td>{{ ligne.article.nom }}</td>
+                    <td class="text-end">{{ ligne.prix_unitaire|intpoint }}</td>
+                    <td class="text-center">{{ ligne.quantite }}</td>
+                    <td class="text-end">{{ ligne.montant|intpoint }}</td>
+                </tr>
+                {% endfor %}
+
+                {% if commande.frais_livraison %}
+                <tr>
+                    <td class="text-center">{{ commande.lignes_commandes.count|add:1 }}</td>
+                    <td>Frais de livraison</td>
+                    <td class="text-end">{{ commande.frais_livraison|intpoint }}</td>
+                    <td class="text-center">1</td>
+                    <td class="text-end">{{ commande.frais_livraison|intpoint }}</td>
+                </tr>
+                {% endif %}
+
+                {% for i in "0123456789" %}
+                {% if forloop.counter > commande.lignes_commandes.count|add:1 %}
+                <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                {% endif %}
+                {% endfor %}
+
+            </tbody>
+            <tfoot style="background-color: {{ commande.page.nom|couleur_page }};" class="fw-bold">
+                <td colspan="4" class="text-center">TOTAL</td>
+                <td class="text-end">{{ commande.total_commande|intpoint }}</td>
+            </tfoot>
+        </table>
+    </div>
+
+    <p class="mt-4">
+        Arrêtée la présente facture à la somme de <strong>{{ commande.total_commande|int2words }} Ariary</strong>.
+    </p>
+
+    <div class="mt-5" style="display: flex; justify-content: space-between; text-align: center;">
+        <div>
+            <p style="text-decoration: underline;"><strong>Le client</strong></p>
+        </div>
+        <div>
+            <p style="text-decoration: underline;"><strong>Le fournisseur</strong></p>
+            <img src="{% static 'images/signature.png' %}" alt="Signature" class="signature">
+        </div>
+    </div>
+
+    <p class="text-center" style="font-style: italic; margin-top: 120px;">
+        Merci infiniment de nous avoir choisi pour votre achat :)
+    </p>
+</div>
+{% endfor %}
+
+</body>
+</html>

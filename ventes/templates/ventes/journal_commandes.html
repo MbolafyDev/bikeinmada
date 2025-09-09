@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block extra_css_and_scripts %}
+    <style>
+    /* Liste sous l'image */
+    .article-list {
+        overflow-x: hidden;    /* jamais de barre horizontale */
+        list-style: disc;
+        padding-left: 1.25rem; /* marge pour les puces */
+        margin-bottom: 0;
+    }
+    /* Contenu d'une ligne d'article */
+    .article-line-inner {
+        display: flex;
+        flex-wrap: wrap;       /* autorise le retour à la ligne */
+        align-items: flex-start;
+        gap: .5rem;
+    }
+    /* Texte du nom -> retour à la ligne */
+    .article-name {
+        flex: 1 1 auto;
+        min-width: 0;
+        white-space: normal;        /* wrap */
+        overflow-wrap: anywhere;    /* casse si mot très long */
+        word-break: break-word;     /* sécurité supplémentaire */
+    }
+
+    /* Toggle d’affichage */
+    .view-toggle .btn { padding: .375rem .6rem; }
+    .view-toggle .btn.active { pointer-events: none; }
+
+    .thumb-120 {
+        height: 120px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;           /* masque ce qui dépasse si besoin */
+        border-radius: .375rem;     /* même rendu que .rounded Bootstrap */
+    }
+    .thumb-120 img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;        /* ne déforme pas l'image */
+        object-position: center;    /* centre l'image */
+        display: block;
+        background: #fff;           /* comble en blanc si bords */
+    }
+    </style>
+{% endblock %}
+
+{% block title %}Journal des commandes{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+
+    <h2 class="text-center">Journal des commandes</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <!-- Barre d'actions -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <a class="btn btn-success" href="{% url 'commande_create' %}">
+            <i class="fa fa-plus"></i> Enregistrer une commande
+        </a>
+
+        <div class="d-flex align-items-center gap-2">
+            <!-- Bascule d’affichage (icônes en haut à droite, >= lg) -->
+            <div class="view-toggle d-none d-lg-flex gap-1"
+                 data-storage-key="zr_display_commandes"
+                 data-target-url="{% url 'liste_commandes_partial' %}"
+                 data-target="#commandes-table-wrapper">
+                <button type="button"
+                        class="btn btn-outline-success {% if display_mode == 'table' %}active{% endif %}"
+                        data-mode="table" title="Mode Tableau">
+                    <i class="fa fa-table"></i>
+                </button>
+                <button type="button"
+                        class="btn btn-outline-success {% if display_mode == 'cards' %}active{% endif %}"
+                        data-mode="cards" title="Mode Cartes">
+                    <i class="fa fa-credit-card"></i>
+                </button>
+            </div>
+
+            <!-- Bouton filtre visible seulement sur mobile/tablette -->
+            <button class="btn btn-outline-success d-lg-none" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#filtersCollapse"
+                    aria-expanded="false" aria-controls="filtersCollapse">
+                <i class="fa fa-filter"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtres : replié sur mobile, visible en permanence sur ≥ lg -->
+    <div id="filtersCollapse" class="collapse d-lg-block">
+        <div class="row m-1">
+            <form id="filtersForm" method="get" class="row g-2 mb-2"
+                  hx-get="{% url 'liste_commandes_partial' %}"
+                  hx-target="#commandes-table-wrapper"
+                  hx-push-url="true"
+                  hx-trigger="change delay:300ms, submit">
+
+                <!-- Date livraison -->
+                <div class="col-md-6 col-lg-2">
+                    <label for="date_livraison" class="form-label fw-bold d-none d-lg-block">Date de livraison</label>
+                    <div class="input-group">
+                        <span class="input-group-text d-lg-none"><i class="fa fa-calendar"></i></span>
+                        <input type="date" name="date_livraison" id="date_livraison" class="form-control"
+                               value="{{ filtre_date_livraison }}">
+                    </div>
+                </div>
+
+                <!-- Article -->
+                <div class="col-md-6 col-lg-3">
+                    <label for="article_id" class="form-label fw-bold d-none d-lg-block">Article</label>
+                    <div class="input-group">
+                        <span class="input-group-text d-lg-none"><i class="fa fa-box-open"></i></span>
+                        <select name="article_id" id="article_id" class="form-select">
+                            <option value="">Tous les articles</option>
+                            {% for a in articles %}
+                                <option value="{{ a.id }}" {% if filtre_article_id == a.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ a.nom }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Page -->
+                <div class="col-md-6 col-lg-2">
+                    <label for="page_id_filter" class="form-label fw-bold d-none d-lg-block">Page</label>
+                    <div class="input-group">
+                        <span class="input-group-text d-lg-none"><i class="fa fa-shop"></i></span>
+                        <select name="page_id_filter" id="page_id_filter" class="form-select">
+                            <option value="">Toutes les pages</option>
+                            {% for p in pages %}
+                                <option value="{{ p.id }}" {% if filtre_page == p.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ p.nom }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Statut vente -->
+                <div class="col-md-6 col-lg-2">
+                    <label for="statut_vente" class="form-label fw-bold d-none d-lg-block">Statut vente</label>
+                    <div class="input-group">
+                        <span class="input-group-text d-lg-none"><i class="fa fa-wallet"></i></span>
+                        <select name="statut_vente" id="statut_vente" class="form-select">
+                            <option value="">Tous les encaissements</option>
+                            <option value="En attente" {% if filtre_statut_vente == "En attente" %}selected{% endif %}>En attente</option>
+                            <option value="Payée" {% if filtre_statut_vente == "Payée" %}selected{% endif %}>Payée</option>
+                            <option value="Annulée" {% if filtre_statut_vente == "Annulée" %}selected{% endif %}>Annulée</option>
+                            <option value="Reportée" {% if filtre_statut_vente == "Reportée" %}selected{% endif %}>Reportée</option>
+                            <option value="Supprimée" {% if filtre_statut_vente == "Supprimée" %}selected{% endif %}>Supprimée</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Statut livraison -->
+                <div class="col-md-6 col-lg-2">
+                    <label for="statut_livraison" class="form-label fw-bold d-none d-lg-block">Statut livraison</label>
+                    <div class="input-group">
+                        <span class="input-group-text d-lg-none"><i class="fa fa-bicycle"></i></span>
+                        <select name="statut_livraison" id="statut_livraison" class="form-select">
+                            <option value="">Toutes les livraisons</option>
+                            <option value="En attente" {% if filtre_statut_livraison == "En attente" %}selected{% endif %}>En attente</option>
+                            <option value="Planifiée" {% if filtre_statut_livraison == "Planifiée" %}selected{% endif %}>Planifiée</option>
+                            <option value="Livrée" {% if filtre_statut_livraison == "Livrée" %}selected{% endif %}>Livrée</option>
+                            <option value="Annulée" {% if filtre_statut_livraison == "Annulée" %}selected{% endif %}>Annulée</option>
+                            <option value="Reportée" {% if filtre_statut_livraison == "Reportée" %}selected{% endif %}>Reportée</option>
+                            <option value="Supprimée" {% if filtre_statut_livraison == "Supprimée" %}selected{% endif %}>Supprimée</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bouton -->
+                <div class="col-md-6 col-lg-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-success w-100">
+                        <i class="fa fa-filter"></i> Filtrer
+                    </button>
+                </div>
+
+                <!-- Champ caché pour préserver le mode d’affichage -->
+                <input type="hidden" name="display" id="display_input" value="{{ display_mode }}">
+                <input type="hidden" name="page" id="page_input" value="{{ page_obj.number }}">
+
+            </form>
+        </div>
+    </div>
+
+    {# Wrapper d’affichage (choisit table/cards selon display_mode en >= lg, cartes en < lg) #}
+    {% include "ventes/includes/commandes_list_wrapper.html" %}
+
+    {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+    {# Modals inclus "offline" #}
+    {% for commande in commandes %}
+        {% include "ventes/includes/commande_detail_modal_content.html" with commande=commande %}
+        {% include "ventes/includes/modal_restauration_commande.html" %}
+    {% endfor %}
+
+    <!-- Modal de confirmation de suppression -->
+    <div class="modal fade" id="deleteCommandeModal" tabindex="-1" ia-labelledby="deleteCommandeLabel" ia-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" id="deleteCommandeForm">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteCommandeLabel">Supprimer la commande</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" ia-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        Êtes-vous sûr de vouloir supprimer la commande relative à la facture <strong id="commandeNum"></strong> ?
+                        {% comment %} <p class="text-danger mt-2">Cette action est irréversible.</p> {% endcomment %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- Modal de suppression ---
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteModal = document.getElementById('deleteCommandeModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const commandeId = button && button.getAttribute('data-id');
+                const commandeNum = button && button.getAttribute('data-numero');
+
+                const form = document.getElementById('deleteCommandeForm');
+                const numLabel = document.getElementById('commandeNum');
+
+                if (commandeId && form) {
+                    form.action = `/commandes/${commandeId}/supprimer/`;
+                }
+                if (numLabel) numLabel.textContent = commandeNum || '';
+            });
+        }
+    });
+
+    // --- Surbrillance bleue de l'article correspondant à la slide active ---
+    document.addEventListener('slid.bs.carousel', function (e) {
+        var carouselEl = e.target;
+        var listSelector = carouselEl.dataset.listTarget;
+        if (!listSelector) return;
+
+        var listEl = document.querySelector(listSelector);
+        if (!listEl) return;
+
+        var count = parseInt(listEl.dataset.count || '0', 10);
+        if (count <= 1) return; // 👈 pas de mise en bleu si un seul article
+
+        var activeItem = e.relatedTarget || carouselEl.querySelector('.carousel-item.active');
+        if (!activeItem) return;
+
+        var idx = activeItem.getAttribute('data-index');
+
+        // Retire l'état actif
+        listEl.querySelectorAll('.item-text').forEach(function (el) {
+            el.classList.remove('text-success','fw-semibold');
+        });
+
+        // Active l'élément correspondant et le garde visible
+        var target = listEl.querySelector('li[data-index="'+ idx +'"] .item-text');
+        if (target) {
+            target.classList.add('text-success','fw-semibold');
+            var li = target.closest('li');
+            if (li && li.scrollIntoView) {
+                li.scrollIntoView({behavior:'smooth', block:'nearest'});
+            }
+        }
+    });
+
+    // --- Clic sur un item -> aller à la slide correspondante (inchangé) ---
+    document.addEventListener('click', function (e) {
+        var li = e.target.closest('ul[data-role="liste-articles"] li[data-index]');
+        if (!li) return;
+
+        var ul = li.closest('ul[data-role="liste-articles"]');
+        var card = ul.closest('.card');
+        var carouselEl = card && card.querySelector('.carousel');
+        if (!carouselEl) return;
+
+        var idx = parseInt(li.getAttribute('data-index'), 10) || 0;
+        var instance = bootstrap.Carousel.getOrCreateInstance(carouselEl);
+        instance.to(idx);
+    });
+
+    // --- Gestion du toggle (mémorisation + rafraîchissement HTMX) ---
+    (function() {
+        const toggle = document.querySelector('.view-toggle');
+        const form = document.getElementById('filtersForm');
+        const displayInput = document.getElementById('display_input');
+
+        if (!toggle || !form || !displayInput) return;
+
+        // utilitaires
+        const getUrlPage = () => (new URLSearchParams(location.search)).get('page') || '';
+        const getOrMakePageInput = () => {
+        let el = document.getElementById('page_input');
+        if (!el) {
+            el = document.createElement('input');
+            el.type = 'hidden';
+            el.name = 'page';
+            el.id = 'page_input';
+            form.appendChild(el);
+        }
+        return el;
+        };
+
+        // 1) Clic toggle => mémoriser display, conserver page courante, soumettre le form (HTMX)
+        toggle.addEventListener('click', function(e) {
+        const btn = e.target.closest('button[data-mode]');
+        if (!btn) return;
+
+        const mode = btn.dataset.mode;
+        // UI
+        toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // mémorise localStorage
+        const storageKey = toggle.dataset.storageKey || 'display_mode';
+        localStorage.setItem(storageKey, mode);
+
+        // met à jour champs form
+        displayInput.value = mode;
+        const pageInput = getOrMakePageInput();
+        pageInput.value = getUrlPage(); // ⬅️ conserve la page courante
+
+        // soumet via HTMX (hx-get + hx-push-url du form)
+        if (form.requestSubmit) form.requestSubmit(); else form.submit();
+        });
+
+        // 2) Quand un filtre change, on remet page à vide ⇒ retour page 1
+        const filterIds = ['date_livraison','article_id','page_id_filter','statut_vente','statut_livraison'];
+        filterIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('change', () => {
+            const pageInput = getOrMakePageInput();
+            pageInput.value = ''; // pas de ?page => Paginator retournera page 1
+        });
+        });
+
+        // 3) Après chaque swap du wrapper, resynchroniser #page_input avec l’URL (utile si pagination cliquée)
+        if (window.htmx) {
+        htmx.on('htmx:afterSwap', function (evt) {
+            if (evt.target && evt.target.id === 'commandes-table-wrapper') {
+            const pageInput = getOrMakePageInput();
+            pageInput.value = getUrlPage();
+            }
+        });
+        }
+    })();
+
+</script>
+
+{% endblock %}

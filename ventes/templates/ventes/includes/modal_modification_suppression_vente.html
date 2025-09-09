@@ -1,0 +1,60 @@
+{% load custom_tags %}
+
+<!-- Modal Modification Vente -->
+<div class="modal fade" id="editVenteModal{{ vente.id }}" tabindex="-1" aria-labelledby="editVenteModalLabel{{ vente.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'vente_encaissement_edit' vente.id %}">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Modifier l'encaissement de la vente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+            {% with form=form_mod_dict|dict_get:vente.id %}
+                <div class="mb-3">
+                    <label for="id_paiement_{{ vente.id }}" class="form-label">Caisse :</label>
+                    {{ form.paiement }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_montant_{{ vente.id }}" class="form-label">Total :</label>
+                    {{ form.montant }}
+                </div>
+            {% endwith %}
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal suppression encaissement de vente -->
+<div class="modal fade" id="deleteVenteModal{{ vente.id }}" tabindex="-1" aria-labelledby="deleteVenteModalLabel{{ vente.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'vente_encaissement_delete' vente.id %}">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Supprimer l'encaissement de la vente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p>Veuillez confirmer la suppression de l'encaissement de la vente relative à la facture <strong>{{ vente.commande.numero_facture }}</strong> </p>
+          <div class="mb-3">
+            <label for="password{{ vente.id }}" class="form-label">Mot de passe :</label>
+            <input type="password" name="password" id="password{{ vente.id }}" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger">Supprimer</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+

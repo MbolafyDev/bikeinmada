@@ -1,0 +1,67 @@
+{# ventes/includes/journal_ventes_table.html #}
+{% load nombre %}
+
+{% if ventes %}
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-success">
+        <tr>
+          <th>Livraison</th>
+          <th>Encaissé</th>
+          <th>Facture</th>
+          <th>Client</th>
+          <th>Lieu</th>
+          <th>Articles</th>
+          <th>Page</th>
+          <th>Paiement</th>
+          <th class="text-end">Montant</th>
+          <th class="text-end">Frais</th>
+          <th class="text-end">Total</th>
+          <th class="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for vente in ventes %}
+          <tr {% if vente.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+            <td>{{ vente.commande.date_livraison|date:"d/m/Y" }}</td>
+            <td>{{ vente.date_encaissement|date:"d/m/Y" }}</td>
+            <td>{{ vente.commande.numero_facture }}</td>
+            <td>{{ vente.commande.client.nom }}</td>
+            <td>{{ vente.commande.client.lieu.lieu }}</td>
+            <td>
+              <ul class="mb-0 list-unstyled ps-0">
+                {% for ligne in vente.commande.lignes_commandes.all %}
+                  <li>{{ ligne.article.nom }} ({{ ligne.quantite }})</li>
+                {% endfor %}
+              </ul>
+            </td>
+            <td>{{ vente.commande.page.nom }}</td>
+            <td>{{ vente.paiement.nom }}</td>
+            <td class="text-end">{{ vente.commande.montant_commande|intpoint }}</td>
+            <td class="text-end">{{ vente.commande.frais_livraison|intpoint }}</td>
+            <td class="text-end">{{ vente.montant|intpoint }}</td>
+            <td class="text-center" style="white-space: nowrap">
+              <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editVenteModal{{ vente.id }}" {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-edit"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteVenteModal{{ vente.id }}" {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot class="table-success">
+        <tr>
+          <td colspan="8" class="text-end fw-bold">Total général</td>
+          <td class="text-end fw-bold">{{ total_montant|intpoint }}</td>
+          <td class="text-end fw-bold">{{ total_frais|intpoint }}</td>
+          <td class="text-end fw-bold">{{ total_ventes|intpoint }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+{% else %}
+  <div class="alert alert-info text-center">Aucune vente enregistrée.</div>
+{% endif %}

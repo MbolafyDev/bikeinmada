@@ -1,0 +1,81 @@
+<!-- Modal : Détail de l'achat -->
+<div class="modal fade" id="ouvrirDetailAchat_{{ achat.id }}" tabindex="-1" aria-labelledby="ouvrirDetailAchatLabel_{{ achat.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title" id="ouvrirDetailAchatLabel_{{ achat.id }}">Détail de l'achat</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Informations générales -->
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">Informations sur l'achat</div>
+          <div class="card-body">
+            <p><strong>Numéro de facture :</strong> {{ achat.num_facture|default:"-" }}</p>
+            <p><strong>Date :</strong> {{ achat.date|date:"d/m/Y" }}</p>
+            <p><strong>Paiement :</strong> {{ achat.paiement.nom }}</p>
+            <p><strong>Remarque :</strong> {{ achat.remarque|default:"-" }}</p>
+          </div>
+        </div>
+
+        <!-- Lignes d'achat -->
+        <div class="card mb-4">
+          <div class="card-header bg-info text-white">Articles achetés</div>
+
+          <!-- ✅ TABLEAU pour grands écrans -->
+          <div class="table-responsive d-none d-lg-block">
+            <table class="table table-bordered table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Article</th>
+                  <th>Prix unitaire</th>
+                  <th>Quantité</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ligne in achat.lignes_achats.all %}
+                <tr>
+                  <td>{{ ligne.article.nom }}</td>
+                  <td>{{ ligne.pu }} Ar</td>
+                  <td>{{ ligne.quantite }}</td>
+                  <td class="text-end"><strong>{{ ligne.total_ligne }} Ar</strong></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr class="table-light">
+                  <td colspan="3" class="text-end"><strong>Total achat :</strong></td>
+                  <td class="text-end"><strong>{{ achat.total }} Ar</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- ✅ CARTES pour petits écrans -->
+          <div class="d-lg-none p-3">
+            {% for ligne in achat.lignes_achats.all %}
+            <div class="card mb-3 shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">{{ ligne.article.nom }}</h5>
+                <p class="mb-1"><strong>PU :</strong> {{ ligne.pu }} Ar</p>
+                <p class="mb-1"><strong>Quantité :</strong> {{ ligne.quantite }}</p>
+                <p class="mb-0"><strong>Total :</strong> {{ ligne.total_ligne }} Ar</p>
+              </div>
+            </div>
+            {% endfor %}
+            <div class="text-end mt-3">
+              <h5><strong>Total achat :</strong> {{ achat.total }} Ar</h5>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer avec boutons -->
+      <div class="modal-footer">
+        <a href="{% url 'achat_edit' achat.id %}" class="btn btn-primary">Modifier</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

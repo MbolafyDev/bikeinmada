@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load nombre %}
+
+{% block title %}Lieux et frais de livraison{% endblock %}
+
+{% block content %}
+<div class="container mb-2 mt-4">
+  <h2 class="text-center">Lieux et frais de livraison</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <!-- Bouton d'ajout -->
+  <div class="mb-3">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ajoutModal">
+      <i class="fa fa-plus"></i> Ajouter un lieu
+    </button>
+  </div>
+
+  <!-- Formulaire de filtre -->
+  <form method="get" class="row g-3 align-items-end mb-4">
+    <div class="col-md-5">
+      <input type="text" id="lieu" name="lieu" value="{{ lieu_recherche }}" class="form-control" placeholder="Rechercher un lieu">
+    </div>
+    <div class="col-md-4">
+      <select id="categorie" name="categorie" class="form-select">
+        <option value="">Toutes les catégories</option>
+        {% for code, label in categories %}
+          <option value="{{ code }}" {% if code == categorie_filtre %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-outline-success w-100"><i class="fa fa-filter"></i> Filtrer</button>
+    </div>
+  </form>
+
+  <!-- Tableau des frais -->
+
+  <table class="table table-bordered table-striped align-middle">
+    <thead class="table-success">
+      <tr>
+        <th>Lieu</th>
+        <th>Catégorie</th>
+        <th class="text-center">Frais (Ar)</th>
+        <th class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in page_obj %}
+        <tr>
+          <td>{{ f.lieu }}</td>
+          <td>{{ f.get_categorie_display }}</td>
+          <td class="text-end">{{ f.frais|intpoint }}</td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editModal{{ f.id }}">
+              <i class="fa fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ f.id }}" {% if not is_admin %}disabled{% endif %}>
+              <i class="fa fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+
+        <!-- Modal Modifier -->
+        <div class="modal fade" id="editModal{{ f.id }}" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form method="post" action="{% url 'frais_livraison_modifier' f.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                  <h5 class="modal-title">Modifier Frais de livraison</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <label>Lieu</label>
+                  <input type="text" name="lieu" class="form-control mb-2" value="{{ f.lieu }}" required>
+                  <label>Catégorie</label>
+                  <select name="categorie" class="form-select mb-2" required>
+                    {% for code, label in categories %}
+                      <option value="{{ code }}" {% if f.categorie == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                  <label>Frais (Ar)</label>
+                  <input type="number" name="frais" class="form-control" value="{{ f.frais }}" required>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                  <button type="submit" class="btn btn-success">Enregistrer</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Supprimer -->
+        <div class="modal fade" id="deleteModal{{ f.id }}" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form method="post" action="{% url 'frais_livraison_supprimer' f.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                  <h5 class="modal-title text-danger">Confirmer la suppression</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  Êtes-vous sûr de vouloir supprimer le lieu <strong>{{ f.lieu }}</strong> ?
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                  <button type="submit" class="btn btn-danger">Supprimer</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+  
+</div>
+
+  <!-- Modal d'ajout -->
+  <div class="modal fade" id="ajoutModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post" action="{% url 'frais_livraison_ajouter' %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title">Ajouter un lieu de livraison</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <label>Lieu</label>
+            <input type="text" name="lieu" class="form-control mb-2" required>
+            <label>Catégorie</label>
+            <select name="categorie" id="categorie-ajout" class="form-select mb-2" required>
+              <option value="" disabled selected>Choisir une catégorie</option>
+              {% for code, label in categories %}
+                <option value="{{ code }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+            <label>Frais (Ar)</label>
+            <input type="number" name="frais" id="frais-ajout" class="form-control" step="500">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-success">Ajouter</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const defaultFrais = {
+    'Ville': 3000,
+    'Périphérie': 4000,
+    'Super-périphérie': 5000,
+    'Province': 3000
+  };
+
+  document.getElementById('categorie-ajout').addEventListener('change', function() {
+    const selectedCategorie = this.value;
+    const fraisField = document.getElementById('frais-ajout');
+    fraisField.value = defaultFrais[selectedCategorie] || '';
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,191 @@
+{# templates/clients/clients_list.html #}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Liste des clients{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+  <h2 class="text-center mb-2">Liste des clients</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="d-flex gap-2">
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addClientModal">
+        <i class="fa fa-plus"></i> Ajouter un client
+      </button>
+      <a class="btn btn-outline-success" href="{% url 'entreprises_list' %}">Entreprises</a>
+    </div>
+
+    {# Toggle d’affichage (>= lg) #}
+    <div class="view-toggle d-none d-lg-flex gap-1"
+         data-storage-key="zr_display_clients"
+         data-target-url="{% url 'clients_list_partial' %}"
+         data-target="#clients-list-wrapper">
+      <button type="button"
+              class="btn btn-outline-success {% if display_mode == 'table' %}active{% endif %}"
+              data-mode="table" title="Mode Tableau">
+        <i class="fa fa-table"></i>
+      </button>
+      <button type="button"
+              class="btn btn-outline-success {% if display_mode == 'cards' %}active{% endif %}"
+              data-mode="cards" title="Mode Cartes">
+        <i class="fa fa-credit-card"></i>
+      </button>
+    </div>
+  </div>
+
+  <form id="clientsFilterForm" method="get" class="row g-2 mb-3"
+        hx-get="{% url 'clients_list_partial' %}"
+        hx-target="#clients-list-wrapper"
+        hx-trigger="change delay:300ms, submit"
+        hx-push-url="true">
+
+    <div class="col-md-3">
+      <input type="text" name="nom" class="form-control" placeholder="Nom" value="{{ nom_query }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" name="lieu" class="form-control" placeholder="Lieu" value="{{ lieu_query }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" name="contact" class="form-control" placeholder="Contact" value="{{ contact_query }}">
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-outline-success w-100">
+        <i class="fa fa-search"></i> Rechercher
+      </button>
+    </div>
+
+    {# Champs cachés pour préserver display + page #}
+    <input type="hidden" name="display" id="display_input" value="{{ display_mode }}">
+    <input type="hidden" name="page" id="page_input" value="{{ page_obj.number }}">
+  </form>
+
+  {# Wrapper HTMX #}
+  <div id="clients-list-wrapper"
+       hx-get="{% url 'clients_list_partial' %}?{{ request.GET.urlencode }}"
+       hx-target="#clients-list-wrapper"
+       hx-swap="outerHTML"
+       hx-trigger="load">
+    {% include "clients/includes/clients_list_wrapper.html" %}
+  </div>
+
+  {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+  {# 🔴 Zone modals FIXE (restent dans le DOM principal) #}
+  <div id="clients-modals">
+    {% for client in clients %}
+      {% include "clients/includes/modal_edit_client.html" %}
+      {% include "clients/includes/modal_delete_client.html" %}
+    {% endfor %}
+  </div>
+</div>
+
+{# Modal d'ajout #}
+<div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="ddClientModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'client_create' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="createModalLabel">Ajouter un client</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nom</label>
+            <input type="text" class="form-control" name="nom" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Lieu</label>
+            <select class="form-select" name="lieu" required>
+              <option value="">-- Choisir un lieu --</option>
+              {% for l in lieux %}
+                <option value="{{ l.id }}">{{ l.lieu }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Précision lieu</label>
+            <input type="text" class="form-control" name="precision_lieu">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Contact</label>
+            <input type="text" class="form-control" name="contact" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Annuler</button>
+          <button class="btn btn-success" type="submit">Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .view-toggle .btn{padding:.375rem .6rem}
+  .view-toggle .btn.active{pointer-events:none}
+</style>
+
+<script>
+  (function () {
+    const toggle = document.querySelector('.view-toggle');
+    const form = document.getElementById('clientsFilterForm');
+    const displayInput = document.getElementById('display_input');
+
+    if (!toggle || !form || !displayInput) return;
+
+    const getUrlPage = () => (new URLSearchParams(location.search)).get('page') || '';
+    const getOrMakePageInput = () => {
+      let el = document.getElementById('page_input');
+      if (!el) {
+        el = document.createElement('input');
+        el.type = 'hidden'; el.name = 'page'; el.id = 'page_input';
+        form.appendChild(el);
+      }
+      return el;
+    };
+
+    // Toggle
+    toggle.addEventListener('click', function (e) {
+      const btn = e.target.closest('button[data-mode]');
+      if (!btn) return;
+
+      const mode = btn.dataset.mode;
+      toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const storageKey = toggle.dataset.storageKey || 'display_clients';
+      localStorage.setItem(storageKey, mode);
+
+      displayInput.value = mode;
+      const pageInput = getOrMakePageInput();
+      pageInput.value = getUrlPage(); // conserve la page courante
+
+      if (form.requestSubmit) form.requestSubmit(); else form.submit();
+    });
+
+    // Si un filtre change → revenir page 1
+    ['nom','lieu','contact'].forEach(id => {
+      const el = document.querySelector(`[name="${id}"]`);
+      if (!el) return;
+      el.addEventListener('change', () => {
+        const pageInput = getOrMakePageInput();
+        pageInput.value = '';
+      });
+    });
+
+    // Après swap HTMX, resync page_input
+    if (window.htmx) {
+      htmx.on('htmx:afterSwap', function (evt) {
+        if (evt.target && evt.target.id === 'clients-list-wrapper') {
+          const pageInput = getOrMakePageInput();
+          pageInput.value = getUrlPage();
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}

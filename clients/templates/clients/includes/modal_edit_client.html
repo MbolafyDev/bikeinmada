@@ -1,0 +1,41 @@
+<!-- includes/modal_edit_client.html -->
+<div class="modal fade" id="editModal{{ client.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ client.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'client_update' client.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel{{ client.id }}">Modifier client</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nom</label>
+                        <input type="text" class="form-control" name="nom" value="{{ client.nom }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lieu</label>
+                        <select class="form-select" name="lieu" required>
+                            <option value="">-- Choisir un lieu --</option>
+                            {% for l in lieux %}
+                                <option value="{{ l.id }}" {% if client.lieu.id == l.id %}selected{% endif %}>{{ l.lieu }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Précision lieu</label>
+                        <input type="text" class="form-control" name="precision_lieu" value="{{ client.precision_lieu }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contact</label>
+                        <input type="text" class="form-control" name="contact" value="{{ client.contact }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

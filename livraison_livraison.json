@@ -1,0 +1,3648 @@
+
+[
+{
+  "model": "livraison.livraison",
+  "pk": 1,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "67 ha",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 2,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": 1,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-07-04T05:45:29.582Z",
+    "lieu": "Alakamisy Ambohidratrimo",
+    "categorie": "Super-périphérie",
+    "frais": 6000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 3,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Alakamisy Fenoarivo",
+    "categorie": "Super-périphérie",
+    "frais": 8000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 4,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Alarobia Amboniloha",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 5,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Alasora",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 6,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambanidia",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 7,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambanja",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 8,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambatobe",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 9,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambatolampy Tsimahafotsy",
+    "categorie": "Super-périphérie",
+    "frais": 8000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 10,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambatolampy Ambohibao",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 11,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambatomainty",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 12,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambaranjana",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 13,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambatomaro",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 14,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambatomena",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 15,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambatonakanga",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 16,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambatondrazaka",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 17,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambatoroka",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 18,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambatovinaky",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 19,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambilobe",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 20,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambodiafontsy Ampitatafika",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 21,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambodifasina",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 22,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambodifilao",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 23,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambodihady",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 24,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambodimita",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 25,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambodin'isotry",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 26,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Amboditsiry",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 27,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambodivona",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 28,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohibao",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 29,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohidahy",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 30,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohidrapeto Itaosy",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 31,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohidratrimo",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 32,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohijafy Ampitatafika",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 33,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohijanahary Ambohibao",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 34,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohijanaka",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 35,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohijatovo",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 36,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohimahitsy",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 37,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohimalaza",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 38,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohimanambola",
+    "categorie": "Super-périphérie",
+    "frais": 8000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 39,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohimanandray Ambohimanarina",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 40,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohimanarina",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 41,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohimangakely",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 42,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohimiandra",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 43,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohimirary",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 44,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohipo",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 45,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohitrarahaba",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 46,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohitrimanjaka",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 47,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambohitsoa",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 48,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambolokandrina",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 49,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambondrona",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 50,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambovombe  Androy",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 51,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ambositra",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 52,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ampahibe",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 53,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ampandrana",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 54,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ampandrianomby",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 55,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Amparafaravola",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 56,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Amparibe",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 57,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ampasapito",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 58,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ampasika",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 59,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ampefiloha",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 60,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ampefy",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 61,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ampitatafika",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 62,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Analakely",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 63,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Analavory",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 64,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Analamahintsy",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 65,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andavamamba",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 66,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andohanimandroseza",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 67,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andoharanofotsy",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 68,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andohatapenaka",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 69,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andohalo",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 70,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andraharo",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 71,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andrainarivo",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 72,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andraisoro",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 73,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andranobevava",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 74,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andranomena",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 75,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andranonahoatra Itaosy",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 76,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andranoro Ambohibao",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 77,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andravoahangy",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 78,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andravoahangy ambony",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 79,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": 1,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-07-30T07:26:38.511Z",
+    "lieu": "Andrefan' ambohijanahary",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 80,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Androhibe",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 81,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Androndra",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 82,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Androndrakely",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 83,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Andrononobe",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 84,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Anjanahary",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 85,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Anjomakely",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 86,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankadifotsy",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 87,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankadikely",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 88,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankadimbahoaka",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 89,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankadindramamy",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 90,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankadindravola Ivato",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 91,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankaditoho Tsimbazaza",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 92,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankadivato",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 93,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankadivory Bevalala",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 94,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankaraobato",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 95,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankatso",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 96,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankazomanga",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 97,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankazotokana",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 98,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankorahotra",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 99,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ankorondrano",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 100,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Anosibe",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 101,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Anosipatrana",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 102,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Anosivavaka Ambohimanarina",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 103,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Anosizato",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 104,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Anosy",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 105,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Anosy Avaratra",
+    "categorie": "Super-périphérie",
+    "frais": 8000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 106,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antalaha",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 107,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antanambao",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 108,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antanandrano",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 109,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antanikatsaka Itaosy",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 110,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antanimena",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 111,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antanimenakely Ampitatafika",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 112,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antanimora",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 113,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antaninandro",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 114,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antaninarenina",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 115,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antohomadinika",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 116,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antsahabe",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 117,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antsahavola",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 118,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antsakaviro",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 119,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antsiranana",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 120,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antsirabe",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 121,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antsobolo Ambatomaro",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 122,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antsofinondry Sabotsy Namehana",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 123,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Antsohihy",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 124,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Avaradoha",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 125,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Avaratr'Ankatso",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 126,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Arivonimamo",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 127,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Befandriana",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 128,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Behenjy Itaosy",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 129,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Behoririka",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 130,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Bel'air Talatamaty",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 131,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Besarety",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 132,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Betafo Ambohimanarina",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 133,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Betongolo",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 134,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Bevalala",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 135,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "By Pass",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 136,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Diego",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 137,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Farafangana",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 138,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Faravohitra",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 139,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Fenerive Est",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 140,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Fasan'ny karàna",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 141,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": 1,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-08-19T17:13:44.739Z",
+    "lieu": "Fenoarivo",
+    "categorie": "Super-périphérie",
+    "frais": 8000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 142,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Fianarantsoa",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 143,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Fort Duchesne",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 144,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Fort Voyron",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 145,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Fort Dauphin",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 146,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Iavoloha",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 147,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ihosy",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 148,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ilafy",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 149,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Imerinafovoany",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 150,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Imerintsiatosika",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 151,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Isoraka",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 152,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Isotry",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 153,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Itaosy",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 154,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Itaosy Antsavatsava",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 155,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Itaosy Avarabohitra",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 156,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Itaosy Cité",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 157,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Itaosy Hôpitaly",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 158,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ivandry",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 159,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Ivato",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 160,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Maevantanana",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 161,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mahajanga",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 162,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mahamasina",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 163,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mahavoky",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 164,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mahazo",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 165,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mahazoarivo",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 166,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mahanoro",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 167,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Manalalondo",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 168,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Malaza Ampitatafika",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 169,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mamory Ivato",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 170,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mampikony",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 171,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Manakambahiny",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 172,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mananjary",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 173,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Manakara",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 174,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mandriambero",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 175,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mandritsara",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 176,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mandroseza",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 177,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mandrosoa Ivato",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 178,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Manjakaray",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 179,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Maroantsetra",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 180,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Mausolé",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 181,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Miandrivazo",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 182,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Moramanga",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 183,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Morondava",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 184,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Namontana",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 185,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Nanisana",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 186,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Nosy Be Hell Ville",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 187,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Paraky",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 188,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Port Bergé",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 189,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Pochard",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 190,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Sabotsy Namehana",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 191,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Sakaraha",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 192,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Sainte Marie",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 193,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Sambava",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 194,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Soamanandrariny",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 195,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Soanierana",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 196,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Soavimasoandro",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 197,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Soavimbahoaka",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 198,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Soavinandriana",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 199,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Talatamaty",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 200,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Tamatave",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 201,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Tanjombato",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 202,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Tanjondava Talatamaty",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 203,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Toamasina",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 204,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Toliara",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 205,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Tsarahonenana Ampasampito",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 206,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Tsaratanana",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 207,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Tsaralalàna",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 208,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Tsaramasay",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 209,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Tsiadana",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 210,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Tsiazotafo",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 211,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Tsimbazaza",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 212,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Tsiroanomandidy",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 213,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Vaingaindrano",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 214,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Vatomandry",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 215,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": null,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-19T18:38:34.267Z",
+    "updated_at": "2025-06-19T18:38:34.678Z",
+    "lieu": "Vavatenina",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 216,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-23T05:54:13.308Z",
+    "updated_at": "2025-06-23T05:54:13.308Z",
+    "lieu": "Brickaville",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 217,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-06-27T04:52:54.635Z",
+    "updated_at": "2025-06-27T04:52:54.635Z",
+    "lieu": "Appel",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 218,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-07-04T05:46:10.120Z",
+    "updated_at": "2025-07-04T05:46:10.120Z",
+    "lieu": "Tanambe",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 219,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-07-09T04:15:38.020Z",
+    "updated_at": "2025-07-09T04:15:38.020Z",
+    "lieu": "Fandriana",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 220,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-07-11T04:25:50.407Z",
+    "updated_at": "2025-07-11T04:25:50.407Z",
+    "lieu": "Ranohira",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 221,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": 1,
+    "deleted_by": null,
+    "created_at": "2025-07-22T04:07:05.976Z",
+    "updated_at": "2025-07-22T04:11:39.743Z",
+    "lieu": "Soavinimerina",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 222,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-07-22T11:13:38.087Z",
+    "updated_at": "2025-07-22T11:13:38.087Z",
+    "lieu": "Ankadindratombo",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 223,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-07-28T04:07:45.991Z",
+    "updated_at": "2025-07-28T04:07:45.991Z",
+    "lieu": "Ampasanimalo",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 224,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-07-28T04:58:22.593Z",
+    "updated_at": "2025-07-28T04:58:22.593Z",
+    "lieu": "Antsahamamy",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 225,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-07-29T06:29:32.111Z",
+    "updated_at": "2025-07-29T06:29:32.111Z",
+    "lieu": "Ambohitrarivo",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 226,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-07-30T03:45:56.740Z",
+    "updated_at": "2025-07-30T03:45:56.740Z",
+    "lieu": "Ambondromamy",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 227,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": 1,
+    "deleted_by": null,
+    "created_at": "2025-07-30T08:31:02.592Z",
+    "updated_at": "2025-07-30T08:31:40.889Z",
+    "lieu": "Récuperation Anjanahary",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 228,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-07-31T16:06:09.658Z",
+    "updated_at": "2025-07-31T16:06:09.658Z",
+    "lieu": "Ankazobe",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 229,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-08-02T04:41:08.667Z",
+    "updated_at": "2025-08-02T04:41:08.667Z",
+    "lieu": "Fiadanana",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 230,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-08-03T16:04:30.045Z",
+    "updated_at": "2025-08-03T16:04:30.045Z",
+    "lieu": "Ambatoboeny",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 231,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-08-05T12:53:38.403Z",
+    "updated_at": "2025-08-05T12:53:38.403Z",
+    "lieu": "Miarinarivo Itasy",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 232,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-08-05T13:27:45.643Z",
+    "updated_at": "2025-08-05T13:27:45.643Z",
+    "lieu": "Ambositra",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 233,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-08-05T13:32:29.754Z",
+    "updated_at": "2025-08-05T13:32:29.754Z",
+    "lieu": "Ambositra",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 234,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-08-10T08:21:18.844Z",
+    "updated_at": "2025-08-10T08:21:18.844Z",
+    "lieu": "Soavina",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 235,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-08-11T08:53:15.460Z",
+    "updated_at": "2025-08-11T08:53:15.460Z",
+    "lieu": "Ambatolampy",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 236,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-08-12T05:16:17.578Z",
+    "updated_at": "2025-08-12T05:16:17.578Z",
+    "lieu": "Menabe",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 237,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-08-12T12:06:07.736Z",
+    "updated_at": "2025-08-12T12:06:07.736Z",
+    "lieu": "Andilamena",
+    "categorie": "Province",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 238,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-08-15T04:10:37.474Z",
+    "updated_at": "2025-08-15T04:10:37.474Z",
+    "lieu": "La Haute Ville",
+    "categorie": "Ville",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 239,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": 1,
+    "deleted_by": null,
+    "created_at": "2025-08-15T04:47:16.948Z",
+    "updated_at": "2025-08-20T05:37:33.566Z",
+    "lieu": "Ambodiafontsy",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 240,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": 1,
+    "deleted_by": null,
+    "created_at": "2025-08-15T04:52:39.059Z",
+    "updated_at": "2025-08-15T04:53:01.248Z",
+    "lieu": "Ambonera Ambodiafontsy",
+    "categorie": "Super-périphérie",
+    "frais": 5000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 241,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-08-15T15:28:52.119Z",
+    "updated_at": "2025-08-15T15:28:52.119Z",
+    "lieu": "Ambohimanga",
+    "categorie": "Périphérie",
+    "frais": 4000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 242,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-09-02T05:33:36.771Z",
+    "updated_at": "2025-09-02T05:33:36.771Z",
+    "lieu": "Ampanefena",
+    "categorie": "Province",
+    "frais": 3000
+  }
+},
+{
+  "model": "livraison.livraison",
+  "pk": 243,
+  "fields": {
+    "statut_publication": "publié",
+    "created_by": 1,
+    "updated_by": null,
+    "deleted_by": null,
+    "created_at": "2025-09-04T05:18:14.089Z",
+    "updated_at": "2025-09-04T05:18:14.089Z",
+    "lieu": "vohemar",
+    "categorie": "Province",
+    "frais": 3000
+  }
+}
+]

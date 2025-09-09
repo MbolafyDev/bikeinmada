@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Réinitialiser le mot de passe de votre compte Zara Store
+{% endblock title %}
+
+{% block content %}
+<div class="row mt-2 p-2 justify-content-center">
+    <div class="col-md-8 col-lg-6 bg-white p-3 text-center border border-light rounded">
+        <h5 class="text-success">Réinitialisez votre mot de passe</h5>
+        <p>Veuillez saisir votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe.</p>
+        
+        <form class="align-items-center" method="post" action="">
+            {% csrf_token %}
+            <div class="mb-3">
+                <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" 
+                       class="form-control text-center" placeholder="Adresse email" 
+                       value="{{ form.email.value|default:'' }}" required>
+                {% for error in form.email.errors %}
+                    <div class="text-danger mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="">
+                <button type="submit" class="btn btn-success">Réinitialiser <i class="bi-person-lock"></i></button>
+            </div>
+        </form>
+        <div class="mt-2">
+            <p><a href="{% url 'login' %}">Se connecter</a></p>
+            <p><a href="{% url 'signup' %}">Créer un compte</a></p>
+        </div>
+    </div>
+</div>
+{% endblock content %}

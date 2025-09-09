@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block title %}Mise à jour de statuts des ventes{% endblock %}
+
+{% block content %}
+<div class="container mb-2 mt-4">
+    <h2 class="mb-4 text-center">Mise à jour de statuts des ventes</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label class="form-label fw-bold">Date de commande</label>
+            <input type="date" name="date_commande" value="{{ date_commande }}" class="form-control">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-bold">Statut vente</label>
+            <select name="statut_vente" class="form-select">
+                <option value="">-- Tous --</option>
+                <option value="En attente" {% if statut_vente == 'En attente' %}selected{% endif %}>En attente</option>
+                <option value="Payée" {% if statut_vente == 'Payée' %}selected{% endif %}>Payée</option>
+                <option value="Annulée" {% if statut_vente == 'Annulée' %}selected{% endif %}>Annulée</option>
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-outline-primary w-100">
+                <i class="fa fa-filter"></i> Filtrer
+            </button>
+        </div>
+    </form>
+
+    <form method="post" action="{% url 'mise_a_jour_statuts_ventes_groupes' %}">
+        {% csrf_token %}
+
+        <!-- Table pour grands écrans -->
+        <div class="table-responsive d-none d-lg-block mb-4">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Date</th>
+                        <th>Facture</th>
+                        <th>Client</th>
+                        <th>Livreur</th>
+                        <th>Statut livraison</th>
+                        <th>Statut vente</th>
+                        <th class="text-end">Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                    <tr>
+                        <td><input type="checkbox" name="commandes" value="{{ commande.id }}"></td>
+                        <td>{{ commande.date_livraison|date:"d/m/Y" }}</td>
+                        <td>{{ commande.numero_facture }}</td>
+                        <td>{{ commande.client.nom }}</td>
+                        <td>{{ commande.livreur.nom }}</td>
+                        <td>{{ commande.statut_livraison }}</td>
+                        <td>{{ commande.statut_vente }}</td>
+                        <td class="text-end">{{ commande.total_commande|intpoint }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cartes pour petits/moyens écrans -->
+        <div class="d-lg-none mb-4">
+            <div class="row">
+                {% for commande in commandes %}
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="commandes" value="{{ commande.id }}">
+                                <label class="form-check-label text-primary fw-bold">Commande du {{ commande.date_livraison|date:"d/m/Y" }}</label>
+                            </div>
+                            <p class="mb-1"><strong>Facture :</strong> {{ commande.numero_facture }}</p>
+                            <p class="mb-1"><strong>Client :</strong> {{ commande.client.nom }}</p>
+                            <p class="mb-1"><strong>Livreur :</strong> {{ commande.livreur.nom }}</p>
+                            <p class="mb-1"><strong>Statut livraison :</strong> {{ commande.statut_livraison }}</p>
+                            <p class="mb-1"><strong>Statut vente :</strong> {{ commande.statut_vente }}</p>
+                            <p class="mb-0"><strong>Montant :</strong> {{ commande.total_commande|intpoint }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+        <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
+            <button type="submit" name="action" value="en_attente" class="btn btn-primary" {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-hourglass"></i> En attente
+            </button>
+            <button type="submit" name="action" value="annulée" class="btn btn-danger" {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-times"></i> Annulée
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById("selectAll")?.addEventListener("change", function () {
+        const checkboxes = document.querySelectorAll("input[name='commandes']");
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+</script>
+{% endblock %}

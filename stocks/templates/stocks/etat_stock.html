@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block title %}Etat des stocks{% endblock %}
+
+{% block extra_css_and_scripts %}
+<style>
+  .view-toggle .btn{padding:.375rem .6rem;}
+  .view-toggle .btn.active{pointer-events:none;}
+
+  /* Vignette à hauteur fixe, fond blanc (uniformiser comme les commandes) */
+  .thumb-120{
+    height:120px;background:#fff;display:flex;align-items:center;justify-content:center;
+    overflow:hidden;border-radius:.375rem;
+  }
+  .thumb-120 img{max-height:100%;max-width:100%;object-fit:contain;object-position:center;display:block;background:#fff;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+
+  <h2 class="text-center mb-2">Etat des stocks</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <!-- Barre d’actions -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div>
+      <button class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#inventaireModal" {% if not is_admin %}disabled{% endif %}>
+        <i class="fa fa-plus"></i> Ajustement
+      </button>
+      <a href="{% url 'inventaire_list' %}" class="btn btn-outline-success mb-2">Historiques</a>
+    </div>
+
+    <!-- Toggle d’affichage (≥ lg) -->
+    <div class="view-toggle d-none d-lg-flex gap-1"
+         data-storage-key="zr_display_etat_stock"
+         data-target-url="{% url 'etat_stock_partial' %}"
+         data-target="#etat-stock-wrapper">
+      <button type="button" class="btn btn-outline-success {% if display_mode == 'table' %}active{% endif %}" data-mode="table" title="Mode Tableau">
+        <i class="fa fa-table"></i>
+      </button>
+      <button type="button" class="btn btn-outline-success {% if display_mode == 'cards' %}active{% endif %}" data-mode="cards" title="Mode Cartes">
+        <i class="fa fa-credit-card"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <form id="filtersForm" method="get"
+        hx-get="{% url 'etat_stock_partial' %}"
+        hx-target="#etat-stock-wrapper"
+        hx-push-url="true"
+        hx-trigger="change delay:300ms, submit">
+
+    <div class="row g-2 mb-3">
+      <div class="col-md-4">
+        <input type="text" class="form-control" name="filtre_article" placeholder="Rechercher par nom" value="{{ request.GET.filtre_article }}">
+      </div>
+      <div class="col-md-2">
+        <input type="number" class="form-control" name="filtre_entree" placeholder="Entrées ≥" value="{{ request.GET.filtre_entree }}">
+      </div>
+      <div class="col-md-2">
+        <input type="number" class="form-control" name="filtre_sortie" placeholder="Sorties ≥" value="{{ request.GET.filtre_sortie }}">
+      </div>
+      <div class="col-md-2">
+        <input type="number" class="form-control" name="filtre_stock" placeholder="Stock final ≥" value="{{ request.GET.filtre_stock }}">
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-success w-100"><i class="fa fa-filter"></i> Filtrer</button>
+      </div>
+    </div>
+
+    <!-- Champs cachés pour préserver le mode + pagination -->
+    <input type="hidden" name="display" id="display_input" value="{{ display_mode }}">
+    <input type="hidden" name="page" id="page_input" value="{{ page_obj.number }}">
+  </form>
+
+  <!-- Wrapper dynamique HTMX -->
+  <div id="etat-stock-wrapper"
+       hx-get="{% url 'etat_stock_partial' %}?{{ request.GET.urlencode }}"
+       hx-trigger="load"
+       hx-swap="outerHTML">
+    {% include "stocks/includes/etat_stock_list_wrapper.html" %}
+  </div>
+
+  {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+</div>
+
+<!-- Modal d’inventaire (global, hors wrapper) -->
+{% include "stocks/includes/modal_inventaire.html" %}
+
+<script>
+(function(){
+  const toggle = document.querySelector('.view-toggle');
+  const form = document.getElementById('filtersForm');
+  const displayInput = document.getElementById('display_input');
+
+  if (toggle && form && displayInput){
+    const getUrlPage = () => (new URLSearchParams(location.search)).get('page') || '';
+    const getOrMakePageInput = () => {
+      let el = document.getElementById('page_input');
+      if (!el){
+        el = document.createElement('input');
+        el.type = 'hidden'; el.name = 'page'; el.id = 'page_input';
+        form.appendChild(el);
+      }
+      return el;
+    };
+
+    toggle.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-mode]');
+      if (!btn) return;
+      const mode = btn.dataset.mode;
+
+      toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const storageKey = toggle.dataset.storageKey || 'display_mode';
+      localStorage.setItem(storageKey, mode);
+
+      displayInput.value = mode;
+      const pageInput = getOrMakePageInput();
+      pageInput.value = getUrlPage(); // conserve la page courante
+
+      if (form.requestSubmit) form.requestSubmit(); else form.submit();
+    });
+
+    // Quand un filtre change => retour page 1
+    ['filtre_article','filtre_entree','filtre_sortie','filtre_stock'].forEach(id=>{
+      const el = document.querySelector(`[name="${id}"]`);
+      if (!el) return;
+      el.addEventListener('change', ()=>{
+        const pageInput = getOrMakePageInput();
+        pageInput.value = '';
+      });
+    });
+
+    // Après chaque swap du wrapper (pagination/clique), resync page_input
+    if (window.htmx){
+      htmx.on('htmx:afterSwap', function(evt){
+        if (evt.target && evt.target.id === 'etat-stock-wrapper'){
+          const pageInput = getOrMakePageInput();
+          pageInput.value = getUrlPage();
+        }
+      });
+    }
+  }
+})();
+</script>
+{% endblock %}

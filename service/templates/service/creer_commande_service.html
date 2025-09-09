@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Création de commande service{% endblock %}
+
+{% block content %}
+<div class="container mb-4">
+  <h2 class="text-center mt-4">Créer une commande de service</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Informations client -->
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">Informations sur le client</div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="client_id" class="form-label">Client</label>
+            <select name="client_id" id="client_id" class="form-select" required>
+              <option value="">-- Sélectionner --</option>
+              {% for c in clients %}
+              <option
+                value="{{ c.id }}"
+                data-nif="{{ c.nif|default_if_none:'' }}"
+                data-stat="{{ c.stat|default_if_none:'' }}"
+                data-rcs="{{ c.rcs|default_if_none:'' }}"
+                data-adresse="{{ c.adresse|default_if_none:'' }}"
+                data-telephone="{{ c.telephone|default_if_none:'' }}"
+                data-email="{{ c.email|default_if_none:'' }}"
+              >
+                {{ c.raison_sociale }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <a href="{% url "entreprises_list" %}" target="_blank">Nouveau client</a>
+          </div>
+        </div>
+
+        <!-- Détails du client sélectionné (grille 3x2) -->
+        <div id="clientDetails" class="row g-3">
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">NIF</div>
+              <div id="clientNif" class="mt-1">—</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">STAT</div>
+              <div id="clientStat" class="mt-1">—</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">RCS</div>
+              <div id="clientRcs" class="mt-1">—</div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">Adresse</div>
+              <div id="clientAdresse" class="mt-1">—</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">Téléphone</div>
+              <div id="clientTelephone" class="mt-1">—</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="border rounded p-2 h-100">
+              <div class="fw-bold small text-muted">Email</div>
+              <div id="clientEmail" class="mt-1">—</div>
+            </div>
+          </div>
+        </div>
+        <!-- /Détails du client -->
+      </div>
+    </div>
+
+    <!-- Informations commande -->
+    <div class="card mb-4">
+      <div class="card-header bg-secondary text-white">Informations sur la commande</div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="date_commande" class="form-label">Date de commande</label>
+            <input type="date" class="form-control" name="date_commande" id="date_commande" value="{{ date_du_jour }}" required>
+          </div>
+          <div class="col-md-6">
+            <label for="page" class="form-label">Page</label>
+            <select name="page" id="page" class="form-select" required>
+              <option value="">-- Choisir une page --</option>
+              {% for p in pages %}
+                <option value="{{ p.id }}">{{ p.nom }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="remarque" class="form-label">Remarque</label>
+          <textarea name="remarque" id="remarque" class="form-control" rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lignes de commande de service -->
+    <div class="card mb-4">
+      <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+        Lignes de commande
+      </div>
+      <div class="card-body">
+        <div id="lignesCommande">
+          <!-- Lignes insérées dynamiquement -->
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-success my-2" onclick="ajouterLigne()">+ Ajouter un service</button>
+        <div class="text-end mt-3">
+          <strong>Total général :</strong>
+          <span id="totalGeneral">0 Ar</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boutons actions -->
+    <div class="text-center">
+      <a href="{% url 'liste_commandes_services' %}" class="btn btn-outline-success">← Retour à la liste</a>
+      <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // ===== Détails client (maj dynamique) =====
+  function majInfosClient() {
+    const select = document.getElementById('client_id');
+    const opt = select.selectedOptions[0];
+    const valOrDash = (v) => (v && v.trim().length) ? v : '-';
+
+    if (!opt || !opt.dataset) {
+      document.getElementById('clientNif').textContent = '-';
+      document.getElementById('clientStat').textContent = '-';
+      document.getElementById('clientRcs').textContent = '-';
+      document.getElementById('clientAdresse').textContent = '-';
+      document.getElementById('clientTelephone').textContent = '-';
+      document.getElementById('clientEmail').textContent = '-';
+      return;
+    }
+
+    document.getElementById('clientNif').textContent = valOrDash(opt.dataset.nif || '');
+    document.getElementById('clientStat').textContent = valOrDash(opt.dataset.stat || '');
+    document.getElementById('clientRcs').textContent = valOrDash(opt.dataset.rcs || '');
+    document.getElementById('clientAdresse').textContent = valOrDash(opt.dataset.adresse || '');
+    document.getElementById('clientTelephone').textContent = valOrDash(opt.dataset.telephone || '');
+    document.getElementById('clientEmail').textContent = valOrDash(opt.dataset.email || '');
+  }
+
+  document.addEventListener('change', (e) => {
+    if (e.target && e.target.id === 'client_id') majInfosClient();
+  });
+
+  // ===== Lignes / totaux =====
+  let services = {{ services_json|safe }};
+  let ligneIndex = 0;
+
+  function ajouterLigne() {
+    const container = document.getElementById("lignesCommande");
+    const div = document.createElement("div");
+    div.classList.add("row", "mb-3");
+    const index = ligneIndex++;
+
+    div.innerHTML = `
+      <div class="col-md-4">
+        <label class="form-label">Service</label>
+        <select name="service" class="form-select" required onchange="mettreAJourTarif(this)">
+          <option value="">-- Choisir --</option>
+          ${services.map(service => `
+            <option value="${service.id}" data-tarif="${service.tarif}">
+              ${service.reference}
+            </option>
+          `).join('')}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Tarif</label>
+        <input type="number" name="tarif" class="form-control" required step="100" onchange="mettreAJourMontant(this)">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Quantité</label>
+        <input type="number" name="quantite" class="form-control" value="1" required min="1" onchange="mettreAJourMontant(this)">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Montant</label>
+        <input type="text" name="montant" class="form-control" readonly>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.row').remove(); mettreAJourTotalGeneral();">✖</button>
+      </div>
+    `;
+
+    container.appendChild(div);
+    mettreAJourTotalGeneral();
+  }
+
+  function formatIntPoint(value) {
+    return (value || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  }
+
+  function mettreAJourTarif(select) {
+    const option = select.selectedOptions[0];
+    const tarif = parseInt(option.getAttribute("data-tarif"));
+    const row = select.closest(".row");
+    row.querySelector('input[name="tarif"]').value = tarif;
+    mettreAJourMontant(row.querySelector('input[name="quantite"]'));
+  }
+
+  function mettreAJourMontant(input) {
+    const row = input.closest(".row");
+    const tarif = parseInt(row.querySelector('input[name="tarif"]').value) || 0;
+    const quantite = parseInt(row.querySelector('input[name="quantite"]').value) || 0;
+    const montant = tarif * quantite;
+    row.querySelector('input[name="montant"]').value = formatIntPoint(montant) + " Ar";
+    mettreAJourTotalGeneral();
+  }
+
+  function mettreAJourTotalGeneral() {
+    let total = 0;
+    document.querySelectorAll('#lignesCommande .row').forEach(row => {
+      const tarif = parseInt(row.querySelector('input[name="tarif"]').value) || 0;
+      const quantite = parseInt(row.querySelector('input[name="quantite"]').value) || 0;
+      total += tarif * quantite;
+    });
+    document.getElementById("totalGeneral").textContent = formatIntPoint(total) + " Ar";
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // initialisation
+    majInfosClient();   // au cas où un client serait déjà pré‑sélectionné côté serveur
+    ajouterLigne();
+  });
+</script>
+
+{% endblock %}

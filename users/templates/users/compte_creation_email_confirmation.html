@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Vérifiez votre email | Zara Space
+{% endblock title %}
+
+{% block content %}
+<div class="row mt-3">
+    <div class="bg-white p-3 text-center border border-light rounded">
+        <h5 class="text-success">Activez votre compte</h5>
+        <p>
+            Un email de confirmation a été envoyé à votre adresse <strong>{{ user.email }}</strong>. 
+            Veuillez cliquer sur le lien dans cet email pour activer votre compte.
+        </p>
+        <p>
+            Si vous ne voyez pas l'email, vérifiez votre dossier de spam, sinon veuillez bien vérifier l'adresse email que vous avez utilisé.
+        </p>
+        <p>
+            <a href="{% url 'resend_confirmation' %}" class="btn btn-outline-success">Renvoyer l'email</a>
+        </p>
+        <p>
+            <a href="{% url 'login' %}" class="btn btn-success">Se connecter <i class="fa fa-sign-in"></i></a>
+        </p>
+    </div>
+</div>
+{% endblock content %}

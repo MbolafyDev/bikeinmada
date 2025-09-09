@@ -1,0 +1,119 @@
+{# ventes/includes/encaissement_cards.html #}
+{% load static %}
+{% load nombre %}
+
+{% with scope=carousel_scope|default:"sm" %}
+{% if ventes %}
+  <div class="row">
+    {% for vente in ventes %}
+      {% with lignes=vente.commande.lignes_commandes.all %}
+      <div class="col-md-6 col-xl-4 mb-4">
+        <div class="card h-100 shadow-sm {% if vente.statut_publication == 'supprimé' %}opacity-50{% endif %}">
+          <div class="card-body">
+            <h5 class="card-title text-success mb-2">Facture n° {{ vente.commande.numero_facture }}</h5>
+
+            <div class="row g-3 align-items-start">
+              <!-- Colonne gauche : image / carrousel -->
+              <div class="col-5">
+                {% if lignes|length > 1 %}
+                  <div id="carouselVente{{ scope }}-{{ vente.id }}"
+                       class="carousel slide carousel-dark"
+                       data-bs-touch="true" data-bs-interval="false"
+                       data-list-target="#listeArticlesVente{{ scope }}-{{ vente.id }}">
+                    <div class="carousel-inner">
+                      {% for ligne in lignes %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}"
+                             data-index="{{ forloop.counter0 }}">
+                          <div class="thumb-120">
+                            {% if ligne.article.image %}
+                              <img src="{{ ligne.article.image.url }}" alt="{{ ligne.article.nom }}" loading="lazy">
+                            {% else %}
+                              <img src="{% static 'images/zarastore.png' %}" alt="{{ ligne.article.nom }}" loading="lazy">
+                            {% endif %}
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button"
+                            data-bs-target="#carouselVente{{ scope }}-{{ vente.id }}" data-bs-slide="prev">
+                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Précédent</span>
+                    </button>
+                    <button class="carousel-control-next" type="button"
+                            data-bs-target="#carouselVente{{ scope }}-{{ vente.id }}" data-bs-slide="next">
+                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Suivant</span>
+                    </button>
+                  </div>
+                {% else %}
+                  {% for ligne in lignes %}
+                    <div class="thumb-120">
+                      {% if ligne.article.image %}
+                        <img src="{{ ligne.article.image.url }}" alt="{{ ligne.article.nom }}" loading="lazy">
+                      {% else %}
+                        <img src="{% static 'images/zarastore.png' %}" alt="{{ ligne.article.nom }}" loading="lazy">
+                      {% endif %}
+                    </div>
+                  {% empty %}
+                    <div class="thumb-120">
+                      <img src="{% static 'images/zarastore.png' %}" alt="Aucun article" loading="lazy">
+                    </div>
+                  {% endfor %}
+                {% endif %}
+
+                <p class="text-secondary text-decoration-underline my-1">Articles :</p>
+                <ul id="listeArticlesVente{{ scope }}-{{ vente.id }}"
+                    class="article-list list-unstyled ps-0 small"
+                    data-role="liste-articles"
+                    data-count="{{ lignes|length }}">
+                  {% for ligne in lignes %}
+                    <li class="py-1" data-index="{{ forloop.counter0 }}">
+                      <div class="article-line-inner">
+                        <span class="article-name item-text {% if lignes|length > 1 and forloop.first %}text-success fw-semibold{% endif %}">
+                          {% if ligne.article.reference %}
+                            {{ ligne.article.reference|slice:":10" }}
+                          {% else %}
+                            {{ ligne.article.nom|slice:":10" }}
+                          {% endif %}
+                        </span>
+                        <span class="badge rounded-pill bg-secondary ms-1">{{ ligne.quantite }}</span>
+                      </div>
+                    </li>
+                  {% empty %}
+                    <li class="py-1 text-muted">Aucun article</li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+              <!-- Colonne droite : infos -->
+              <div class="col-7">
+                <p class="card-text mb-1"><i class="fa fa-user"></i> {{ vente.commande.client.nom }}</p>
+                <p class="card-text mb-1"><i class="fa fa-location-dot"></i> {{ vente.commande.client.lieu.lieu }}</p>
+                <p class="card-text mb-1"><i class="fa fa-bicycle"></i> {{ vente.commande.date_livraison|date:"d/m/Y" }}</p>
+                <p class="card-text mb-1"><i class="fa fa-wallet"></i> {{ vente.date_encaissement|date:"d/m/Y" }}</p>
+                <p class="card-text mb-1"><i class="fa fa-shop"></i> {{ vente.commande.page.nom }}</p>
+                <p class="card-text mb-1"><i class="fa fa-wallet"></i> {{ vente.paiement.nom }}</p>
+                {% comment %} <p class="card-text mb-1"><i class="fa fa-dollar"></i> {{ vente.commande.montant_commande|intpoint }} Ar</p>
+                <p class="card-text mb-1"><i class="fa fa-bicycle"></i> {{ vente.commande.frais_livraison|intpoint }} Ar</p> {% endcomment %}
+                <p class="card-text mb-0"><i class="fa fa-coins"></i> {{ vente.montant|intpoint }} Ar</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer text-end">
+            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editVenteModal{{ vente.id }}" {% if not is_admin %}disabled{% endif %}>
+              <i class="fa fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteVenteModal{{ vente.id }}" {% if not is_admin %}disabled{% endif %}>
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endwith %}
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-info text-center">Aucune vente enregistrée.</div>
+{% endif %}
+{% endwith %}

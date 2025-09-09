@@ -1,0 +1,108 @@
+{# templates/ventes/includes/facturation_cards.html #}
+{% load nombre %}
+
+<form id="factures-form-cards" method="post" action="{% url 'voir_factures' %}" target="_blank">
+  {% csrf_token %}
+  <div class="row">
+    {% for commande in commandes %}
+      <div class="col-md-6 col-lg-4 col-xl-3 mb-3">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" name="commandes" value="{{ commande.id }}" id="cb-{{ commande.id }}">
+              <label class="form-check-label" for="cb-{{ commande.id }}">
+                <strong class="text-success">Facture n° {{ commande.numero_facture }}</strong>
+              </label>
+            </div>
+            <p class="mb-1"><strong>Date :</strong> {{ commande.date_livraison|date:"d/m/Y" }}</p>
+            <p class="mb-1"><strong>Client :</strong> {{ commande.client.nom }}</p>
+            <p class="mb-1"><strong>Lieu :</strong> {{ commande.client.lieu.lieu }}</p>
+            <p class="mb-1"><strong>Contact :</strong> {{ commande.client.contact }}</p>
+            <p class="mb-1"><strong>Total :</strong> {{ commande.total_commande|intpoint }}</p>
+            <p class="mb-0"><strong>Statut livraison :</strong> {{ commande.statut_livraison }}</p>
+          </div>
+
+          {# 👇 Footer actions individuelles (voir / imprimer cette facture uniquement) #}
+          <div class="card-footer d-flex justify-content-end gap-2">
+            <button type="button"
+                    class="btn btn-sm btn-outline-success btn-voir-facture"
+                    data-id="{{ commande.id }}"
+                    title="Voir la facture">
+              <i class="fa fa-eye"></i>
+            </button>
+            <button type="button"
+                    class="btn btn-sm btn-outline-secondary btn-imprimer-facture"
+                    data-id="{{ commande.id }}"
+                    title="Imprimer la facture">
+              <i class="fa fa-print"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="mt-2 d-flex flex-wrap gap-2">
+    <button type="submit" formaction="{% url 'voir_factures' %}" formtarget="_blank" class="btn btn-success">
+      <i class="fa fa-eye"></i> Voir les factures
+    </button>
+    <button type="button" id="btn-imprimer-cards" class="btn btn-secondary">
+      <i class="fa fa-print"></i> Imprimer
+    </button>
+  </div>
+</form>
+
+<script>
+(function () {
+  const voirUrl = "{% url 'voir_factures' %}";
+  const imprimerUrl = "{% url 'imprimer_factures' %}";
+
+  // Impression groupée (bouton global)
+  document.getElementById("btn-imprimer-cards")?.addEventListener("click", function () {
+    const form = document.getElementById("factures-form-cards");
+    const checked = form.querySelectorAll("input[name='commandes']:checked");
+    if (checked.length === 0) { alert("Veuillez sélectionner au moins une commande."); return; }
+
+    const newForm = document.createElement("form");
+    newForm.method = "POST";
+    newForm.action = imprimerUrl;
+    newForm.target = "_blank";
+
+    const csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (csrf) newForm.appendChild(csrf.cloneNode());
+
+    checked.forEach(cb => {
+      const input = document.createElement("input");
+      input.type = "hidden"; input.name = "commandes"; input.value = cb.value;
+      newForm.appendChild(input);
+    });
+
+    document.body.appendChild(newForm); newForm.submit(); document.body.removeChild(newForm);
+  });
+
+  // Actions individuelles (voir / imprimer) sans formulaire imbriqué
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".btn-voir-facture, .btn-imprimer-facture");
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    const actionUrl = btn.classList.contains("btn-voir-facture") ? voirUrl : imprimerUrl;
+
+    const parentForm = document.getElementById("factures-form-cards");
+    const csrf = parentForm.querySelector('input[name="csrfmiddlewaretoken"]');
+
+    const newForm = document.createElement("form");
+    newForm.method = "POST";
+    newForm.action = actionUrl;
+    newForm.target = "_blank";
+
+    if (csrf) newForm.appendChild(csrf.cloneNode());
+
+    const input = document.createElement("input");
+    input.type = "hidden"; input.name = "commandes"; input.value = id;
+    newForm.appendChild(input);
+
+    document.body.appendChild(newForm); newForm.submit(); document.body.removeChild(newForm);
+  });
+})();
+</script>

@@ -1,0 +1,21 @@
+<!-- includes/modal_delete_entreprise.html -->
+<div class="modal fade" id="deleteModal{{ entreprise.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ entreprise.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'entreprise_delete' entreprise.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel{{ entreprise.id }}">Supprimer entreprise</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Voulez-vous vraiment supprimer l'entreprise <strong>{{ entreprise.raison_sociale }}</strong> ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

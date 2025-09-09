@@ -1,0 +1,27 @@
+{% load static %}
+
+<style>
+  .dropdown-item:hover {
+    background-color: var(--success); /* Use Bootstrap's primary color */
+    color: white; /* Ensure the text is readable */
+  }
+  #navbarMenu .active {
+    color: var(--success) !important; /* Ensure this overrides other styles */
+  }
+  .dropdown-item:hover {
+    background-color: var(--success); /* Use Bootstrap's primary color */
+    color: white; /* Ensure the text is readable */
+  }
+
+</style>
+
+<div class="container-fluid bg-white">
+  <div class="container">
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white py-1">
+      <!-- Logo -->
+      <a class="navbar-brand mr-3" href="">
+        <img src="{% static 'images/zarastore.png' %}" width="50" height="50" alt="Logo" />
+      </a>
+    </nav>
+  </div>
+</div>

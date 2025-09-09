@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Modifier des informations de profil{% endblock %}
+
+{% block content %}
+<div class="container mx-auto max-w-lg mt-8 p-6 bg-white rounded shadow">
+    <h2 class="text-2xl font-bold mb-4">Modifier le profil</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 gap-4">
+            <div>
+                {{ form.first_name.label_tag }}
+                {{ form.first_name }}
+            </div>
+            <div>
+                {{ form.last_name.label_tag }}
+                {{ form.last_name }}
+            </div>
+            <div>
+                {{ form.adresse.label_tag }}
+                {{ form.adresse }}
+            </div>
+            <div>
+                {{ form.telephone.label_tag }}
+                {{ form.telephone }}
+            </div>
+        </div>
+        <button type="submit" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Enregistrer</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% load static %}
+
+<!-- Sidebar -->
+<nav id="sidebar">
+    <div class="sidebar-header">
+      <a class="navbar-brand" href="">
+        <img src="{% static 'images/zarastore.png' %}" width="50" height="50" alt="Logo" />
+      </a>
+    </div>
+
+    <!-- Menu Items -->
+    <div class="">
+
+      <!-- Commandes -->
+      <button class="btn w-100 text-start">
+        <a href="{% url 'liste_commandes' %}" class="nav-link"><i class="fa fa-list-squares"></i> Commandes </a>
+      </button>
+
+      <!-- Livraison -->
+      <button class="btn w-100 text-start">
+        <a href="{% url 'liste_livraisons' %}" class="nav-link"><i class="fa fa-bicycle"></i> Livraison </a>
+      </button>
+            
+      <!-- Ventes -->
+      <button class="btn w-100 text-start">
+        <a href="{% url 'liste_encaissement_ventes' %}" class="nav-link"><i class="fa fa-shopping-cart"></i> Ventes </a>
+      </button>
+
+      <!-- Facturation -->
+      <button class="btn w-100 text-start">
+        <a href="{% url 'facturation' %}" class="nav-link"><i class="fa fa-receipt"></i> Facturation </a>
+      </button>
+
+      <!-- Achats -->
+      <button class="btn w-100 text-start">
+        <a href="{% url 'achats_list' %}" class="nav-link"><i class="fa fa-basket-shopping"></i> Achats</a>
+      </button>
+
+      <!-- Charges -->
+      <button class="btn w-100 text-start">
+        <a href="{% url 'charges_list' %}" class="nav-link"><i class="fa fa-euro"></i> Charges </a>
+      </button>
+      
+      <!-- Caisses -->
+      <button class="btn w-100 text-start">
+        <a href="{% url 'etat_caisses' %}" class="nav-link"><i class="fa fa-coins"></i> Caisses </a>
+      </button>
+
+      <!-- Stock -->
+      <button class="btn w-100 text-start">
+        <a href="{% url 'etat_stock' %}" class="nav-link"><i class="fa fa-store"></i> Stocks </a>
+      </button>
+
+      <!-- Inventaire -->
+      <button class="btn w-100 text-start">
+        <a href="{% url 'inventaire_list' %}" class="nav-link"><i class="fa fa-list-alt"></i> Inventaire </a>
+      </button>
+
+      <!-- Clients -->
+      <button class="btn w-100 text-start">
+        <a href="{% url 'clients_list' %}" class="nav-link"><i class="fa fa-people-carry"></i> Clients </a>
+      </button>
+
+      <!-- Articles -->
+      <button class="btn w-100 text-start">
+        <a href="{% url 'article_list' %}" class="nav-link"><i class="fa fa-shop"></i> Articles </a>
+      </button>
+
+      <!-- Statistiques -->
+      <button class="btn w-100 text-start" data-bs-toggle="collapse" data-bs-target="#statsMenu">
+        <i class="fa fa-chart-column"></i> Statistiques
+      </button>
+      <div class="collapse" id="statsMenu">
+        <ul class="list-unstyled ps-4">
+          <li><a href="{% url 'rapport_vente' %}" class="nav-link">Rapport de ventes</a></li>
+          <li><a href="{% url 'compte_de_resultat' %}" class="nav-link">Compte de résultat</a></li>
+          <li><a href="{% url 'bilan' %}" class="nav-link">Bilan</a></li>
+        </ul>
+      </div>
+
+      <!-- Utilisateurs -->
+      {% comment %} <button class="btn w-100 text-start" data-bs-toggle="collapse" data-bs-target="#usersMenu">
+        <i class="fa fa-user"></i> Utilisateurs
+      </button>
+      <div class="collapse" id="usersMenu">
+        <ul class="list-unstyled ps-4">
+          <li><a href="#" class="nav-link">Liste des utilisateurs</a></li>
+          <li><a href="#" class="nav-link">Rôles et permissions</a></li>
+        </ul>
+      </div> {% endcomment %}
+
+      <!-- Paramètres -->
+      <button class="btn w-100 text-start" data-bs-toggle="collapse" data-bs-target="#settingsMenu">
+        <i class="fa fa-gear"></i> Paramètres
+      </button>
+      <div class="collapse" id="settingsMenu">
+        <ul class="list-unstyled ps-4">
+          <li><a href="{% url 'profil' %}" class="nav-link">Profil</a></li>
+          <li><a href="{% url 'configuration' %}" class="nav-link">Configuration</a></li>
+        </ul>
+      </div>
+
+      <div class="btn w-100 text-start">
+        {% if user.is_authenticated %}
+          <a href="{% url 'logout' %}" class="nav-link"><i class="fa fa-sign-out-alt"></i> Se déconnecter</a>
+       Compte :  <span class="text-primary">{{ user.username }}</span>
+          {% else %}
+          <a href="{% url 'login' %}" class="nav-link"><i class="fa fa-sign-in-alt"></i> Se connecter</a>
+        {% endif %}
+      </div>
+
+    </div>
+  </nav>

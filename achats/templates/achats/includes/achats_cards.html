@@ -1,0 +1,155 @@
+{# achats/includes/achats_cards.html #}
+{% load static %}
+{% load nombre %}
+
+{% with scope=carousel_scope|default:"sm" %}
+{% if achats %}
+  <div class="row">
+    {% for achat in achats %}
+      {% with lignes=achat.lignes_achats.all %}
+      <div class="col-md-6 col-xl-4 mb-4">
+        <div class="card h-100 shadow-sm {% if achat.statut_publication == 'supprimé' %}opacity-50{% endif %}">
+          <div class="card-body">
+            <h5 class="card-title text-primary mb-2">
+              Achat du {{ achat.date|date:"d/m/Y" }} 
+            </h5>
+
+            <div class="row g-3 align-items-start">
+              <!-- Colonne gauche : carousel/images -->
+              <div class="col-5">
+                {% if lignes|length > 1 %}
+                  <div id="carouselAchat{{ scope }}-{{ achat.id }}"
+                       class="carousel slide carousel-dark"
+                       data-bs-touch="true" data-bs-interval="false"
+                       data-list-target="#listeArticlesAchat{{ scope }}-{{ achat.id }}">
+                    <div class="carousel-inner">
+                      {% for ligne in lignes %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}"
+                             data-index="{{ forloop.counter0 }}">
+                          <div class="thumb-120">
+                            {% if ligne.article.image %}
+                              <img src="{{ ligne.article.image.url }}" alt="{{ ligne.article.nom }}" loading="lazy">
+                            {% else %}
+                              <img src="{% static 'images/zarastore.png' %}" alt="{{ ligne.article.nom }}" loading="lazy">
+                            {% endif %}
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button"
+                            data-bs-target="#carouselAchat{{ scope }}-{{ achat.id }}" data-bs-slide="prev">
+                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Précédent</span>
+                    </button>
+                    <button class="carousel-control-next" type="button"
+                            data-bs-target="#carouselAchat{{ scope }}-{{ achat.id }}" data-bs-slide="next">
+                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Suivant</span>
+                    </button>
+                  </div>
+                {% else %}
+                  {% for ligne in lignes %}
+                    <div class="thumb-120">
+                      {% if ligne.article.image %}
+                        <img src="{{ ligne.article.image.url }}" alt="{{ ligne.article.nom }}" loading="lazy">
+                      {% else %}
+                        <img src="{% static 'images/zarastore.png' %}" alt="{{ ligne.article.nom }}" loading="lazy">
+                      {% endif %}
+                    </div>
+                  {% empty %}
+                    <div class="thumb-120"><img src="{% static 'images/zarastore.png' %}" alt="Aucun article" loading="lazy"></div>
+                  {% endfor %}
+                {% endif %}
+
+                <p class="text-secondary text-decoration-underline my-1">Articles :</p>
+                <ul id="listeArticlesAchat{{ scope }}-{{ achat.id }}"
+                    class="article-list list-unstyled ps-0 small"
+                    data-role="liste-articles"
+                    data-count="{{ lignes|length }}">
+                  {% for ligne in lignes %}
+                    <li class="py-1" data-index="{{ forloop.counter0 }}">
+                      <div class="article-line-inner">
+                        <span class="article-name item-text {% if lignes|length > 1 and forloop.first %}text-primary fw-semibold{% endif %}">
+                          {% if ligne.article.reference %}
+                            {{ ligne.article.reference|slice:":10" }}
+                          {% else %}
+                            {{ ligne.article.nom|slice:":10" }}
+                          {% endif %}
+                        </span>
+                        <span class="badge rounded-pill bg-secondary ms-1">{{ ligne.quantite }}</span>
+                      </div>
+                    </li>
+                  {% empty %}
+                    <li class="py-1 text-muted">Aucun article</li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+              <!-- Colonne droite : infos -->
+              <div class="col-7">
+                <p class="card-text mb-1"><i class="fa fa-file-invoice"></i> Facture n° {{ achat.num_facture }}</p>
+                <p class="card-text mb-1"><i class="fa fa-wallet"></i> {{ achat.paiement.nom }}</p>
+                <p class="card-text mb-1"><i class="fa fa-comment"></i> {{ achat.remarque|default:"-" }}</p>
+                <p class="card-text mb-0"><i class="fa fa-coins"></i> {{ achat.total|intpoint }} Ar</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer text-end">
+            <button type="button" class="btn btn-sm btn-outline-primary me-1"
+                    data-bs-toggle="modal" data-bs-target="#ouvrirDetailAchat_{{ achat.id }}">
+              <i class="fa fa-eye"></i>
+            </button>
+
+            <form action="{% url 'achat_edit' achat.id %}" method="get" class="d-inline me-1">
+              <button type="submit" class="btn btn-sm btn-outline-success"
+                      {% if not is_admin or achat.statut_publication == 'supprimé' %}disabled{% endif %}>
+                <i class="fa fa-edit"></i>
+              </button>
+            </form>
+
+            {% if achat.statut_publication == "supprimé" and is_admin %}
+              <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fa fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a class="dropdown-item text-danger"
+                       data-bs-toggle="modal"
+                       data-bs-target="#deleteDefAchatModal"
+                       data-id="{{ achat.id }}"
+                       data-numero="{{ achat.num_facture }}">
+                      Suppr. déf.
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item text-primary"
+                       data-bs-toggle="modal"
+                       data-bs-target="#restoreAchatModal{{ achat.id }}">
+                      Restaurer
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            {% else %}
+              <button type="button" class="btn btn-sm btn-outline-danger"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteAchatModal"
+                      data-id="{{ achat.id }}"
+                      data-numero="{{ achat.num_facture }}"
+                      {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-trash"></i>
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endwith %}
+    {% endfor %}
+  </div>
+
+{% else %}
+  <div class="alert alert-info text-center">Aucun achat enregistré.</div>
+{% endif %}
+{% endwith %}

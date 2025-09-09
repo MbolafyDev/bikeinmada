@@ -1,0 +1,82 @@
+{# templates/charges/includes/charges_table.html #}
+{% load nombre %}
+{% if charges %}
+  <div class="table-responsive mb-2">
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-success">
+        <tr>
+          <th>Date</th>
+          <th>Libellé</th>
+          <th>P.U</th>
+          <th>Qté</th>
+          <th>Montant</th>
+          <th>Paiement</th>
+          <th>Remarque</th>
+          <th>Page</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for charge in charges %}
+        <tr {% if charge.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+          <td>{{ charge.date|date:"d/m/Y" }}</td>
+          <td>{{ charge.libelle.libelle }}</td>
+          <td class="text-end">{{ charge.pu|intpoint }}</td>
+          <td class="text-center">{{ charge.quantite }}</td>
+          <td class="text-end">{{ charge.montant|intpoint }}</td>
+          <td>{{ charge.paiement.nom }}</td>
+          <td>{{ charge.remarque }}</td>
+          <td>{{ charge.page.nom }}</td>
+          <td class="text-center" style="white-space: nowrap">
+            <button class="btn btn-sm btn-outline-success"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editModal{{ charge.id }}"
+                    {% if not is_admin or charge.statut_publication == 'supprimé' %}disabled{% endif %}>
+              <i class="fa fa-edit"></i>
+            </button>
+
+            {% if charge.statut_publication == "supprimé" and is_admin %}
+              <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fa fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a class="dropdown-item text-danger"
+                       data-bs-toggle="modal"
+                       data-bs-target="#deleteDefModal{{ charge.id }}">
+                      Suppr. déf.
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item text-success"
+                       data-bs-toggle="modal"
+                       data-bs-target="#restoreModal{{ charge.id }}">
+                      Restaurer
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            {% else %}
+              <button class="btn btn-sm btn-outline-danger"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteModal{{ charge.id }}"
+                      {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-trash"></i>
+              </button>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        <tr class="table-success fw-bold">
+          <td colspan="4" class="text-center">Total des charges</td>
+          <td class="text-end">{{ total_charges|intpoint }}</td>
+          <td colspan="4"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="alert alert-info text-center">Aucune opération enregistrée.</div>
+{% endif %}

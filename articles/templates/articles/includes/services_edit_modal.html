@@ -1,0 +1,31 @@
+<div class="modal fade" id="editModal{{ service.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ service.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" action="{% url 'service_edit' service.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel{{ service.id }}">Modifier le service</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="nom{{ service.id }}" class="form-label">Nom</label>
+            <input type="text" class="form-control" id="nom{{ service.id }}" name="nom" value="{{ service.nom }}" required>
+          </div>
+          <div class="mb-3">
+            <label for="reference{{ service.id }}" class="form-label">Référence</label>
+            <input type="text" class="form-control" id="reference{{ service.id }}" name="reference" value="{{ service.reference }}" required>
+          </div>
+          <div class="mb-3">
+            <label for="tarif{{ service.id }}" class="form-label">Tarif (Ar)</label>
+            <input type="number" class="form-control" id="tarif{{ service.id }}" name="tarif" step="100" value="{{ service.tarif }}" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

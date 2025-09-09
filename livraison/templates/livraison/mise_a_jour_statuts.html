@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block title %}Mise à jour de statuts des livraisons{% endblock %}
+
+{% block content %}
+<div class="container mb-2 mt-4">
+    <h2 class="mb-4 text-center">Mise à jour de statuts des livraisons</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <!-- Filtre -->
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <label class="form-label fw-bold">Date de livraison</label>
+            <input type="date" name="date_livraison" value="{{ date_livraison }}" class="form-control">
+        </div>
+        <div class="col-12 col-md-3">
+            <label class="form-label fw-bold">Livreur</label>
+            <select name="livreur" class="form-select">
+                <option value="">-- Tous --</option>
+                {% for livreur in livreurs %}
+                    <option value="{{ livreur.id }}" {% if livreur.id|stringformat:"s" == selected_livreur %}selected{% endif %}>
+                        {{ livreur.nom }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-md-3">
+            <label class="form-label fw-bold">Statut livraison</label>
+            <select name="statut_livraison" class="form-select">
+                <option value="">-- Tous --</option>
+                <option value="En attente" {% if statut_livraison == 'En attente' %}selected{% endif %}>En attente</option>
+                <option value="Planifiée" {% if statut_livraison == 'Planifiée' %}selected{% endif %}>Planifiée</option>
+                <option value="Livrée" {% if statut_livraison == 'Livrée' %}selected{% endif %}>Livrée</option>
+                <option value="Annulée" {% if statut_livraison == 'Annulée' %}selected{% endif %}>Annulée</option>
+                <option value="Reportée" {% if statut_livraison == "Reportée" %}selected{% endif %}>Reportée</option>
+                <option value="Supprimée" {% if statut_livraison == "Supprimée" %}selected{% endif %}>Supprimée</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-3 d-flex justify-content-end">
+            <button type="submit" class="btn btn-outline-success w-100 w-md-auto mt-2 mt-md-4">
+                <i class="fa fa-filter"></i> Filtrer
+            </button>
+        </div>
+    </form>
+
+    <form method="post" action="{% url 'mise_a_jour_statuts_livraisons_groupes' %}">
+        {% csrf_token %}
+
+        <!-- Table pour grands écrans -->
+        <div class="table-responsive d-none d-lg-block mb-4">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-success">
+                    <tr class="text-nowrap">
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Date</th>
+                        <th>Facture</th> 
+                        <th>Client</th>
+                        <th>Lieu</th>
+                        <th>Livreur</th>
+                        <th>Statut livraison</th>
+                        <th>Statut vente</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Frais livreur</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                    <tr>
+                        <td><input type="checkbox" name="commandes" value="{{ commande.id }}"></td>
+                        <td>{{ commande.date_livraison|date:"d/m/Y" }}</td>
+                        <td>{{ commande.numero_facture }}</td>
+                        <td>{{ commande.client.nom }}</td>
+                        <td>{{ commande.client.lieu.lieu }}</td>
+                        <td>{{ commande.livreur.nom }}</td>
+                        <td>{{ commande.statut_livraison }}</td>
+                        <td>{{ commande.statut_vente }}</td>
+                        <td class="text-end">{{ commande.total_commande|intpoint }}</td>
+                        <td class="text-end">{{ commande.frais_livreur|intpoint }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cartes pour petits/moyens écrans -->
+        <div class="d-lg-none mb-4">
+            <div class="row">
+                {% for commande in commandes %}
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="commandes" value="{{ commande.id }}">
+                                <label class="form-check-label text-success fw-bold">Livraison du {{ commande.date_livraison|date:"d/m/Y" }}</label>
+                            </div>
+                            <p class="mb-1"><strong>Facture :</strong> {{ commande.numero_facture }}</p>
+                            <p class="mb-1"><strong>Client :</strong> {{ commande.client.nom }}</p>
+                            <p class="mb-1"><strong>Lieu :</strong> {{ commande.client.lieu.lieu }}</p>
+                            <p class="mb-1"><strong>Livreur :</strong> {{ commande.livreur.nom }}</p>
+                            <p class="mb-1"><strong>Statut livraison :</strong> {{ commande.statut_livraison }}</p>
+                            <p class="mb-1"><strong>Statut vente :</strong> {{ commande.statut_vente }}</p>
+                            <p class="mb-1"><strong>Total :</strong> {{ commande.total_commande|intpoint }}</p>
+                            <p class="mb-0"><strong>Frais livreur :</strong> {{ commande.frais_livreur|intpoint }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+        <!-- Actions -->
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-3">
+                <label for="nouvelle_date" class="form-label fw-bold">Nouvelle date :</label>
+                <input type="date" name="nouvelle_date" id="nouvelle_date" class="form-control">
+            </div>
+            <div class="col-12 col-md-9">
+                <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end">
+                    <button type="submit" name="action" value="reportée" class="btn btn-success w-100 w-md-auto">
+                        <i class="fa fa-calendar"></i> Reportée
+                    </button>
+                    <button type="submit" name="action" value="livrée" class="btn btn-success w-100 w-md-auto">
+                        <i class="fa fa-thumbs-up"></i> Livrée
+                    </button>
+                    <button type="submit" name="action" value="annulée" class="btn btn-danger w-100 w-md-auto">
+                        <i class="fa fa-trash-arrow-up"></i> Annulée
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById("selectAll")?.addEventListener("change", function () {
+        const checkboxes = document.querySelectorAll("input[name='commandes']");
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+</script>
+{% endblock %}

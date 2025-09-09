@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block title %}Encaissement de ventes{% endblock %}
+
+{% block content %}
+<div class="container mb-2 mt-4">
+
+    <h2 class="mb-4 text-center">Encaisser une ou plusieures ventes</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label for="date_livraison" class="form-label fw-bold">Date de livraison</label>
+            <input type="date" id="date_livraison" name="date_livraison" class="form-control"
+                value="{{ selected_date }}">
+        </div>
+        <div class="col-md-3">
+            <label for="statut_livraison" class="form-label fw-bold">Statut livraison</label>
+            <select id="statut_livraison" name="statut_livraison" class="form-select">
+                <option value="">Tous</option>
+                <option value="En attente" {% if selected_statut_livraison == "En attente" %}selected{% endif %}>En attente</option>
+                <option value="Planifiée" {% if selected_statut_livraison == "Planifiée" %}selected{% endif %}>Planifiée</option>
+                <option value="Livrée" {% if selected_statut_livraison == "Livrée" %}selected{% endif %}>Livrée</option>
+                <option value="Annulée" {% if selected_statut_livraison == "Annulée" %}selected{% endif %}>Annulée</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="statut_vente" class="form-label fw-bold">Statut vente</label>
+            <select id="statut_vente" name="statut_vente" class="form-select">
+                <option value="">Tous</option>
+                <option value="En attente" {% if selected_statut_vente == "En attente" %}selected{% endif %}>En attente</option>
+                <option value="Payée" {% if selected_statut_vente == "Payée" %}selected{% endif %}>Payée</option>
+                <option value="Annulée" {% if selected_statut_vente == "Annulée" %}selected{% endif %}>Annulée</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-outline-primary w-100">
+                <i class="fa fa-filter"></i> Filtrer
+            </button>
+        </div>
+    </form>
+
+    <!-- 🧩 Partie commandes -->
+    {% if commandes %}
+    <form method="post" action="{% url 'valider_commandes_groupes' %}">
+        {% csrf_token %}
+
+        <!-- ✅ TABLEAU pour grand écran -->
+        <div class="table-responsive d-none d-lg-block">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th><input type="checkbox" id="select-all"></th>
+                        <th>Date</th>
+                        <th>Facture</th>
+                        <th>Client</th>
+                        <th>Lieu</th>
+                        <th>Articles</th>
+                        <th>Livraison</th>
+                        <th>Vente</th>
+                        <th>Montant</th>
+                        <th>Frais</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                    <tr>
+                        <td><input type="checkbox" name="commandes" value="{{ commande.id }}"></td>
+                        <td>{{ commande.date_livraison|date:"d/m/Y" }}</td>
+                        <td>{{ commande.numero_facture }}</td>
+                        <td>{{ commande.client.nom }}</td>
+                        <td>{{ commande.client.lieu.lieu }}</td>
+                        <td>
+                            <ul class="mb-0">
+                                {% for ligne in commande.lignes_commandes.all %}
+                                <li>{{ ligne.article.nom }} ({{ ligne.quantite }})</li>
+                                {% endfor %}
+                            </ul>
+                        </td> 
+                        <td>{{ commande.statut_livraison }}</td>
+                        <td>{{ commande.statut_vente }}</td>
+                        <td class="text-end">{{ commande.montant_commande|intpoint }}</td>
+                        <td class="text-end">{{ commande.frais_livraison|intpoint }}</td>
+                        <td class="text-end">{{ commande.total_commande|intpoint }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-primary">
+                    <tr>
+                        <th colspan="8" class="text-end">Total général :</th>
+                        <th class="text-end">{{ total_montant|intpoint }}</th>
+                        <th class="text-end">{{ total_frais|intpoint }}</th>
+                        <th class="text-end">{{ total_general|intpoint }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- ✅ CARTES pour petit écran -->
+        <div class="d-lg-none">
+            <div class="row">
+                {% for commande in commandes %}
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="commandes" value="{{ commande.id }}" id="cb-{{ commande.id }}">
+                                <label class="form-check-label" for="cb-{{ commande.id }}">
+                                    <strong class="text-primary">Facture n° {{ commande.numero_facture }}</strong>
+                                </label>
+                            </div>
+                            <p class="mb-1"><strong>Date de livraison :</strong> {{ commande.date_livraison|date:"d/m/Y" }}</p>
+                            <p class="mb-1"><strong>Client :</strong> {{ commande.client.nom }}</p>
+                            <p class="mb-1"><strong>Lieu :</strong> {{ commande.client.lieu.lieu }}</p>
+                            <p class="card-text"><strong>Articles :</strong></p>
+                                <ul class="mb-2">
+                                    {% for ligne in commande.lignes_commandes.all %}
+                                    <li>{{ ligne.article.nom }} ({{ ligne.quantite }})</li>
+                                    {% endfor %}
+                                </ul>
+                            <p class="mb-1"><strong>Statut livraison :</strong> {{ commande.statut_livraison }}</p>
+                            <p class="mb-1"><strong>Statut vente :</strong> {{ commande.statut_vente }}</p>
+                            <p class="mb-1"><strong>Montant :</strong> {{ commande.montant_commande|intpoint }}</p>
+                            <p class="mb-1"><strong>Frais :</strong> {{ commande.frais_livraison|intpoint }}</p>
+                            <p class="mb-0"><strong>Total :</strong> {{ commande.total_commande|intpoint }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+        <!-- 🧾 Paiement -->
+        <div class="row mb-3 mt-3">
+            <div class="col-md-4">
+                <label for="paiement" class="form-label fw-bold">Mode de paiement :</label>
+                <select name="paiement" id="paiement" class="form-select" required>
+                    <option value="">-- Choisir une caisse --</option>
+                    {% for caisse in caisses %}
+                        <option value="{{ caisse.id }}">{{ caisse.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="date_encaissement" class="form-label fw-bold">Date d'encaissement :</label>
+                <input type="date" name="date_encaissement" id="date_encaissement"
+                    class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100 mt-2" {% if not is_admin %}disabled{% endif %}>
+                    <i class="fa fa-check"></i> Valider l'encaissement
+                </button>
+            </div>
+        </div>
+
+    </form>
+    {% else %}
+        <div class="alert alert-info">Aucune vente à encaisser.</div>
+    {% endif %}
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const selectAll = document.getElementById("select-all");
+
+    if (selectAll) {
+        selectAll.addEventListener("change", function () {
+            const checkboxes = document.querySelectorAll("input[name='commandes']");
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    }
+});
+</script>
+
+{% endblock %}

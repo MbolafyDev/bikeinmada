@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+
+{% block title %}Journal des achats{% endblock %}
+
+{% block extra_css_and_scripts %}
+<style>
+  .thumb-120{
+    height:120px;background:#fff;display:flex;align-items:center;justify-content:center;
+    overflow:hidden;border-radius:.375rem
+  }
+  .thumb-120 img{max-height:100%;max-width:100%;object-fit:contain;object-position:center;display:block;background:#fff}
+  .article-list{overflow-x:hidden;list-style:disc;padding-left:1.25rem;margin-bottom:0}
+  .article-line-inner{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.5rem}
+  .article-name{flex:1 1 auto;min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+  .view-toggle .btn{padding:.375rem .6rem}
+  .view-toggle .btn.active{pointer-events:none}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mb-2">
+
+  <h2 class="text-center mb-2">Journal des achats</h2>
+
+  {% include "includes/messages_alert.html" %}
+
+  <!-- Barre d’actions -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAchatModal" {% if not is_admin %}disabled{% endif %}>
+      <i class="fa fa-plus"></i> Ajouter un achat
+    </button>
+
+    <div class="d-flex align-items-center gap-2">
+      <!-- Toggle d’affichage (>= lg) -->
+      <div class="view-toggle d-none d-lg-flex gap-1" data-storage-key="zr_display_achats">
+        <button type="button" class="btn btn-outline-primary {% if display_mode == 'table' %}active{% endif %}" data-mode="table" title="Mode Tableau">
+          <i class="fa fa-table"></i>
+        </button>
+        <button type="button" class="btn btn-outline-primary {% if display_mode == 'cards' %}active{% endif %}" data-mode="cards" title="Mode Cartes">
+          <i class="fa fa-credit-card"></i>
+        </button>
+      </div>
+
+      <!-- Bouton filtre (mobile/tablette) -->
+      <button class="btn btn-outline-primary d-lg-none" type="button"
+              data-bs-toggle="collapse" data-bs-target="#filtersCollapse"
+              aria-expanded="false" aria-controls="filtersCollapse">
+        <i class="fa fa-filter"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div id="filtersCollapse" class="collapse d-lg-block">
+    <form id="achatsFiltersForm" method="get"
+          hx-get="{% url 'achats_list_partial' %}"
+          hx-target="#achats-wrapper"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+          class="row g-3 mb-3 align-items-end">
+
+      <!-- Date -->
+      <div class="col-md-6 col-lg-3">
+        <label for="date_filter" class="form-label fw-bold d-none d-lg-block">Date</label>
+        <div class="input-group">
+          <span class="input-group-text d-lg-none"><i class="fa fa-calendar"></i></span>
+          <input type="date" name="date_filter" id="date_filter" class="form-control" value="{{ date_filter }}">
+        </div>
+      </div>
+
+      <!-- Article -->
+      <div class="col-md-6 col-lg-3">
+        <label for="article" class="form-label fw-bold d-none d-lg-block">Article</label>
+        <div class="input-group">
+          <span class="input-group-text d-lg-none"><i class="fa fa-box-open"></i></span>
+          <select name="article" id="article" class="form-select">
+            <option value="">Tous les articles</option>
+            {% for art in articles %}
+              <option value="{{ art.id }}" {% if filter_article == art.id|stringformat:"s" %}selected{% endif %}>{{ art.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Paiement -->
+      <div class="col-md-6 col-lg-3">
+        <label for="paiement" class="form-label fw-bold d-none d-lg-block">Paiement</label>
+        <div class="input-group">
+          <span class="input-group-text d-lg-none"><i class="fa fa-wallet"></i></span>
+          <select name="paiement" id="paiement" class="form-select">
+            <option value="">Tous les paiements</option>
+            {% for c in caisses %}
+              <option value="{{ c.id }}" {% if filter_paiement == c.id|stringformat:"s" %}selected{% endif %}>{{ c.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Bouton -->
+      <div class="col-md-6 col-lg-3">
+        <button type="submit" class="btn btn-outline-primary w-100">
+          <i class="fa fa-filter"></i> Filtrer
+        </button>
+      </div>
+
+      <!-- cachés pour préserver mode + page -->
+      <input type="hidden" name="display" id="display_input" value="{{ display_mode }}">
+      <input type="hidden" name="page" id="page_input" value="{{ page_obj.number }}">
+    </form>
+  </div>
+
+  <!-- Zone dynamique (wrapper) -->
+  <div id="achats-wrapper"
+       hx-get="{% url 'achats_list_partial' %}?{{ request.GET.urlencode }}"
+       hx-target="#achats-wrapper"
+       hx-swap="outerHTML"
+       hx-trigger="load">
+    {% include "achats/includes/achats_list_wrapper.html" %}
+  </div>
+
+  {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+</div>
+
+{# Modals globaux (une seule fois) #}
+{% include "achats/includes/achat_ajout.html" %}
+{% include "achats/includes/achat_suppression.html" %}
+
+<!-- Bloc JSON sécurisé pour le formulaire d'ajout -->
+{{ articles|json_script:"articles-data" }}
+
+<script>
+  // --- Données articles (JSON sécurisé) ---
+  const ARTICLES = (() => {
+    const el = document.getElementById("articles-data");
+    try { return JSON.parse(el?.textContent || "[]"); } catch { return []; }
+  })();
+
+  // --- Ajoute une ligne d'achat ---
+  function ajouterLigne() {
+    const container = document.getElementById("lignesAchat");
+    if (!container) return;
+
+    const row = document.createElement("div");
+    row.className = "row g-2 mb-2 align-items-end";
+    row.innerHTML = `
+      <div class="col-lg-5">
+        <label class="form-label d-none d-lg-block">Article</label>
+        <div class="input-group">
+          <span class="input-group-text d-lg-none"><i class="fa fa-box-open"></i></span>
+          <select name="article" class="form-select" required>
+            <option value="">-- Choisir un article --</option>
+            ${ARTICLES.map(a => `
+              <option value="${a.id}" data-prix="${a.prix_achat ?? 0}">${a.nom}</option>
+            `).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="col-lg-2">
+        <label class="form-label d-none d-lg-block">P.U</label>
+        <div class="input-group">
+          <span class="input-group-text d-lg-none">P.U</span>
+          <input type="number" name="pu" class="form-control" step="100" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="col-lg-2">
+        <label class="form-label d-none d-lg-block">Qté</label>
+        <div class="input-group">
+          <span class="input-group-text d-lg-none">Qté</span>
+          <input type="number" name="quantite" class="form-control" min="1" value="1" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="col-lg-2">
+        <label class="form-label d-none d-lg-block">Montant</label>
+        <div class="input-group">
+          <span class="input-group-text d-lg-none">Ar</span>
+          <input type="number" name="montant" class="form-control" readonly tabindex="-1">
+        </div>
+      </div>
+
+      <div class="col-auto col-lg-1 d-flex align-items-end">
+        <button type="button"
+                class="btn btn-sm btn-outline-danger p-0 fs-4 remove-ligne"
+                title="Supprimer la ligne" aria-label="Supprimer">x</button>
+      </div>
+    `;
+    container.appendChild(row);
+
+    const sel = row.querySelector('select[name="article"]');
+    const pu  = row.querySelector('input[name="pu"]');
+    const qte = row.querySelector('input[name="quantite"]');
+    const mt  = row.querySelector('input[name="montant"]');
+
+    const recalc = () => {
+      const puVal  = parseInt(pu.value || '0', 10) || 0;
+      const qteVal = parseInt(qte.value || '1', 10) || 1;
+      mt.value = puVal * qteVal;
+    };
+
+    sel.addEventListener('change', () => {
+      const opt = sel.selectedOptions[0];
+      pu.value = opt ? (opt.getAttribute('data-prix') || 0) : 0;
+      recalc();
+    });
+    pu.addEventListener('input', recalc);
+    qte.addEventListener('input', recalc);
+
+    row.querySelector('.remove-ligne').addEventListener('click', () => row.remove());
+  }
+
+  // 1re ligne au chargement si le conteneur existe
+  document.addEventListener("DOMContentLoaded", () => {
+    const cont = document.getElementById("lignesAchat");
+    if (cont && !cont.children.length) ajouterLigne();
+  });
+
+  // Sécurité : si le modal s’ouvre et que c’est vide, on met au moins une ligne
+  document.addEventListener('shown.bs.modal', (e) => {
+    if (e.target && e.target.id === 'createAchatModal') {
+      const cont = document.getElementById("lignesAchat");
+      if (cont && !cont.children.length) ajouterLigne();
+    }
+  });
+
+
+  // --- Modal suppression (inchangé) ---
+  document.addEventListener('DOMContentLoaded', function () {
+    const deleteModal = document.getElementById('deleteAchatModal');
+    if (!deleteModal) return;
+    deleteModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const achatId = button && button.getAttribute('data-id');
+      const achatNum = button && button.getAttribute('data-numero');
+      const form = document.getElementById('deleteAchatForm');
+      const numLabel = document.getElementById('achatNum');
+      if (achatId && form) form.action = `/achats/${achatId}/supprimer/`;
+      if (numLabel) numLabel.textContent = achatNum || 'n° inconnu';
+    });
+  });
+
+  // --- Surbrillance bleue de l'article correspondant à la slide active ---
+  document.addEventListener('slid.bs.carousel', function (e) {
+    var carouselEl = e.target;
+    var listSelector = carouselEl.dataset.listTarget;
+    if (!listSelector) return;
+    var listEl = document.querySelector(listSelector);
+    if (!listEl) return;
+
+    var count = parseInt(listEl.dataset.count || '0', 10);
+    if (count <= 1) return;
+
+    var activeItem = e.relatedTarget || carouselEl.querySelector('.carousel-item.active');
+    if (!activeItem) return;
+    var idx = activeItem.getAttribute('data-index');
+
+    listEl.querySelectorAll('.item-text').forEach(function (el) {
+      el.classList.remove('text-primary','fw-semibold');
+    });
+
+    var target = listEl.querySelector('li[data-index="'+ idx +'"] .item-text');
+    if (target) {
+      target.classList.add('text-primary','fw-semibold');
+      var li = target.closest('li');
+      if (li && li.scrollIntoView) li.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }
+  });
+
+  // --- Clic sur un item -> aller à la slide correspondante ---
+  document.addEventListener('click', function (e) {
+    var li = e.target.closest('ul[data-role="liste-articles"] li[data-index]');
+    if (!li) return;
+    var ul = li.closest('ul[data-role="liste-articles"]');
+    var card = ul.closest('.card');
+    var carouselEl = card && card.querySelector('.carousel');
+    if (!carouselEl) return;
+
+    var idx = parseInt(li.getAttribute('data-index'), 10) || 0;
+    var instance = bootstrap.Carousel.getOrCreateInstance(carouselEl);
+    instance.to(idx);
+  });
+
+  // --- Toggle (mémoriser + conserver pagination) ---
+  (function () {
+    const toggle = document.querySelector('.view-toggle');
+    const form = document.getElementById('achatsFiltersForm');
+    const displayInput = document.getElementById('display_input');
+    const pageInput = document.getElementById('page_input');
+    if (!toggle || !form || !displayInput || !pageInput) return;
+
+    const storageKey = toggle.dataset.storageKey || 'display_achats';
+    const getUrlPage = () => (new URLSearchParams(location.search)).get('page') || '';
+
+    const htmxSubmit = () => {
+      if (form.requestSubmit) form.requestSubmit();
+      else form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    };
+
+    toggle.addEventListener('click', function (e) {
+      const btn = e.target.closest('button[data-mode]');
+      if (!btn) return;
+      const mode = btn.dataset.mode;
+
+      toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      localStorage.setItem(storageKey, mode);
+      displayInput.value = mode;
+      pageInput.value = getUrlPage(); // conserve la page en cours
+
+      htmxSubmit();
+    });
+
+    // Changement de filtres -> retour page 1
+    ['date_filter','article','paiement'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('change', () => { pageInput.value = ''; });
+    });
+
+    // Après swap wrapper, resynchroniser page cachée avec l’URL (utile si pagination cliquée)
+    if (window.htmx) {
+      htmx.on('htmx:afterSwap', function (evt) {
+        if (evt.target && evt.target.id === 'achats-wrapper') {
+          pageInput.value = getUrlPage();
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}

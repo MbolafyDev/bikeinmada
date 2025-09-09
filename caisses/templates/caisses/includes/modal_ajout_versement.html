@@ -1,0 +1,49 @@
+<!-- Modal Enregistrer un versement -->
+<div class="modal fade" id="modalVersement" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'ajouter_versement' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Enregistrer un versement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="date" class="form-label">Date</label>
+            <input type="date" name="date" id="date" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+          </div>
+          <div class="mb-3">
+            <label for="montant" class="form-label">Montant</label>
+            <input type="number" name="montant" id="montant" step="500" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="caisse" class="form-label">Caisse</label>
+            <select name="caisse" id="caisse" class="form-control" required>
+              {% for c in caisses %}
+                <option value="{{ c.id }}">{{ c.nom }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="page" class="form-label">Page</label>
+            <select name="page" id="page" class="form-control" required>
+              <option value=""> -- Sélectionner une page --</option>
+              {% for p in pages %}
+                <option value="{{ p.id }}">{{ p.nom }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="remarque" class="form-label">Remarque</label>
+            <textarea name="remarque" id="remarque" class="form-control"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

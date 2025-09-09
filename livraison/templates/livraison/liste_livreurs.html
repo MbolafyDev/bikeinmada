@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des livreurs{% endblock %}
+
+{% block content %}
+<div class="container mb-2 mt-4">
+    <h2 class="mb-4 text-center">Liste des livreurs</h2>
+
+    {% include "includes/messages_alert.html" %}
+
+    <!-- Bouton ajouter -->
+    <button class="btn btn-success my-3" data-bs-toggle="modal" data-bs-target="#modalAjout" {% if not is_admin %}disabled{% endif %}>
+        <i class="fa fa-plus"></i> Ajouter un livreur
+    </button>
+    
+    {% if livreurs %}
+    <!-- TABLEAU - grands écrans -->
+    <div class="d-none d-lg-block">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>Nom</th>
+                    <th>Type</th>
+                    <th>Responsable</th>
+                    <th>Adresse</th>
+                    <th>Contact</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in livreurs %}
+                <tr>
+                    <td>{{ l.nom }}</td>
+                    <td>{{ l.get_type_display }}</td>
+                    <td>{{ l.responsable }}</td>
+                    <td>{{ l.adresse }}</td>
+                    <td>{{ l.contact }}</td>
+                    <td class="text-end">
+                        <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editModal{{ l.id }}" {% if not is_admin %}disabled{% endif %}>
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ l.id }}" {% if not is_admin %}disabled{% endif %}>
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- CARTES - petits écrans -->
+    <div class="d-lg-none">
+        <div class="row">
+            {% for l in livreurs %}
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ l.nom }}</h5>
+                        <p class="card-text mb-1"><strong>Responsable :</strong> {{ l.responsable }}</p>
+                        <p class="card-text mb-1"><strong>Type :</strong> {{ l.get_type_display }}</p> <!-- ✅ -->
+                        <p class="card-text mb-1"><strong>Adresse :</strong> {{ l.adresse }}</p>
+                        <p class="card-text mb-2"><strong>Contact :</strong> {{ l.contact }}</p>
+                    </div>
+                    <div class="card-footer text-end">
+                            <button type="button" class="btn btn-sm btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#editModal{{ l.id }}" {% if not is_admin %}disabled{% endif %}>
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ l.id }}" {% if not is_admin %}disabled{% endif %}>
+                                <i class="fa fa-trash"></i>
+                            </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Modals édition & suppression -->
+    {% for l in livreurs %}
+        <!-- Modal modifier -->
+        <div class="modal fade" id="editModal{{ l.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'modifier_livreur' l.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title">Modifier Livreur</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <label>Nom</label>
+                            <input type="text" name="nom" class="form-control mb-2" value="{{ l.nom }}" required>
+                            <label>Type</label>
+                            <select name="type" class="form-select mb-2" required>
+                                <option value="Employé" {% if l.type == 'Employé' %}selected{% endif %}>Employé</option>
+                                <option value="Prestataire" {% if l.type == 'Prestataire' %}selected{% endif %}>Prestataire</option>
+                            </select>
+                            <label>Responsable</label>
+                            <input type="text" name="responsable" class="form-control mb-2" value="{{ l.responsable }}" required>
+                            <label>Adresse</label>
+                            <input type="text" name="adresse" class="form-control mb-2" value="{{ l.adresse }}" required>
+                            <label>Contact</label>
+                            <input type="text" name="contact" class="form-control mb-2" value="{{ l.contact }}" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-success">Enregistrer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal suppression -->
+        <div class="modal fade" id="deleteModal{{ l.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'supprimer_livreur' l.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger">Confirmer la suppression</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            Êtes-vous sûr de vouloir supprimer le livreur <strong>{{ l.nom }}</strong> ?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-danger">Supprimer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-info">Aucun livreur enregistré.</div>
+    {% endif %}
+
+    <!-- Modal ajout -->
+    <div class="modal fade" id="modalAjout" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" action="{% url 'ajouter_livreur' %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nouveau Livreur</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label>Nom</label>
+                        <input type="text" name="nom" class="form-control mb-2" required>
+                        <label>Type</label>
+                        <select name="type" class="form-select mb-2" required>
+                            <option value="Employé">Employé</option>
+                            <option value="Prestataire">Prestataire</option>
+                        </select>
+                        <label>Responsable</label>
+                        <input type="text" name="responsable" class="form-control mb-2" required>
+                        <label>Adresse</label>
+                        <input type="text" name="adresse" class="form-control mb-2" required>
+                        <label>Contact</label>
+                        <input type="text" name="contact" class="form-control mb-2" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

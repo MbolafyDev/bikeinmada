@@ -1,0 +1,20 @@
+{# templates/livraison/includes/livraisons_list_wrapper.html #}
+{% load nombre %}
+
+{% if commandes %}
+  {# ≥ lg : bascule table/cartes #}
+  <div class="d-none d-lg-block">
+    {% if display_mode == 'cards' %}
+      {% include "livraison/includes/livraisons_cards.html" %}
+    {% else %}
+      {% include "livraison/includes/livraisons_table.html" %}
+    {% endif %}
+  </div>
+
+  {# < lg : toujours cartes #}
+  <div class="d-lg-none">
+    {% include "livraison/includes/livraisons_cards.html" %}
+  </div>
+{% else %}
+  <div class="alert alert-info">Aucune livraison trouvée.</div>
+{% endif %}

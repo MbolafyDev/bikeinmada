@@ -1,0 +1,104 @@
+<!-- includes/modal_details_entreprise.html -->
+<div class="modal fade" id="detailsModal{{ entreprise.id }}" tabindex="-1" aria-labelledby="detailsModalLabel{{ entreprise.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails de l'entreprise</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <label class="form-label">Raison sociale</label>
+                        <div class="form-control bg-light">{{ entreprise.raison_sociale|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date de début</label>
+                        <div class="form-control bg-light">{{ entreprise.date_debut|default_if_none:""|date:"d/m/Y" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Page Facebook</label>
+                        <div class="form-control bg-light">{{ entreprise.page_facebook|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Lien vers la page</label>
+                        <div class="form-control bg-light">
+                            <a href="{{ entreprise.lien_page|default_if_none:"" }}" target="_blank">{{ entreprise.lien_page|default_if_none:"" }}</a>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Activité / Produits</label>
+                        <div class="form-control bg-light">{{ entreprise.activite_produits|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Personne de contact</label>
+                        <div class="form-control bg-light">{{ entreprise.personne_de_contact|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Lien profil</label>
+                        <div class="form-control bg-light">
+                            <a href="{{ entreprise.lien_profil|default_if_none:"" }}" target="_blank">{{ entreprise.lien_profil|default_if_none:"" }}</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">NIF</label>
+                        <div class="form-control bg-light">{{ entreprise.nif|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">STAT</label>
+                        <div class="form-control bg-light">{{ entreprise.stat|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">RCS</label>
+                        <div class="form-control bg-light">{{ entreprise.rcs|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Adresse</label>
+                        <div class="form-control bg-light" style="white-space: pre-wrap;">{{ entreprise.adresse|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Téléphone</label>
+                        <div class="form-control bg-light">{{ entreprise.telephone|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <div class="form-control bg-light">{{ entreprise.email|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Fokontany</label>
+                        <div class="form-control bg-light">{{ entreprise.fokontany|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Commune</label>
+                        <div class="form-control bg-light">{{ entreprise.commune|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Région</label>
+                        <div class="form-control bg-light">{{ entreprise.region|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Numéro CIN</label>
+                        <div class="form-control bg-light">{{ entreprise.cin_numero|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date CIN</label>
+                        <div class="form-control bg-light">{{ entreprise.date_cin|default_if_none:""|date:"d/m/Y" }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Lieu CIN</label>
+                        <div class="form-control bg-light">{{ entreprise.lieu_cin|default_if_none:"" }}</div>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Remarque</label>
+                        <div class="form-control bg-light" style="white-space: pre-wrap;">{{ entreprise.remarque|default_if_none:"" }}</div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer mt-3">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
