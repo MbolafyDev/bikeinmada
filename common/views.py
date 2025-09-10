@@ -3,14 +3,17 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from common.decorators import admin_required
 from .models import Pages, Caisse, PlanDesComptes
+from users.models import CustomUser
 
 @login_required
 @admin_required
 def configuration_view(request):
+    profil = CustomUser.objects.all()
     pages = Pages.objects.all().order_by('nom')
     caisses = Caisse.objects.all()
     plans = PlanDesComptes.objects.all().order_by('compte_numero')
     return render(request, 'common/configuration.html', {
+        'profil': profil,
         'pages': pages,
         'caisses': caisses,
         'plans': plans,

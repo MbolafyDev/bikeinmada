@@ -16,3 +16,4 @@ urlpatterns = [
     path('modifier_plan/<int:pk>/', views.modifier_plan, name='modifier_plan'),
     path('supprimer_plan/<int:pk>/', views.supprimer_plan, name='supprimer_plan'),
 ]
+ 

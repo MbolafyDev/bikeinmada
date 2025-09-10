@@ -1,0 +1,47 @@
+{% load nombre %}
+
+<div class="mb-3">
+    <h4>Caisses</h4>
+    <button class="btn btn-primary my-2" data-bs-toggle="modal" data-bs-target="#modalCaisse" {% if not is_admin %}disabled{% endif %}>
+        <i class="fa fa-plus"></i> Ajouter une caisse
+    </button>
+
+    {% if caisses %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-primary">
+                <tr>
+                    <th>Nom</th>
+                    <th>Responsable</th>
+                    <th>Solde initial</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in caisses %}
+                <tr>
+                    <td>{{ c.nom }}</td>
+                    <td>{{ c.responsable }}</td>
+                    <td class="text-end">{{ c.solde_initial|intpoint }} Ar</td>
+                    <td class="text-end" style="white-space: nowrap">
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editCaisseModal{{ c.id }}" {% if not is_admin %}disabled{% endif %}>
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteCaisseModal{{ c.id }}" {% if not is_admin %}disabled{% endif %}>
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- Modals éditer / supprimer caisse -->
+                {% comment %}
+                  {% include "common/includes/modals/caisse_modals.html" with caisse=c %}
+                {% endcomment %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">Aucune caisse enregistrée.</div>
+    {% endif %}
+</div>

@@ -220,6 +220,8 @@ def creer_commande(request):
             'prix_achat': article.prix_achat,
             'livraison': article.livraison,
             'stock': stock,
+            'couleur': getattr(article.couleur, 'couleur', None) if hasattr(article, 'couleur') else None,
+            'taille': getattr(article.taille, 'taille', None) if hasattr(article, 'taille') else None,
         })
     # Sérialisation des articles pour JS
     articles_json = json.dumps(articles_data, cls=DjangoJSONEncoder)

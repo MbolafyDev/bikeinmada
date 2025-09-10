@@ -1,5 +1,23 @@
+# articles/models.py
 from django.db import models
 from common.mixins import AuditMixin
+
+class Categorie(AuditMixin):
+    categorie = models.CharField("Categorie", max_length=100)
+
+    def __str__(self):
+        return self.categorie
+
+class Taille(AuditMixin):
+    taille = models.CharField("Taille", max_length=100)
+
+    def __str__(self):
+        return self.taille
+
+class Couleur(AuditMixin):
+    couleur = models.CharField("Couleur", max_length=100)
+    def __str__(self):
+        return self.couleur
 
 class Article(AuditMixin):
     LIVRAISON_CHOICES = [
@@ -18,6 +36,11 @@ class Article(AuditMixin):
         choices=LIVRAISON_CHOICES,
         default='Payante'
     )
+
+    # ✅ Corrections ici
+    taille = models.ForeignKey('Taille', on_delete=models.SET_NULL, blank=True, null=True)
+    couleur = models.ForeignKey('Couleur', on_delete=models.SET_NULL, blank=True, null=True)
+    categorie = models.ForeignKey('Categorie', on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return self.nom

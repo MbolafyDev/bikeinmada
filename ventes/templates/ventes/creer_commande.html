@@ -151,7 +151,7 @@
           <option value="">-- Choisir --</option>
           ${articles.map(article => `
             <option value="${article.id}" data-prix="${article.prix_vente}" data-livraison="${article.livraison}" data-stock="${article.stock}">
-              ${article.nom}
+              ${article.nom} - ${article.taille} - ${article.couleur}
             </option>
           `).join('')}
         </select>

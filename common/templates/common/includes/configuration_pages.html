@@ -1,0 +1,57 @@
+<div class="mb-3">
+    <h4>Boutique | Pages</h4>
+    <button class="btn btn-primary my-2" data-bs-toggle="modal" data-bs-target="#modalPage" {% if not is_admin %}disabled{% endif %}>
+        <i class="fa fa-plus"></i> Ajouter une page
+    </button>
+
+    {% if pages %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-primary">
+                <tr>
+                    <th>Logo</th>
+                    <th>Nom</th>
+                    <th>Type</th>
+                    <th>Contact</th>
+                    <th>Lien</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pages %}
+                <tr>
+                    <td class="text-center">
+                        {% if p.logo %}
+                            <img src="{{ p.logo.url }}" alt="Logo de {{ p.nom }}" style="height: 40px;">
+                        {% else %}
+                            <span class="text-muted">Aucun</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ p.nom }}</td>
+                    <td>{{ p.get_type_display }}</td>
+                    <td>{{ p.contact }}</td>
+                    <td>{% if p.lien %}<a href="{{ p.lien }}" target="_blank">Lien</a>{% endif %}</td>
+                    <td class="text-end" style="white-space: nowrap">
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPageModal{{ p.id }}" {% if not is_admin %}disabled{% endif %}>
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeletePageModal{{ p.id }}" {% if not is_admin %}disabled{% endif %}>
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            
+
+                <!-- Modals éditer / supprimer page -->
+                {% comment %}
+                  {% include "common/includes/modals/page_modals.html" with page=p %}
+                    
+                {% endcomment %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">Aucune page enregistrée.</div>
+    {% endif %}
+</div>

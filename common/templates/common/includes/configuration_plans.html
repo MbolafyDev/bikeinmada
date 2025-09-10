@@ -1,0 +1,43 @@
+<div class="mb-3">
+    <h4>Plan des comptes</h4>
+    <button class="btn btn-primary my-2" data-bs-toggle="modal" data-bs-target="#modalPlan" {% if not is_admin %}disabled{% endif %}>
+        <i class="fa fa-plus"></i> Ajouter un compte
+    </button>
+
+    {% if plans %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-primary">
+                <tr>
+                    <th>Numéro</th>
+                    <th>Libellé</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in plans %}
+                <tr>
+                    <td>{{ plan.compte_numero }}</td>
+                    <td>{{ plan.libelle }}</td>
+                    <td class="text-end" style="white-space: nowrap">
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPlanModal{{ plan.id }}" {% if not is_admin %}disabled{% endif %}>
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeletePlanModal{{ plan.id }}" {% if not is_admin %}disabled{% endif %}>
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- Modals éditer / supprimer plan -->
+                {% comment %}
+                  {% include "common/includes/modals/plan_modals.html" with plan=plan %}
+                {% endcomment %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">Aucun compte enregistré.</div>
+    {% endif %}
+</div>
