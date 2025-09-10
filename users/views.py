@@ -149,16 +149,13 @@ def profil_view(request):
 
 @login_required
 def modifier_profil(request):
-    user = request.user
-
     if request.method == 'POST':
-        form = ProfilForm(request.POST, instance=user)
+        form = ProfilForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            return redirect('profil')  # Remplace 'profil' par l’URL de la page d’accueil ou de confirmation
-    else:
-        form = ProfilForm(instance=user)
-
-    return render(request, 'users/modifier_profil.html', {
-        'form': form,
-    })
+            messages.success(request, "Profil mis à jour avec succès.")
+            next_url = request.POST.get('next') or '/'
+            return redirect(next_url)
+        messages.error(request, "Veuillez corriger les erreurs du formulaire.")
+        return redirect('/configuration/?tab=profil#tab-profil')
+    return redirect('/configuration/?tab=profil#tab-profil')

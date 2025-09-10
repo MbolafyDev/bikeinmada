@@ -3,6 +3,15 @@
 {% load nombre %}
 
 {% block title %}Configuration{% endblock %}
+{% block css_files %}
+  <style>
+    .list-group-item.active {
+    background-color: #198754 !important; /* Bootstrap success */
+    border-color: #198754 !important;
+    color: #fff !important;
+}
+  </style>
+{% endblock css_files %}
 
 {% block content %}
 <div class="container-fluid mb-4">
@@ -13,26 +22,35 @@
         <!-- 🔹 Menu gauche -->
         <div class="col-md-4">
             <div class="list-group">
-                <a href="#tab-pages" class="list-group-item list-group-item-action {% if active_tab == 'profil' %}active{% endif %}" data-bs-toggle="tab">
+                <a href="?tab=profil#tab-profil" 
+                class="list-group-item list-group-item-action {% if active_tab == 'profil' %}active list-group-item-success{% endif %}" 
+                data-bs-toggle="tab">
                     <i class="fa fa-store"></i> Profil
                 </a>
-                <a href="#tab-pages" class="list-group-item list-group-item-action {% if active_tab == 'pages' %}active{% endif %}" data-bs-toggle="tab">
+                <a href="?tab=pages#tab-pages" 
+                class="list-group-item list-group-item-action {% if active_tab == 'pages' %}list-group-item-success{% endif %}" 
+                data-bs-toggle="tab">
                     <i class="fa fa-store"></i> Boutique | Pages
                 </a>
-                <a href="#tab-caisses" class="list-group-item list-group-item-action {% if active_tab == 'caisses' %}active{% endif %}" data-bs-toggle="tab">
+                <a href="?tab=caisses#tab-caisses" 
+                class="list-group-item list-group-item-action {% if active_tab == 'caisses' %}list-group-item-success{% endif %}" 
+                data-bs-toggle="tab">
                     <i class="fa fa-cash-register"></i> Caisses
                 </a>
-                <a href="#tab-plans" class="list-group-item list-group-item-action {% if active_tab == 'plans' %}active{% endif %}" data-bs-toggle="tab">
+                <a href="?tab=plans#tab-plans" 
+                class="list-group-item list-group-item-action {% if active_tab == 'plans' %}list-group-item-success{% endif %}" 
+                data-bs-toggle="tab">
                     <i class="fa fa-book"></i> Plan des comptes
                 </a>
             </div>
+
         </div>
 
         <!-- 🔹 Contenu droit -->
         <div class="col-md-8">
             <div class="tab-content">
                 <!-- Onglet Pages -->
-                <div class="tab-pane fade {% if active_tab == 'profil' %}show active{% endif %}" id="tab-pages">
+                <div class="tab-pane fade {% if active_tab == 'profil' %}show active{% endif %}" id="tab-profil">
                     {% include "users/profil.html" %}
                 </div>
 
@@ -55,3 +73,5 @@
 </div>
 
 {% endblock %}
+
+

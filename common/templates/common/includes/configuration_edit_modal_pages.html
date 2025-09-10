@@ -1,0 +1,57 @@
+<div class="modal fade" id="editPageModal{{ page.id }}" tabindex="-1" aria-labelledby="editPageModalLabel{{ page.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'modifier_page' page.id %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editPageModalLabel{{ page.id }}">Modifier la page</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="nom{{ page.id }}">Nom</label>
+            <input type="text" name="nom" id="nom{{ page.id }}" class="form-control" value="{{ page.nom }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="type{{ page.id }}">Type</label>
+            <select name="type" id="type{{ page.id }}" class="form-select" required>
+              {% for value,label in type_choices %}
+                <option value="{{ value }}" {% if page.type == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="contact{{ page.id }}">Contact</label>
+            <input type="text" name="contact" id="contact{{ page.id }}" class="form-control" value="{{ page.contact }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="lien{{ page.id }}">Lien</label>
+            <input type="url" name="lien" id="lien{{ page.id }}" class="form-control" value="{{ page.lien|default_if_none:'' }}" placeholder="https://...">
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label" for="logo{{ page.id }}">Logo</label>
+            {% if page.logo %}
+              <div class="d-flex align-items-center gap-3 mb-2">
+                <img src="{{ page.logo.url }}" alt="Logo actuel de {{ page.nom }}" style="height: 40px;">
+                <span class="text-muted small">Laisse vide pour conserver le logo actuel.</span>
+              </div>
+            {% else %}
+              <div class="text-muted small mb-2">Aucun logo pour le moment.</div>
+            {% endif %}
+            <input type="file" name="logo" id="logo{{ page.id }}" class="form-control" accept="image/*">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Mettre à jour</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

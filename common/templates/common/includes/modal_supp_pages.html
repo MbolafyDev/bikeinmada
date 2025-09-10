@@ -1,0 +1,43 @@
+{# templates/common/includes/modal_supp_pages.html #}
+{# Usage: {% include "common/includes/modal_supp_pages.html" with page=p %} #}
+
+<div class="modal fade" id="deletePageModal{{ page.id }}" tabindex="-1" aria-labelledby="deletePageModalLabel{{ page.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'supprimer_page' page.id %}">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deletePageModalLabel{{ page.id }}">
+            Supprimer la page
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+
+        <div class="modal-body">
+          <p>Veuillez confirmer la suppression de la page suivante :</p>
+          <p class="mb-2">
+            <strong>{{ page.nom }}</strong>
+            <span class="text-muted">({{ page.get_type_display }})</span>
+          </p>
+          {% if page.lien %}
+            <p class="small mb-3">
+              Lien : <a href="{{ page.lien }}" target="_blank" rel="noopener">ouvrir</a>
+            </p>
+          {% endif %}
+
+          <div class="alert alert-warning mb-0">
+            <i class="fa fa-exclamation-triangle"></i>
+            Cette action est <strong>irréversible</strong>.
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="fa fa-trash"></i> Supprimer
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

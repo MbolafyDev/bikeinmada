@@ -3,57 +3,75 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from common.decorators import admin_required
 from .models import Pages, Caisse, PlanDesComptes
-from users.models import CustomUser
+from users.forms import ProfilForm
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 @login_required
 @admin_required
 def configuration_view(request):
-    profil = CustomUser.objects.all()
+    active_tab = request.GET.get('tab', 'profil')
+    form = ProfilForm(instance=request.user)
+
     pages = Pages.objects.all().order_by('nom')
     caisses = Caisse.objects.all()
     plans = PlanDesComptes.objects.all().order_by('compte_numero')
+
+    is_admin = True
+
     return render(request, 'common/configuration.html', {
-        'profil': profil,
+        'user': request.user, 
+        'form': form,
         'pages': pages,
         'caisses': caisses,
         'plans': plans,
-        'type_choices': Pages.TYPE_CHOICES,   # ➕ pour alimenter les <option>
+        'type_choices': Pages.TYPE_CHOICES,
+        'active_tab': active_tab,
+        "is_admin": is_admin,
     })
+
+def _redir_pages():
+    return HttpResponseRedirect(f"{reverse('configuration')}?tab=pages")
 
 @login_required
 @admin_required
 @require_POST
 def ajouter_page(request):
-    Pages.objects.create(
-        nom=request.POST['nom'],
-        contact=request.POST['contact'],
-        lien=request.POST.get('lien'),
+    page = Pages.objects.create(
+        nom=request.POST.get('nom', '').strip(),
+        contact=request.POST.get('contact', '').strip(),
+        lien=request.POST.get('lien') or None,
         logo=request.FILES.get('logo'),
-        type=request.POST.get('type') or 'VENTE'  # ➕
+        type=request.POST.get('type') or 'VENTE'
     )
-    return redirect('configuration')
+    messages.success(request, f"Page « {page.nom} » ajoutée avec succès.")
+    return _redir_pages()
 
 @login_required
 @admin_required
 @require_POST
 def modifier_page(request, pk):
     page = get_object_or_404(Pages, pk=pk)
-    page.nom = request.POST.get("nom")
-    page.contact = request.POST.get("contact")
-    page.lien = request.POST.get("lien")
-    page.type = request.POST.get("type") or page.type   # ➕
+    page.nom = request.POST.get("nom", page.nom).strip()
+    page.contact = request.POST.get("contact", page.contact).strip()
+    page.lien = request.POST.get("lien") or None
+    page.type = request.POST.get("type") or page.type
     if 'logo' in request.FILES:
         page.logo = request.FILES['logo']
     page.save()
-    return redirect('configuration')
+    messages.success(request, f"Page « {page.nom} » modifiée avec succès.")
+    return _redir_pages()
 
 @login_required
 @admin_required
 @require_POST
 def supprimer_page(request, pk):
     page = get_object_or_404(Pages, pk=pk)
+    nom = page.nom
     page.delete()
-    return redirect('configuration')
+    messages.success(request, f"Page « {nom} » supprimée.")
+    return _redir_pages()
 
 @login_required
 @admin_required
