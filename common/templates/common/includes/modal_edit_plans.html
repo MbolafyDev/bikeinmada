@@ -1,0 +1,72 @@
+{# common/includes/modal_edit_plans.html #}
+
+{# --- Modal : Éditer un plan #}
+<div class="modal fade" id="editPlanModal{{ plan.id }}" tabindex="-1" aria-labelledby="editPlanLabel{{ plan.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'modifier_plan' plan.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editPlanLabel{{ plan.id }}">
+            <i class="fa fa-edit me-1"></i> Modifier le compte
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="planNumero{{ plan.id }}" class="form-label">Numéro <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="planNumero{{ plan.id }}"
+                   name="compte_numero" value="{{ plan.compte_numero }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="planLibelle{{ plan.id }}" class="form-label">Libellé <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="planLibelle{{ plan.id }}"
+                   name="libelle" value="{{ plan.libelle }}" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary" {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-save me-1"></i> Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# --- Modal : Confirmer la suppression #}
+<div class="modal fade" id="confirmDeletePlanModal{{ plan.id }}" tabindex="-1" aria-labelledby="confirmDeletePlanLabel{{ plan.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'supprimer_plan' plan.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <div class="modal-header">
+          <h5 class="modal-title text-danger" id="confirmDeletePlanLabel{{ plan.id }}">
+            <i class="fa fa-triangle-exclamation me-1"></i> Supprimer le compte
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="mb-0">
+            Voulez-vous vraiment supprimer le compte
+            <strong>{{ plan.compte_numero }} – {{ plan.libelle }}</strong> ?
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger" {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-trash me-1"></i> Supprimer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

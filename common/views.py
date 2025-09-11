@@ -163,7 +163,7 @@ def ajouter_plan(request):
         compte_numero=request.POST['compte_numero'],
         libelle=request.POST['libelle']
     )
-    messages.success(request, "Plan ajoutée avec succès.")
+    messages.success(request, "Compte ajouté avec succès.")
     return _redir_to_next_or(_redir_plans(), request)
 
 @login_required
@@ -171,15 +171,18 @@ def ajouter_plan(request):
 @require_POST
 def modifier_plan(request, pk):
     plan = get_object_or_404(PlanDesComptes, pk=pk)
-    plan.compte_numero = request.POST.get("compte_numero")
-    plan.libelle = request.POST.get("libelle")
+    plan.compte_numero = request.POST.get("compte_numero", plan.compte_numero)
+    plan.libelle = request.POST.get("libelle", plan.libelle)
     plan.save()
-    return redirect('configuration')
+    messages.success(request, f"Compte « {plan.compte_numero} – {plan.libelle} » modifié.")
+    return _redir_to_next_or(_redir_plans(), request)
 
 @login_required
 @admin_required
 @require_POST
 def supprimer_plan(request, pk):
     plan = get_object_or_404(PlanDesComptes, pk=pk)
+    num, lib = plan.compte_numero, plan.libelle
     plan.delete()
-    return redirect('configuration')
+    messages.success(request, f"Compte « {num} – {lib} » supprimé.")
+    return _redir_to_next_or(_redir_plans(), request)
