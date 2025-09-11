@@ -2,9 +2,11 @@
 
 <div class="mb-3">
     <h4>Caisses</h4>
-    <button class="btn btn-primary my-2" data-bs-toggle="modal" data-bs-target="#modalCaisse" {% if not is_admin %}disabled{% endif %}>
+    <button class="btn btn-success my-2" data-bs-toggle="modal" data-bs-target="#modalCaisse"
+        {% if not is_admin %}disabled{% endif %}>
         <i class="fa fa-plus"></i> Ajouter une caisse
     </button>
+
 
     {% if caisses %}
     <div class="table-responsive">
@@ -32,16 +34,18 @@
                         </button>
                     </td>
                 </tr>
-
+                {% include "common/includes/modal_edit_caisses.html" with caisse=c is_admin=is_admin %}
                 <!-- Modals éditer / supprimer caisse -->
-                {% comment %}
-                  {% include "common/includes/modals/caisse_modals.html" with caisse=c %}
-                {% endcomment %}
                 {% endfor %}
             </tbody>
         </table>
+
+        
+
     </div>
     {% else %}
     <div class="alert alert-info">Aucune caisse enregistrée.</div>
     {% endif %}
 </div>
+
+{% include "common/includes/pagination.html" with page_obj=caisses_page page_param="page_caisses" extra_querystring=caisses_qs_params anchor="#tab-caisses" hx_target="#caisses-wrapper" %}

@@ -6,72 +6,100 @@
 {% block css_files %}
   <style>
     .list-group-item.active {
-    background-color: #198754 !important; /* Bootstrap success */
-    border-color: #198754 !important;
-    color: #fff !important;
-}
+      background-color: #198754 !important; /* Bootstrap success */
+      border-color: #198754 !important;
+      color: #fff !important;
+    }
   </style>
 {% endblock css_files %}
 
 {% block content %}
 <div class="container-fluid mb-4">
-    <h2 class="text-center mb-3">Configuration</h2>
-    {% include "includes/messages_alert.html" %}
+  <h2 class="text-center mb-3">Configuration</h2>
+  {% include "includes/messages_alert.html" %}
 
-    <div class="row">
-        <!-- 🔹 Menu gauche -->
-        <div class="col-md-4">
-            <div class="list-group">
-                <a href="?tab=profil#tab-profil" 
-                class="list-group-item list-group-item-action {% if active_tab == 'profil' %}active list-group-item-success{% endif %}" 
-                data-bs-toggle="tab">
-                    <i class="fa fa-store"></i> Profil
-                </a>
-                <a href="?tab=pages#tab-pages" 
-                class="list-group-item list-group-item-action {% if active_tab == 'pages' %}list-group-item-success{% endif %}" 
-                data-bs-toggle="tab">
-                    <i class="fa fa-store"></i> Boutique | Pages
-                </a>
-                <a href="?tab=caisses#tab-caisses" 
-                class="list-group-item list-group-item-action {% if active_tab == 'caisses' %}list-group-item-success{% endif %}" 
-                data-bs-toggle="tab">
-                    <i class="fa fa-cash-register"></i> Caisses
-                </a>
-                <a href="?tab=plans#tab-plans" 
-                class="list-group-item list-group-item-action {% if active_tab == 'plans' %}list-group-item-success{% endif %}" 
-                data-bs-toggle="tab">
-                    <i class="fa fa-book"></i> Plan des comptes
-                </a>
-            </div>
+  <div class="row">
+    <!-- 🔹 Menu gauche -->
+    <div class="col-md-4">
+      <div class="list-group">
+        <a href="?tab=profil#tab-profil"
+           class="list-group-item list-group-item-action {% if active_tab == 'profil' %}active list-group-item-success{% endif %}">
+          <i class="fa fa-store"></i> Profil
+        </a>
 
-        </div>
+        <a href="?tab=pages#tab-pages"
+           class="list-group-item list-group-item-action {% if active_tab == 'pages' %}active list-group-item-success{% endif %}">
+          <i class="fa fa-store"></i> Boutique | Pages
+        </a>
 
-        <!-- 🔹 Contenu droit -->
-        <div class="col-md-8">
-            <div class="tab-content">
-                <!-- Onglet Pages -->
-                <div class="tab-pane fade {% if active_tab == 'profil' %}show active{% endif %}" id="tab-profil">
-                    {% include "users/profil.html" %}
-                </div>
+        <a href="?tab=caisses#tab-caisses"
+           class="list-group-item list-group-item-action {% if active_tab == 'caisses' %}active list-group-item-success{% endif %}">
+          <i class="fa fa-cash-register"></i> Caisses
+        </a>
 
-                <div class="tab-pane fade {% if active_tab == 'pages' %}show active{% endif %}" id="tab-pages">
-                    {% include "common/includes/configuration_pages.html" %}
-                </div>
-
-                <!-- Onglet Caisses -->
-                <div class="tab-pane fade {% if active_tab == 'caisses' %}show active{% endif %}" id="tab-caisses">
-                    {% include "common/includes/configuration_casses.html" %}
-                </div>
-
-                <!-- Onglet Plan des comptes -->
-                <div class="tab-pane fade {% if active_tab == 'plans' %}show active{% endif %}" id="tab-plans">
-                    {% include "common/includes/configuration_plans.html" %}
-                </div>
-            </div>
-        </div>
+        <a href="?tab=plans#tab-plans"
+           class="list-group-item list-group-item-action {% if active_tab == 'plans' %}active list-group-item-success{% endif %}">
+          <i class="fa fa-book"></i> Plan des comptes
+        </a>
+      </div>
     </div>
+
+    <!-- 🔹 Contenu droit -->
+    <div class="col-md-8">
+      <div class="tab-content">
+
+        <!-- Profil -->
+        <div class="tab-pane fade {% if active_tab == 'profil' %}show active{% endif %}" id="tab-profil">
+        {% include "users/profil.html" with form=form %}
+        </div>
+
+        <!-- Pages -->
+        <div class="tab-pane fade {% if active_tab == 'pages' %}show active{% endif %}" id="tab-pages">
+          <div id="pages-wrapper">
+            {% include "common/includes/configuration_pages.html" with pages=pages_page %}
+          </div>
+          
+        </div>
+
+        <!-- Caisses -->
+        <div class="tab-pane fade {% if active_tab == 'caisses' %}show active{% endif %}" id="tab-caisses">
+          <div id="caisses-wrapper">
+            {% include "common/includes/configuration_casses.html" with caisses=caisses_page %}
+          </div>
+          
+        </div>
+
+        <!-- Plans -->
+        <div class="tab-pane fade {% if active_tab == 'plans' %}show active{% endif %}" id="tab-plans">
+          <div id="plans-wrapper">
+            {% include "common/includes/configuration_plans.html" with plans=plans_page %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<script>
+  (function () {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (!tab) return;
+
+    // Active le lien de menu correspondant
+    document.querySelectorAll('.list-group a').forEach(a => {
+      a.classList.remove('active');
+      if (a.href.includes(`tab=${tab}`)) a.classList.add('active');
+    });
+
+    // Active le pane correspondant
+    const pane = document.getElementById(`tab-${tab}`);
+    if (pane) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('show', 'active'));
+      pane.classList.add('show', 'active');
+    }
+  })();
+</script>
+
+{% include "common/includes/configuration_ajout.html" %}
 {% endblock %}
-
-

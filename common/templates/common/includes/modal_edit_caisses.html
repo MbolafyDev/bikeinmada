@@ -1,0 +1,76 @@
+<div class="modal fade" id="editCaisseModal{{ caisse.id }}" tabindex="-1" aria-labelledby="editCaisseLabel{{ caisse.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'modifier_caisse' caisse.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="editCaisseLabel{{ caisse.id }}">
+            <i class="fa fa-edit me-1"></i> Modifier la caisse
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="caisseNom{{ caisse.id }}" class="form-label">Nom <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="caisseNom{{ caisse.id }}" name="nom" value="{{ caisse.nom }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="caisseResponsable{{ caisse.id }}" class="form-label">Responsable <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="caisseResponsable{{ caisse.id }}" name="responsable" value="{{ caisse.responsable }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="caisseSolde{{ caisse.id }}" class="form-label">Solde initial (Ar)</label>
+            <input type="number" class="form-control text-end" id="caisseSolde{{ caisse.id }}" name="solde_initial"
+                   value="{{ caisse.solde_initial|default:0 }}" step="1" min="0" inputmode="numeric">
+            <div class="form-text">Laissez 0 si inconnu.</div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-primary" {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-save me-1"></i> Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# --- Modal : Confirmer la suppression --- #}
+<div class="modal fade" id="confirmDeleteCaisseModal{{ caisse.id }}" tabindex="-1" aria-labelledby="confirmDeleteCaisseLabel{{ caisse.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'supprimer_caisse' caisse.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title text-danger" id="confirmDeleteCaisseLabel{{ caisse.id }}">
+            <i class="fa fa-triangle-exclamation me-1"></i> Supprimer la caisse
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="mb-0">
+            Voulez-vous vraiment supprimer la caisse
+            <strong>{{ caisse.nom }}</strong> ?
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-danger" {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-trash me-1"></i> Supprimer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

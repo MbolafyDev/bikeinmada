@@ -55,6 +55,8 @@
     {% endif %}
 </div>
 
-{% include "common/includes/configuration_ajout.html" %}
+{% include "common/includes/pagination.html" with page_obj=pages_page page_param="page_pages" extra_querystring=pages_qs_params anchor="#tab-pages" hx_target="#pages-wrapper" %}
+
+
 
 

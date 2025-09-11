@@ -1,0 +1,68 @@
+{# includes/pagination_config.html #}
+{# Reçoit: page_obj, page_param, extra_querystring, anchor #}
+{% if page_obj and page_obj.has_other_pages %}
+<nav class="mt-2" aria-label="Pagination">
+  <ul class="pagination justify-content-center">
+
+    {# Premier #}
+    {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?{{ page_param }}=1{% if extra_querystring %}&{{ extra_querystring }}{% endif %}{{ anchor|default:'' }}">
+          <i class="fas fa-angle-double-left" title="Premier"></i>
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">
+        <i class="fas fa-angle-double-left"></i>
+      </span></li>
+    {% endif %}
+
+    {# Précédent #}
+    {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?{{ page_param }}={{ page_obj.previous_page_number }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}{{ anchor|default:'' }}">
+          <i class="fas fa-angle-left" title="Précédent"></i>
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">
+        <i class="fas fa-angle-left"></i>
+      </span></li>
+    {% endif %}
+
+    {# Numéro courant #}
+    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+
+    {# Suivant #}
+    {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?{{ page_param }}={{ page_obj.next_page_number }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}{{ anchor|default:'' }}">
+          <i class="fas fa-angle-right" title="Suivant"></i>
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">
+        <i class="fas fa-angle-right"></i>
+      </span></li>
+    {% endif %}
+
+    {# Dernier #}
+    {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?{{ page_param }}={{ page_obj.paginator.num_pages }}{% if extra_querystring %}&{{ extra_querystring }}{% endif %}{{ anchor|default:'' }}">
+          <i class="fas fa-angle-double-right" title="Dernier"></i>
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">
+        <i class="fas fa-angle-double-right"></i>
+      </span></li>
+    {% endif %}
+
+  </ul>
+</nav>
+{% endif %}

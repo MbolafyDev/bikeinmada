@@ -1,6 +1,6 @@
 <div class="mb-3">
     <h4>Plan des comptes</h4>
-    <button class="btn btn-primary my-2" data-bs-toggle="modal" data-bs-target="#modalPlan" {% if not is_admin %}disabled{% endif %}>
+    <button class="btn btn-success my-2" data-bs-toggle="modal" data-bs-target="#modalPlan" {% if not is_admin %}disabled{% endif %}>
         <i class="fa fa-plus"></i> Ajouter un compte
     </button>
 
@@ -41,3 +41,5 @@
     <div class="alert alert-info">Aucun compte enregistré.</div>
     {% endif %}
 </div>
+
+{% include "common/includes/pagination.html" with page_obj=plans_page page_param="page_plans" extra_querystring=plans_qs_params anchor="#tab-plans" hx_target="#plans-wrapper" %}

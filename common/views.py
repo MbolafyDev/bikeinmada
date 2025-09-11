@@ -7,6 +7,24 @@ from users.forms import ProfilForm
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.core.paginator import Paginator
+
+def _redir_to_next_or(default_response, request):
+  
+    nxt = request.POST.get('next')
+    if nxt:
+        return HttpResponseRedirect(nxt)
+    return default_response
+
+def _redir_pages():
+    return HttpResponseRedirect(f"{reverse('configuration')}?tab=pages#tab-pages")
+
+def _redir_caisses():
+    return HttpResponseRedirect(f"{reverse('configuration')}?tab=caisses#tab-caisses")
+
+def _redir_plans():
+    return HttpResponseRedirect(f"{reverse('configuration')}?tab=plans#tab-plans")
+
 
 @login_required
 @admin_required
@@ -14,25 +32,55 @@ def configuration_view(request):
     active_tab = request.GET.get('tab', 'profil')
     form = ProfilForm(instance=request.user)
 
-    pages = Pages.objects.all().order_by('nom')
-    caisses = Caisse.objects.all()
-    plans = PlanDesComptes.objects.all().order_by('compte_numero')
+    # Querysets
+    pages_qs   = Pages.objects.all().order_by('nom')
+    caisses_qs = Caisse.objects.all().order_by('nom')
+    plans_qs   = PlanDesComptes.objects.all().order_by('compte_numero')
 
-    is_admin = True
+    # Tailles par page (avec valeurs par défaut)
+    per_pages   = int(request.GET.get('pp_pages', 3))
+    per_caisses = int(request.GET.get('pp_caisses', 3))
+    per_plans   = int(request.GET.get('pp_plans', 3))
+
+    # Paginators
+    pages_p   = Paginator(pages_qs, per_pages)
+    caisses_p = Paginator(caisses_qs, per_caisses)
+    plans_p   = Paginator(plans_qs, per_plans)
+
+    # ✅ Accepte aussi ?page=... pour l'onglet actif (fallback si page_X non fourni)
+    generic_page = request.GET.get('page')
+
+    pages_num   = request.GET.get('page_pages')   or (generic_page if active_tab == 'pages'   else 1)
+    caisses_num = request.GET.get('page_caisses') or (generic_page if active_tab == 'caisses' else 1)
+    plans_num   = request.GET.get('page_plans')   or (generic_page if active_tab == 'plans'   else 1)
+
+    # Page objects
+    pages_page   = pages_p.get_page(pages_num)
+    caisses_page = caisses_p.get_page(caisses_num)
+    plans_page   = plans_p.get_page(plans_num)
+
+    # QS minimales pour rester sur le bon onglet
+    pages_qs_params   = "tab=pages"
+    caisses_qs_params = "tab=caisses"
+    plans_qs_params   = "tab=plans"
 
     return render(request, 'common/configuration.html', {
-        'user': request.user, 
+        'user': request.user,
         'form': form,
-        'pages': pages,
-        'caisses': caisses,
-        'plans': plans,
         'type_choices': Pages.TYPE_CHOICES,
         'active_tab': active_tab,
-        "is_admin": is_admin,
-    })
+        'is_admin': True,
 
-def _redir_pages():
-    return HttpResponseRedirect(f"{reverse('configuration')}?tab=pages")
+        # objets paginés
+        'pages_page': pages_page,
+        'caisses_page': caisses_page,
+        'plans_page': plans_page,
+
+        # querystrings pour la pagination
+        'pages_qs_params': pages_qs_params,
+        'caisses_qs_params': caisses_qs_params,
+        'plans_qs_params': plans_qs_params,
+    })
 
 @login_required
 @admin_required
@@ -82,7 +130,8 @@ def ajouter_caisse(request):
         responsable=request.POST['responsable'],
         solde_initial=request.POST.get('solde_initial', 0)
     )
-    return redirect('configuration')
+    messages.success(request, "Caisse ajoutée avec succès.")
+    return _redir_to_next_or(_redir_caisses(), request)
 
 @login_required
 @admin_required
@@ -93,15 +142,18 @@ def modifier_caisse(request, pk):
     caisse.responsable = request.POST.get("responsable")
     caisse.solde_initial = request.POST.get("solde_initial", 0)
     caisse.save()
-    return redirect('configuration')
+    messages.success(request, f"Caisse « {caisse.nom} » modifiée.")
+    return _redir_to_next_or(_redir_caisses(), request)
 
 @login_required
 @admin_required
 @require_POST
 def supprimer_caisse(request, pk):
     caisse = get_object_or_404(Caisse, pk=pk)
+    nom = caisse.nom
     caisse.delete()
-    return redirect('configuration')
+    messages.success(request, f"Caisse « {nom} » supprimée.")
+    return _redir_to_next_or(_redir_caisses(), request)
 
 @login_required
 @admin_required
@@ -111,7 +163,8 @@ def ajouter_plan(request):
         compte_numero=request.POST['compte_numero'],
         libelle=request.POST['libelle']
     )
-    return redirect('configuration')
+    messages.success(request, "Plan ajoutée avec succès.")
+    return _redir_to_next_or(_redir_plans(), request)
 
 @login_required
 @admin_required
