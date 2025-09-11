@@ -1,0 +1,20 @@
+{# ventes/includes/commandes_list_wrapper.html #}
+{% load static nombre %}
+
+<div id="commandes-table-wrapper"
+     hx-get="{% url 'liste_commandes_partial' %}?{{ request.GET.urlencode }}"
+     hx-target="#commandes-table-wrapper"
+     hx-swap="outerHTML">
+
+  <div class="d-none d-lg-block">
+    {% if display_mode == 'cards' %}
+      {% include "ventes/includes/commandes_cards.html" with carousel_scope="lg" %}
+    {% else %}
+      {% include "ventes/includes/commandes_table.html" %}
+    {% endif %}
+  </div>
+
+  <div class="d-lg-none">
+    {% include "ventes/includes/commandes_cards.html" with carousel_scope="sm" %}
+  </div>
+</div>

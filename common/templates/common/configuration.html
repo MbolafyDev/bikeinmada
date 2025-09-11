@@ -47,6 +47,11 @@
         Liste des livreurs
         </a>
 
+        <!-- Lieux et frais -->
+         <a href="{% url 'configuration' %}?tab=frais#tab-frais" class="list-group-item list-group-item-action  {% if active_tab == 'frais' %}active list-group-item-success{% endif %}">
+        Lieux et frais
+        </a>
+
       </div>
     </div>
 
@@ -87,6 +92,10 @@
         {% include "livraison/liste_livreurs.html" %}
         </div>
 
+        <!-- lieu et frais -->
+        <div class="tab-pane fade {% if active_tab == 'frais' %}show active{% endif %}" id="tab-frais">
+                {% include "livraison/frais_livraison.html" %}
+        </div>
 
       </div>
     </div>

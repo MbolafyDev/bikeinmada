@@ -1,9 +1,6 @@
-{% extends 'base.html' %}
+
 {% load nombre %}
 
-{% block title %}Lieux et frais de livraison{% endblock %}
-
-{% block content %}
 <div class="container mb-2 mt-4">
   <h2 class="text-center">Lieux et frais de livraison</h2>
 
@@ -167,5 +164,3 @@
     fraisField.value = defaultFrais[selectedCategorie] || '';
   });
 </script>
-
-{% endblock %}

@@ -28,7 +28,8 @@ INSTALLED_APPS = [
     'caisses',
     'statistiques',
     'service',
-    'pwa'
+    'pwa',
+    'configuration'
 ]
 
 MIDDLEWARE = [

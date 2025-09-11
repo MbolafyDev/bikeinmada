@@ -1,203 +1,231 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
-from common.decorators import admin_required
-from .models import Pages, Caisse, PlanDesComptes
-from users.forms import ProfilForm
-from django.contrib import messages
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from django.core.paginator import Paginator
-from livraison.models import Livreur
-from livraison.forms import LivreurForm
+# from django.shortcuts import render, redirect, get_object_or_404
+# from django.views.decorators.http import require_POST
+# from django.contrib.auth.decorators import login_required
+# from common.decorators import admin_required
+# from .models import Pages, Caisse, PlanDesComptes
+# from users.forms import ProfilForm
+# from django.contrib import messages
+# from django.http import HttpResponseRedirect, QueryDict
+# from django.urls import reverse
+# from django.core.paginator import Paginator
+# from livraison.models import Livreur, Livraison, CATEGORIE_CHOIX
+# from livraison.forms import LivreurForm
 
-def _redir_to_next_or(default_response, request):
+# def _redir_to_next_or(default_response, request):
   
-    nxt = request.POST.get('next')
-    if nxt:
-        return HttpResponseRedirect(nxt)
-    return default_response
+#     nxt = request.POST.get('next')
+#     if nxt:
+#         return HttpResponseRedirect(nxt)
+#     return default_response
 
-def _redir_pages():
-    return HttpResponseRedirect(f"{reverse('configuration')}?tab=pages#tab-pages")
+# def _redir_pages():
+#     return HttpResponseRedirect(f"{reverse('configuration')}?tab=pages#tab-pages")
 
-def _redir_caisses():
-    return HttpResponseRedirect(f"{reverse('configuration')}?tab=caisses#tab-caisses")
+# def _redir_caisses():
+#     return HttpResponseRedirect(f"{reverse('configuration')}?tab=caisses#tab-caisses")
 
-def _redir_plans():
-    return HttpResponseRedirect(f"{reverse('configuration')}?tab=plans#tab-plans")
+# def _redir_plans():
+#     return HttpResponseRedirect(f"{reverse('configuration')}?tab=plans#tab-plans")
 
-@login_required
-@admin_required
-def configuration_view(request):
-    active_tab = request.GET.get('tab', 'profil')
-    form = ProfilForm(instance=request.user)
+# @login_required
+# @admin_required
+# def configuration_view(request):
+#     active_tab = request.GET.get('tab', 'profil')
+#     form = ProfilForm(instance=request.user)
 
-    # Querysets
-    pages_qs   = Pages.objects.all().order_by('nom')
-    caisses_qs = Caisse.objects.all().order_by('nom')
-    plans_qs   = PlanDesComptes.objects.all().order_by('compte_numero')
+#     # ---------- Querysets des autres onglets ----------
+#     pages_qs    = Pages.objects.all().order_by('nom')
+#     caisses_qs  = Caisse.objects.all().order_by('nom')
+#     plans_qs    = PlanDesComptes.objects.all().order_by('compte_numero')
+#     livreurs_qs = Livreur.objects.all().order_by('nom')
 
-    livreurs_qs = Livreur.objects.all().order_by('nom')
+#     # ---------- Tailles par page ----------
+#     per_pages     = int(request.GET.get('pp_pages', 3))
+#     per_caisses   = int(request.GET.get('pp_caisses', 3))
+#     per_plans     = int(request.GET.get('pp_plans', 3))
+#     per_livreurs  = int(request.GET.get('pp_livreurs', 3))
+#     per_frais     = int(request.GET.get('pp_frais', 10))
 
-    # Tailles par page (avec valeurs par défaut)
-    per_pages   = int(request.GET.get('pp_pages', 3))
-    per_caisses = int(request.GET.get('pp_caisses', 3))
-    per_plans   = int(request.GET.get('pp_plans', 3))
-    per_livreurs  = int(request.GET.get('pp_livreurs', 3))
+#     # ---------- Paginators ----------
+#     pages_p    = Paginator(pages_qs, per_pages)
+#     caisses_p  = Paginator(caisses_qs, per_caisses)
+#     plans_p    = Paginator(plans_qs, per_plans)
+#     livreurs_p = Paginator(livreurs_qs, per_livreurs)
 
-    # Paginators
-    pages_p   = Paginator(pages_qs, per_pages)
-    caisses_p = Paginator(caisses_qs, per_caisses)
-    plans_p   = Paginator(plans_qs, per_plans)
-    livreurs_p  = Paginator(livreurs_qs, per_livreurs)
+#     generic_page = request.GET.get('page')
 
-    # ✅ Accepte aussi ?page=... pour l'onglet actif (fallback si page_X non fourni)
-    generic_page = request.GET.get('page')
+#     pages_num    = request.GET.get('page_pages')    or (generic_page if active_tab == 'pages'    else 1)
+#     caisses_num  = request.GET.get('page_caisses')  or (generic_page if active_tab == 'caisses'  else 1)
+#     plans_num    = request.GET.get('page_plans')    or (generic_page if active_tab == 'plans'    else 1)
+#     livreurs_num = request.GET.get('page_livreurs') or (generic_page if active_tab == 'livreurs' else 1)
 
-    pages_num   = request.GET.get('page_pages')   or (generic_page if active_tab == 'pages'   else 1)
-    caisses_num = request.GET.get('page_caisses') or (generic_page if active_tab == 'caisses' else 1)
-    plans_num   = request.GET.get('page_plans')   or (generic_page if active_tab == 'plans'   else 1)
-    livreurs_num  = request.GET.get('page_livreurs')  or (generic_page if active_tab == 'livreurs'  else 1)
+#     pages_page    = pages_p.get_page(pages_num)
+#     caisses_page  = caisses_p.get_page(caisses_num)
+#     plans_page    = plans_p.get_page(plans_num)
+#     livreurs_page = livreurs_p.get_page(livreurs_num)
 
-    # Page objects
-    pages_page   = pages_p.get_page(pages_num)
-    caisses_page = caisses_p.get_page(caisses_num)
-    plans_page   = plans_p.get_page(plans_num)
-    livreurs_page  = livreurs_p.get_page(livreurs_num)
+#     lieu_recherche   = (request.GET.get('lieu', '') or '').strip()
+#     categorie_filtre = (request.GET.get('categorie', '') or '').strip()
 
-    # QS minimales pour rester sur le bon onglet
-    pages_qs_params   = "tab=pages"
-    caisses_qs_params = "tab=caisses"
-    plans_qs_params   = "tab=plans"
-    livreurs_qs_params  = "tab=livreurs"
+#     frais_qs = Livraison.objects.all()
+#     if lieu_recherche:
+#         frais_qs = frais_qs.filter(lieu__icontains=lieu_recherche)
+#     if categorie_filtre:
+#         frais_qs = frais_qs.filter(categorie=categorie_filtre)
+#     frais_qs = frais_qs.order_by('lieu')
 
-    livreur_form = LivreurForm()
+#     frais_p = Paginator(frais_qs, per_frais)
+ 
+#     frais_page_num = request.GET.get('page') if active_tab == 'frais' else 1
+#     frais_page = frais_p.get_page(frais_page_num)
 
-    return render(request, 'common/configuration.html', {
-        'user': request.user,
-        'form': form,
-        'type_choices': Pages.TYPE_CHOICES,
-        'active_tab': active_tab,
-        'is_admin': True,
+#     params = request.GET.copy()
+#     params['tab'] = 'frais'
 
-        # objets paginés
-        'pages_page': pages_page,
-        'caisses_page': caisses_page,
-        'plans_page': plans_page,
+#     clean_params = QueryDict(mutable=True)
+#     for key, values in params.lists():
+#         if key == 'page':
+#             continue
+#         clean_values = [v for v in values if (v or '').strip()]
+#         if clean_values:
+#             clean_params.setlist(key, clean_values)
+#     frais_extra_qs = '&' + clean_params.urlencode() if clean_params else ''
 
-        'livreurs_page': livreurs_page,
-        'livreur_form': livreur_form,
-        'livreurs': livreurs_page.object_list,
+#     pages_qs_params    = "tab=pages"
+#     caisses_qs_params  = "tab=caisses"
+#     plans_qs_params    = "tab=plans"
+#     livreurs_qs_params = "tab=livreurs"
 
-        # querystrings pour la pagination
-        'pages_qs_params': pages_qs_params,
-        'caisses_qs_params': caisses_qs_params,
-        'plans_qs_params': plans_qs_params,
-        'livreurs_qs_params': livreurs_qs_params,
-    })
+#     livreur_form = LivreurForm()
 
-@login_required
-@admin_required
-@require_POST
-def ajouter_page(request):
-    page = Pages.objects.create(
-        nom=request.POST.get('nom', '').strip(),
-        contact=request.POST.get('contact', '').strip(),
-        lien=request.POST.get('lien') or None,
-        logo=request.FILES.get('logo'),
-        type=request.POST.get('type') or 'VENTE'
-    )
-    messages.success(request, f"Page « {page.nom} » ajoutée avec succès.")
-    return _redir_pages()
+#     return render(request, 'common/configuration.html', {
+#         'user': request.user,
+#         'form': form,
+#         'type_choices': Pages.TYPE_CHOICES,
+#         'active_tab': active_tab,
+#         'is_admin': True,
 
-@login_required
-@admin_required
-@require_POST
-def modifier_page(request, pk):
-    page = get_object_or_404(Pages, pk=pk)
-    page.nom = request.POST.get("nom", page.nom).strip()
-    page.contact = request.POST.get("contact", page.contact).strip()
-    page.lien = request.POST.get("lien") or None
-    page.type = request.POST.get("type") or page.type
-    if 'logo' in request.FILES:
-        page.logo = request.FILES['logo']
-    page.save()
-    messages.success(request, f"Page « {page.nom} » modifiée avec succès.")
-    return _redir_pages()
+#         'pages_page': pages_page,
+#         'caisses_page': caisses_page,
+#         'plans_page': plans_page,
 
-@login_required
-@admin_required
-@require_POST
-def supprimer_page(request, pk):
-    page = get_object_or_404(Pages, pk=pk)
-    nom = page.nom
-    page.delete()
-    messages.success(request, f"Page « {nom} » supprimée.")
-    return _redir_pages()
+#         'livreurs_page': livreurs_page,
+#         'livreur_form': livreur_form,
+#         'livreurs': livreurs_page.object_list,
 
-@login_required
-@admin_required
-@require_POST
-def ajouter_caisse(request):
-    Caisse.objects.create(
-        nom=request.POST['nom'],
-        responsable=request.POST['responsable'],
-        solde_initial=request.POST.get('solde_initial', 0)
-    )
-    messages.success(request, "Caisse ajoutée avec succès.")
-    return _redir_to_next_or(_redir_caisses(), request)
+#         'pages_qs_params': pages_qs_params,
+#         'caisses_qs_params': caisses_qs_params,
+#         'plans_qs_params': plans_qs_params,
+#         'livreurs_qs_params': livreurs_qs_params,
 
-@login_required
-@admin_required
-@require_POST
-def modifier_caisse(request, pk):
-    caisse = get_object_or_404(Caisse, pk=pk)
-    caisse.nom = request.POST.get("nom")
-    caisse.responsable = request.POST.get("responsable")
-    caisse.solde_initial = request.POST.get("solde_initial", 0)
-    caisse.save()
-    messages.success(request, f"Caisse « {caisse.nom} » modifiée.")
-    return _redir_to_next_or(_redir_caisses(), request)
+#         'frais_page_obj': frais_page, 
+#         'categories': CATEGORIE_CHOIX,
+#         'lieu_recherche': lieu_recherche,
+#         'categorie_filtre': categorie_filtre,
+#         'frais_extra_querystring': frais_extra_qs,
+#     })
 
-@login_required
-@admin_required
-@require_POST
-def supprimer_caisse(request, pk):
-    caisse = get_object_or_404(Caisse, pk=pk)
-    nom = caisse.nom
-    caisse.delete()
-    messages.success(request, f"Caisse « {nom} » supprimée.")
-    return _redir_to_next_or(_redir_caisses(), request)
+# @login_required
+# @admin_required
+# @require_POST
+# def ajouter_page(request):
+#     page = Pages.objects.create(
+#         nom=request.POST.get('nom', '').strip(),
+#         contact=request.POST.get('contact', '').strip(),
+#         lien=request.POST.get('lien') or None,
+#         logo=request.FILES.get('logo'),
+#         type=request.POST.get('type') or 'VENTE'
+#     )
+#     messages.success(request, f"Page « {page.nom} » ajoutée avec succès.")
+#     return _redir_pages()
 
-@login_required
-@admin_required
-@require_POST
-def ajouter_plan(request):
-    PlanDesComptes.objects.create(
-        compte_numero=request.POST['compte_numero'],
-        libelle=request.POST['libelle']
-    )
-    messages.success(request, "Compte ajouté avec succès.")
-    return _redir_to_next_or(_redir_plans(), request)
+# @login_required
+# @admin_required
+# @require_POST
+# def modifier_page(request, pk):
+#     page = get_object_or_404(Pages, pk=pk)
+#     page.nom = request.POST.get("nom", page.nom).strip()
+#     page.contact = request.POST.get("contact", page.contact).strip()
+#     page.lien = request.POST.get("lien") or None
+#     page.type = request.POST.get("type") or page.type
+#     if 'logo' in request.FILES:
+#         page.logo = request.FILES['logo']
+#     page.save()
+#     messages.success(request, f"Page « {page.nom} » modifiée avec succès.")
+#     return _redir_pages()
 
-@login_required
-@admin_required
-@require_POST
-def modifier_plan(request, pk):
-    plan = get_object_or_404(PlanDesComptes, pk=pk)
-    plan.compte_numero = request.POST.get("compte_numero", plan.compte_numero)
-    plan.libelle = request.POST.get("libelle", plan.libelle)
-    plan.save()
-    messages.success(request, f"Compte « {plan.compte_numero} – {plan.libelle} » modifié.")
-    return _redir_to_next_or(_redir_plans(), request)
+# @login_required
+# @admin_required
+# @require_POST
+# def supprimer_page(request, pk):
+#     page = get_object_or_404(Pages, pk=pk)
+#     nom = page.nom
+#     page.delete()
+#     messages.success(request, f"Page « {nom} » supprimée.")
+#     return _redir_pages()
 
-@login_required
-@admin_required
-@require_POST
-def supprimer_plan(request, pk):
-    plan = get_object_or_404(PlanDesComptes, pk=pk)
-    num, lib = plan.compte_numero, plan.libelle
-    plan.delete()
-    messages.success(request, f"Compte « {num} – {lib} » supprimé.")
-    return _redir_to_next_or(_redir_plans(), request)
+# @login_required
+# @admin_required
+# @require_POST
+# def ajouter_caisse(request):
+#     Caisse.objects.create(
+#         nom=request.POST['nom'],
+#         responsable=request.POST['responsable'],
+#         solde_initial=request.POST.get('solde_initial', 0)
+#     )
+#     messages.success(request, "Caisse ajoutée avec succès.")
+#     return _redir_to_next_or(_redir_caisses(), request)
+
+# @login_required
+# @admin_required
+# @require_POST
+# def modifier_caisse(request, pk):
+#     caisse = get_object_or_404(Caisse, pk=pk)
+#     caisse.nom = request.POST.get("nom")
+#     caisse.responsable = request.POST.get("responsable")
+#     caisse.solde_initial = request.POST.get("solde_initial", 0)
+#     caisse.save()
+#     messages.success(request, f"Caisse « {caisse.nom} » modifiée.")
+#     return _redir_to_next_or(_redir_caisses(), request)
+
+# @login_required
+# @admin_required
+# @require_POST
+# def supprimer_caisse(request, pk):
+#     caisse = get_object_or_404(Caisse, pk=pk)
+#     nom = caisse.nom
+#     caisse.delete()
+#     messages.success(request, f"Caisse « {nom} » supprimée.")
+#     return _redir_to_next_or(_redir_caisses(), request)
+
+# @login_required
+# @admin_required
+# @require_POST
+# def ajouter_plan(request):
+#     PlanDesComptes.objects.create(
+#         compte_numero=request.POST['compte_numero'],
+#         libelle=request.POST['libelle']
+#     )
+#     messages.success(request, "Compte ajouté avec succès.")
+#     return _redir_to_next_or(_redir_plans(), request)
+
+# @login_required
+# @admin_required
+# @require_POST
+# def modifier_plan(request, pk):
+#     plan = get_object_or_404(PlanDesComptes, pk=pk)
+#     plan.compte_numero = request.POST.get("compte_numero", plan.compte_numero)
+#     plan.libelle = request.POST.get("libelle", plan.libelle)
+#     plan.save()
+#     messages.success(request, f"Compte « {plan.compte_numero} – {plan.libelle} » modifié.")
+#     return _redir_to_next_or(_redir_plans(), request)
+
+# @login_required
+# @admin_required
+# @require_POST
+# def supprimer_plan(request, pk):
+#     plan = get_object_or_404(PlanDesComptes, pk=pk)
+#     num, lib = plan.compte_numero, plan.libelle
+#     plan.delete()
+#     messages.success(request, f"Compte « {num} – {lib} » supprimé.")
+#     return _redir_to_next_or(_redir_plans(), request)

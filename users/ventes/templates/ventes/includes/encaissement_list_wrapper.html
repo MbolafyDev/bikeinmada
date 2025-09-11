@@ -1,0 +1,16 @@
+{# ventes/includes/ventes_list_wrapper.html #}
+{% load nombre %}
+
+{# Sur grand écran : table OU cartes selon display_mode #}
+<div class="d-none d-lg-block">
+  {% if display_mode == 'cards' %}
+    {% include "ventes/includes/encaissement_cards.html" with carousel_scope="lg" %}
+  {% else %}
+    {% include "ventes/includes/encaissement_table.html" %}
+  {% endif %}
+</div>
+
+{# Sur mobile : toujours cartes #}
+<div class="d-lg-none">
+  {% include "ventes/includes/encaissement_cards.html" with carousel_scope="sm" %}
+</div>

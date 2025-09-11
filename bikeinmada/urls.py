@@ -35,6 +35,7 @@ urlpatterns = [
     path('livraison/', include('livraison.urls')),
     path('statistiques/', include('statistiques.urls')),
     path('services/', include('service.urls')),
+    path('configuration/', include('configuration.urls')),
 
     # Routes PWA à la racine du domaine
     path("manifest.webmanifest", pwa_views.ManifestView.as_view(), name="manifest"),

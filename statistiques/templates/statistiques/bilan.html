@@ -1,54 +1,45 @@
-{% extends "base.html" %}
-{% load static %}
 {% load nombre %}
+<div class="container mb-2 px-0">
+  <h3 class="mb-3">Bilan</h3>
 
-{% block title %}Bilan{% endblock %}
-
-{% block content %}
-<div class="container mb2 mt-4">
-
-    <h2 class="text-center mb-4">Bilan</h2>
-
+  <div class="table-responsive">
     <table class="table table-bordered table-striped align-middle">
-        <thead class="table-success">
-            <tr>
-                <th colspan="2">Actifs</th>
-                <th colspan="2">Passifs</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Immobilisations</td>
-                <td class="text-end">{{ immobilisations|intpoint }}</td>
-                <td>Capital</td>
-                <td class="text-end">{{ capital|intpoint }}</td>
-            </tr>
-            <tr>
-                <td>Stocks et en cours</td>
-                <td class="text-end">{{ stocks|intpoint }}</td>
-                <td>Résultat</td>
-                <td class="text-end">{{ resultat|intpoint }}</td>
-            </tr>
-            <tr>
-                <td>Trésorerie (caisse)</td>
-                <td class="text-end">{{ tresorerie|intpoint }}</td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Versements (marge)</td>
-                <td class="text-end">{{ versements|intpoint }}</td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr style="font-weight: bold;">
-                <td>Total Actifs</td>
-                <td class="text-end">{{ total_actif|intpoint }}</td>
-                <td>Total Passifs</td>
-                <td class="text-end">{{ total_passif|intpoint }}</td>
-            </tr>
-        </tbody>
+      <thead class="table-success">
+        <tr>
+          <th colspan="2">Actifs</th>
+          <th colspan="2">Passifs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Immobilisations</td>
+          <td class="text-end">{{ immobilisations|intpoint }}</td>
+          <td>Capital</td>
+          <td class="text-end">{{ capital|intpoint }}</td>
+        </tr>
+        <tr>
+          <td>Stocks et en cours</td>
+          <td class="text-end">{{ stocks|intpoint }}</td>
+          <td>Résultat</td>
+          <td class="text-end">{{ resultat|intpoint }}</td>
+        </tr>
+        <tr>
+          <td>Trésorerie (caisse)</td>
+          <td class="text-end">{{ tresorerie|intpoint }}</td>
+          <td></td><td></td>
+        </tr>
+        <tr>
+          <td>Versements (marge)</td>
+          <td class="text-end">{{ versements|intpoint }}</td>
+          <td></td><td></td>
+        </tr>
+        <tr class="fw-bold">
+          <td>Total Actifs</td>
+          <td class="text-end">{{ total_actif|intpoint }}</td>
+          <td>Total Passifs</td>
+          <td class="text-end">{{ total_passif|intpoint }}</td>
+        </tr>
+      </tbody>
     </table>
-
+  </div>
 </div>
-{% endblock %}

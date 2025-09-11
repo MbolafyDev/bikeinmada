@@ -1,172 +1,159 @@
-{% extends 'base.html' %}
-{% load static %}
-{% load nombre %}
-{% load extras %}
-{% load tz %}
+{% load nombre extras tz %}
+<div class="card shadow-sm">
+  <div class="card-header bg-success text-white">Rapport de vente</div>
+  <div class="card-body">
+    <form method="get" class="row gy-3 gx-2 mb-4" hx-get="{% url 'statistiques_section' 'rapport' %}" hx-target="#statsContent" hx-swap="innerHTML" hx-push-url="true">
+      <div class="col-6 col-md-2">
+        <label class="form-label">Année</label>
+        <select name="year" class="form-select">
+          <option value="" {% if not year %}selected{% endif %}>Tous</option>
+          {% for y in years %}
+            <option value="{{ y }}" {% if year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-{% block title %}Rapport de vente{% endblock %}
+      <div class="col-6 col-md-2">
+        <label class="form-label">Mois</label>
+        <select name="month" class="form-select">
+          <option value="" {% if not month %}selected{% endif %}>Tous</option>
+          {% for val, label in months %}
+            <option value="{{ val }}" {% if month == val %}selected{% endif %}>{{ val }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-{% block content %}
-<div class="container mb-2 mt-4">
-  <h2 class="text-center mb-4">Rapport de vente</h2>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Articles</label>
+        <select name="article" class="form-select">
+          <option value="" {% if not article %}selected{% endif %}>Tous les articles</option>
+          {% for a in articles %}
+            <option value="{{ a }}" {% if article == a %}selected{% endif %}>{{ a }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-  <form method="get" class="row gy-3 gx-2 mb-4">
-    <div class="col-6 col-md-2">
-      <label class="form-label">Année</label>
-      <select name="year" class="form-select">
-        <option value="" {% if not year %}selected{% endif %}>Tous</option>
-        {% for y in years %}
-          <option value="{{ y }}" {% if year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
-        {% endfor %}
-      </select>
-    </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label">Pages</label>
+        <select name="page" class="form-select">
+          <option value="" {% if not page %}selected{% endif %}>Toutes</option>
+          {% for p in pages %}
+            <option value="{{ p }}" {% if page == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <div class="col-6 col-md-2">
-      <label class="form-label">Mois</label>
-      <select name="month" class="form-select">
-        <option value="" {% if not month %}selected{% endif %}>Tous</option>
-        {% for val, label in months %}
-          <option value="{{ val }}" {% if month == val %}selected{% endif %}>{{ val }}</option>
-        {% endfor %}
-      </select>
-    </div>
+      <div class="col-6 col-md-2 align-self-end">
+        <button type="submit" class="btn btn-outline-success border w-100"><i class="fa fa-filter"></i> Filtrer</button>
+      </div>
+    </form>
 
-    <div class="col-12 col-md-4">
-      <label class="form-label">Articles</label>
-      <select name="article" class="form-select">
-        <option value="" {% if not article %}selected{% endif %}>Tous les articles</option>
-        {% for a in articles %}
-          <option value="{{ a }}" {% if article == a %}selected{% endif %}>{{ a }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="col-6 col-md-2">
-      <label class="form-label">Pages</label>
-      <select name="page" class="form-select">
-        <option value="" {% if not page %}selected{% endif %}>Toutes</option>
-        {% for p in pages %}
-          <option value="{{ p }}" {% if page == p %}selected{% endif %}>{{ p }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="col-6 col-md-2 align-self-end">
-      <button type="submit" class="btn btn-success w-100"><i class="fa fa-filter"></i> Filtrer</button>
-    </div>
-  </form>
-
-  <h4 class="mt-5">Ventes par articles</h4>
-
-  {% if rapport_article %}
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped align-middle">
-        <thead class="table-success text-center">
-          <tr>
-            <th>Articles</th>
-            <th>Quantité</th>
-            <th>Montant vente</th>
-            <th>Marge</th>
-            {% for page in pages %}
-              <th>{{ page }}</th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in rapport_article %}
-          <tr>
-              <td>{{ item.article__nom }}</td>
-              <td class="text-end">{{ item.total_qte }}</td>
-              <td class="text-end">{{ item.total_montant|default:0|intpoint }}</td>
-              <td class="text-end">{{ item.total_marge|default:0|intpoint }}</td>
+    <h5 class="mt-3">Ventes par articles</h5>
+    {% if rapport_article %}
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-success text-center">
+            <tr>
+              <th>Articles</th>
+              <th>Quantité</th>
+              <th>Montant vente</th>
+              <th>Marge</th>
               {% for page in pages %}
-                {% nested_dict_get marge_par_article_page item.article__nom page as marge %}
-                <td class="text-end">{{ marge|intpoint }}</td>
+                <th>{{ page }}</th>
               {% endfor %}
             </tr>
-          {% endfor %}
-          <tr class="fw-bold table-success">
-            <td class="text-center">Total</td>
-            <td class="text-end">{{ total_general_qte }}</td>
-            <td class="text-end">{{ total_general_montant|intpoint }}</td>
-            <td class="text-end">{{ total_general_marge|intpoint }}</td>
-            {% for page in pages %}
-              <td class="text-end">{{ total_par_page|get_item:page|default:0|intpoint }}</td>
+          </thead>
+          <tbody>
+            {% for item in rapport_article %}
+              <tr>
+                <td>{{ item.article__nom }}</td>
+                <td class="text-end">{{ item.total_qte }}</td>
+                <td class="text-end">{{ item.total_montant|default:0|intpoint }}</td>
+                <td class="text-end">{{ item.total_marge|default:0|intpoint }}</td>
+                {% for page in pages %}
+                  {% nested_dict_get marge_par_article_page item.article__nom page as marge %}
+                  <td class="text-end">{{ marge|intpoint }}</td>
+                {% endfor %}
+              </tr>
             {% endfor %}
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  {% else %}
-    <div class="alert alert-info">Aucune vente enregistrée pour cette période.</div>
-  {% endif %}
+            <tr class="fw-bold table-success">
+              <td class="text-center">Total</td>
+              <td class="text-end">{{ total_general_qte }}</td>
+              <td class="text-end">{{ total_general_montant|intpoint }}</td>
+              <td class="text-end">{{ total_general_marge|intpoint }}</td>
+              {% for page in pages %}
+                <td class="text-end">{{ total_par_page|get_item:page|default:0|intpoint }}</td>
+              {% endfor %}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="alert alert-info">Aucune vente enregistrée pour cette période.</div>
+    {% endif %}
 
-  <h4 class="mt-5">Ventes par mois</h4>
-  {% if rapport_mois %}
-  <div class="table-responsive">
-    <table class="table table-bordered table-striped align-middle">
-      <thead class="table-success text-center">
-        <tr>
-          <th>Mois</th>
-          <th>Montant vente</th>
-          <th>Marge</th>
-          {% for page in pages %}
-            <th>{{ page }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in rapport_mois %}
-          <tr>
-            <td class="text-center">{{ item.mois }}</td>
-            <td class="text-end">{{ item.total_vente|default:0|intpoint }}</td>
-            <td class="text-end">{{ item.total_marge|default:0|intpoint }}</td>
-            {% for page in pages %}
-              <td class="text-end">
-                {{ marge_par_mois_page|get_item:item.mois|get_item:page|default:0|intpoint }}
-              </td>
+    <h5 class="mt-4">Ventes par mois</h5>
+    {% if rapport_mois %}
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-success text-center">
+            <tr>
+              <th>Mois</th>
+              <th>Montant vente</th>
+              <th>Marge</th>
+              {% for page in pages %}
+                <th>{{ page }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in rapport_mois %}
+              <tr>
+                <td class="text-center">{{ item.mois }}</td>
+                <td class="text-end">{{ item.total_vente|default:0|intpoint }}</td>
+                <td class="text-end">{{ item.total_marge|default:0|intpoint }}</td>
+                {% for page in pages %}
+                  <td class="text-end">{{ marge_par_mois_page|get_item:item.mois|get_item:page|default:0|intpoint }}</td>
+                {% endfor %}
+              </tr>
             {% endfor %}
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-    <div class="alert alert-info">Aucune vente enregistrée pour cette période.</div>
-  {% endif %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="alert alert-info">Aucune vente enregistrée pour cette période.</div>
+    {% endif %}
 
-  <h4 class="mt-5">Ventes par jour</h4>
-  {% if rapport_jour %}
-  <div class="table-responsive">
-    <table class="table table-bordered table-striped align-middle">
-      <thead class="table-success text-center">
-        <tr>
-          <th>Date</th>
-          <th>Montant vente</th>
-          <th>Marge</th>
-          {% for page in pages %}
-            <th>{{ page }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in rapport_jour %}
-          <tr>
-            <td>{{ item.display_date }}</td>
-            <td class="text-end">{{ item.total_vente|default:0|intpoint }}</td>
-            <td class="text-end">{{ item.total_marge|default:0|intpoint }}</td>
-            {% for page in pages %}
-              <td class="text-end">
-                {{ marge_par_jour_page|get_item:item.date|get_item:page|default:0|intpoint }}
-              </td>
+    <h5 class="mt-4">Ventes par jour</h5>
+    {% if rapport_jour %}
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-success text-center">
+            <tr>
+              <th>Date</th>
+              <th>Montant vente</th>
+              <th>Marge</th>
+              {% for page in pages %}
+                <th>{{ page }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in rapport_jour %}
+              <tr>
+                <td>{{ item.display_date }}</td>
+                <td class="text-end">{{ item.total_vente|default:0|intpoint }}</td>
+                <td class="text-end">{{ item.total_marge|default:0|intpoint }}</td>
+                {% for page in pages %}
+                  <td class="text-end">{{ marge_par_jour_page|get_item:item.date|get_item:page|default:0|intpoint }}</td>
+                {% endfor %}
+              </tr>
             {% endfor %}
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="alert alert-info">Aucune vente enregistrée pour cette période.</div>
+    {% endif %}
   </div>
-  {% else %}
-    <div class="alert alert-info">Aucune vente enregistrée pour cette période.</div>
-  {% endif %}
 </div>
-{% endblock %}

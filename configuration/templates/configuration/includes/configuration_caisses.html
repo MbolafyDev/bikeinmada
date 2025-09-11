@@ -1,0 +1,158 @@
+{% load nombre %}
+
+<div class="d-flex align-items-center justify-content-between mb-2">
+  <h4 class="mb-0">Caisses</h4>
+  <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCaisse" {% if not is_admin %}disabled{% endif %}>
+    <i class="fa fa-plus"></i> Ajouter une caisse
+  </button>
+</div>
+
+{% if caisses %}
+  <!-- TABLEAU (lg+) -->
+  <div class="d-none d-lg-block">
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-success">
+          <tr>
+            <th>Nom</th>
+            <th>Responsable</th>
+            <th>Solde initial</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in caisses %}
+          <tr {% if c.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+            <td>{{ c.nom }}</td>
+            <td>{{ c.responsable }}</td>
+            <td class="text-end">{{ c.solde_initial|intpoint }} Ar</td>
+            <td class="text-end" style="white-space: nowrap">
+              <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editCaisseModal{{ c.id }}" {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-edit"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteCaisseModal{{ c.id }}" {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CARTES (md & petits écrans) -->
+  <div class="d-lg-none">
+    <div class="row">
+      {% for c in caisses %}
+      <div class="col-12 col-md-6 mb-3">
+        <div class="card shadow-sm h-100 {% if c.statut_publication == 'supprimé' %}opacity-75{% endif %}">
+          <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+              <h5 class="card-title text-success mb-2" {% if c.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+                {{ c.nom }}
+              </h5>
+            </div>
+            <p class="mb-1">
+              <strong>Responsable :</strong>
+              <span class="float-end">{{ c.responsable }}</span>
+            </p>
+            <p class="mb-0">
+              <strong>Solde initial :</strong>
+              <span class="float-end">{{ c.solde_initial|intpoint }} Ar</span>
+            </p>
+          </div>
+          <div class="card-footer text-end">
+            <button type="button" class="btn btn-sm btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#editCaisseModal{{ c.id }}" {% if not is_admin %}disabled{% endif %}>
+              <i class="fa fa-edit"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteCaisseModal{{ c.id }}" {% if not is_admin %}disabled{% endif %}>
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+{% else %}
+  <div class="alert alert-info">Aucune caisse enregistrée.</div>
+{% endif %}
+
+{# ---------- Modals édition / suppression (boucle séparée) ---------- #}
+{% for c in caisses %}
+<div class="modal fade" id="editCaisseModal{{ c.id }}" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'modifier_caisse' c.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Modifier Caisse</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label>Nom</label>
+          <input type="text" name="nom" class="form-control mb-2" value="{{ c.nom }}" required>
+          <label>Responsable</label>
+          <input type="text" name="responsable" class="form-control mb-2" value="{{ c.responsable }}" required>
+          <label>Solde initial</label>
+          <input type="number" name="solde_initial" class="form-control" value="{{ c.solde_initial }}">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="confirmDeleteCaisseModal{{ c.id }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'supprimer_caisse' c.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title text-danger">Confirmation de suppression</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>Supprimer la caisse <strong>{{ c.nom }}</strong> ?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger" {% if not is_admin %}disabled{% endif %}>Supprimer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{# ---------- Modal ajout Caisse ---------- #}
+<div class="modal fade" id="modalCaisse" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'ajouter_caisse' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Ajouter une caisse</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label>Nom</label>
+          <input type="text" name="nom" class="form-control mb-2" required>
+          <label>Responsable</label>
+          <input type="text" name="responsable" class="form-control mb-2" required>
+          <label>Solde initial</label>
+          <input type="number" name="solde_initial" class="form-control" value="0" min="0">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success" {% if not is_admin %}disabled{% endif %}>Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

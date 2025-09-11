@@ -13,4 +13,4 @@ class LivraisonGroupForm(forms.Form):
 class LivraisonForm(forms.ModelForm):
     class Meta:
         model = Livraison
-        fields = ['lieu', 'categorie', 'frais']
+        fields = ['lieu', 'categorie', 'frais_livraison', 'frais_livreur']

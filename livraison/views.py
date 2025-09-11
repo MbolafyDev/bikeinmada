@@ -10,24 +10,15 @@ from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
 from common.decorators import admin_required
 from common.utils import is_admin, resolve_display_mode
-from django.db.models import Q, Sum
-from .models import Livreur, Livraison, CATEGORIE_CHOIX, FRAIS_PAR_DEFAUT
+from django.db.models import Q, Sum, F, IntegerField, Value, ExpressionWrapper
+from django.db.models.functions import Coalesce
+from django.db import transaction
+from .models import Livreur, Livraison, CATEGORIE_CHOIX, FRAIS_LIVRAISON_PAR_DEFAUT, FRAIS_LIVREUR_PAR_DEFAUT
 from common.models import Caisse, PlanDesComptes
 from ventes.models import Commande, LigneCommande
 from charges.models import Charge
 from .forms import LivreurForm
 from datetime import datetime
-from django.http import HttpResponseRedirect
-
-def _redir_to_next_or(default_response, request):
-  
-    nxt = request.POST.get('next')
-    if nxt:
-        return HttpResponseRedirect(nxt)
-    return default_response
-
-def _redir_livreurs():
-    return HttpResponseRedirect(f"{reverse('configuration')}?tab=livreurs#tab-livreurs")
 
 @login_required
 def liste_livraisons(request): 
@@ -54,7 +45,7 @@ def liste_livraisons(request):
         commandes = commandes.filter(statut_livraison=selected_statut)
 
     # Pagination
-    paginator = Paginator(commandes, 20)
+    paginator = Paginator(commandes, 24)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -205,7 +196,7 @@ def planification_livraison(request):
     if date:
         commandes_qs = commandes_qs.filter(date_livraison=date)
 
-    paginator = Paginator(commandes_qs, 20)
+    paginator = Paginator(commandes_qs, 24)
     page_number = params.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -282,7 +273,6 @@ def mise_a_jour_statuts_livraisons(request):
     date_livraison = params.get('date_livraison')
     livreur_id = params.get('livreur')
     statut_livraison = params.get('statut_livraison')
-
     if 'statut_livraison' not in params:
         statut_livraison = "Planifiée"
 
@@ -295,14 +285,31 @@ def mise_a_jour_statuts_livraisons(request):
     if statut_livraison:
         commandes_qs = commandes_qs.filter(statut_livraison=statut_livraison)
 
-    commandes_qs = commandes_qs.order_by('-date_livraison')
+    # --- IMPORTANT : annotations pour éviter N+1 et pouvoir agréger ---
+    # montant_commande = SUM(lignes.prix_unitaire * lignes.quantite)
+    commandes_qs = commandes_qs.annotate(
+        montant_commande_anno=Coalesce(
+            Sum(F('lignes_commandes__prix_unitaire') * F('lignes_commandes__quantite')),
+            Value(0),
+        ),
+        total_commande_anno=ExpressionWrapper(
+            F('montant_commande_anno') + Coalesce(F('frais_livraison'), Value(0)),
+            output_field=IntegerField(),
+        ),
+    ).order_by('-date_livraison')
 
-    # Pagination
-    paginator = Paginator(commandes_qs, 20)
-    page_number = params.get("page") 
+    # --- Agrégats sur l'ensemble filtré (toutes pages) ---
+    agg = commandes_qs.aggregate(
+        total_filtre_total_commande=Coalesce(Sum('total_commande_anno'), Value(0)),
+        total_filtre_frais_livreur=Coalesce(Sum('frais_livreur'), Value(0)),
+    )
+
+    # Pagination (garder le même QS annoté)
+    paginator = Paginator(commandes_qs, 24)
+    page_number = params.get("page")
     page_obj = paginator.get_page(page_number)
 
-    # Construction d'une querystring propre pour la pagination
+    # Querystring propre pour la pagination
     clean_params = QueryDict(mutable=True)
     for key, values in params.lists():
         if key != "page":
@@ -323,83 +330,128 @@ def mise_a_jour_statuts_livraisons(request):
         'statut_livraison': statut_livraison,
         'today': today,
         'is_admin': is_admin(request.user),
+
+        # 🔢 Totaux globaux (toutes pages, avec filtres existants)
+        'total_filtre_total_commande': int(agg['total_filtre_total_commande'] or 0),
+        'total_filtre_frais_livreur': int(agg['total_filtre_frais_livreur'] or 0),
     })
 
-@login_required
 def mise_a_jour_statuts_livraisons_groupes(request):
-    if request.method == 'POST':
-        ids = request.POST.getlist('commandes')
-        action = request.POST.get('action')
-        nouvelle_date = request.POST.get('nouvelle_date')
+    if request.method != 'POST':
+        return redirect('mise_a_jour_statuts_livraisons')
 
-        if not ids:
-            messages.warning(request, "Aucune commande sélectionnée.")
+    ids = request.POST.getlist('commandes')
+    action = request.POST.get('action')
+    nouvelle_date = request.POST.get('nouvelle_date')
+
+    if not ids:
+        messages.warning(request, "Aucune commande sélectionnée.")
+        return redirect('mise_a_jour_statuts_livraisons')
+
+    commandes = Commande.objects.filter(id__in=ids)
+
+    # ---------------------------
+    # Cas simples : Annulée / Livrée
+    # ---------------------------
+    if action == 'annulée':
+        # Bloquer si une des commandes est déjà payée
+        deja_payees = list(
+            commandes.filter(statut_vente='Payée').values_list('numero_facture', flat=True)
+        )
+        if deja_payees:
+            factures = ", ".join(deja_payees)
+            messages.warning(
+                request,
+                (
+                    "Vente déjà payée pour "
+                    f"{factures} ; reportez la livraison ou supprimez d'abord l'encaissement de la vente."
+                )
+            )
             return redirect('mise_a_jour_statuts_livraisons')
 
-        commandes = Commande.objects.filter(id__in=ids)
+        # Sinon, on annule livraison ET vente
+        updated = commandes.update(statut_livraison='Annulée', statut_vente='Annulée')
+        messages.success(request, f"{updated} commande(s) annulée(s) avec succès.")
+        return redirect('mise_a_jour_statuts_livraisons')
 
-        if action == 'annulée':
-            commandes.update(statut_vente='Annulée', statut_livraison='Annulée')
-            messages.success(request, f"{commandes.count()} commande(s) annulée(s) avec succès.")
-        
-        elif action == 'livrée':
-            commandes.update(statut_livraison='Livrée')
-            messages.success(request, f"{commandes.count()} commande(s) livrée(s) avec succès")
-        
-        elif action == 'reportée':
-            if not nouvelle_date:
-                messages.warning(request, "Veuillez spécifier une nouvelle date de livraison.")
-                return redirect('mise_a_jour_statuts_livraisons')
-            
-            # Si nouvelle_date est une chaîne venant de POST, il faut convertir :
-            if isinstance(nouvelle_date, str):
-                try:
-                    nouvelle_date_obj = datetime.strptime(nouvelle_date, "%Y-%m-%d").date()
-                except ValueError:
-                    messages.error(request, "Format de date invalide.")
-                    return redirect('mise_a_jour_statuts_livraisons')
-            else:
-                nouvelle_date_obj = nouvelle_date  # déjà une date
+    if action == 'livrée':
+        # On ne touche PAS à statut_vente
+        updated = commandes.update(statut_livraison='Livrée')
+        messages.success(request, f"{updated} commande(s) livrée(s) avec succès.")
+        return redirect('mise_a_jour_statuts_livraisons')
 
-            date_formatee = nouvelle_date_obj.strftime("%d/%m/%Y")
+    # ---------------------------
+    # Cas particulier : Reportée
+    # ---------------------------
+    if action == 'reportée':
+        if not nouvelle_date:
+            messages.warning(request, "Veuillez spécifier une nouvelle date de livraison.")
+            return redirect('mise_a_jour_statuts_livraisons')
 
-            for commande in commandes:
-                # 1. Marquer la commande actuelle comme reportée
-                commande.statut_vente = 'Reportée'
+        try:
+            nouvelle_date_obj = datetime.strptime(nouvelle_date, "%Y-%m-%d").date()
+        except ValueError:
+            messages.error(request, "Format de date invalide (attendu AAAA-MM-JJ).")
+            return redirect('mise_a_jour_statuts_livraisons')
+
+        date_formatee = nouvelle_date_obj.strftime("%d/%m/%Y")
+
+        with transaction.atomic():
+            qs = (
+                commandes.select_related('client', 'page')
+                .prefetch_related('lignes_commandes')
+            )
+
+            for commande in qs:
+                statut_vente_initial = commande.statut_vente
+                remarque_initiale = (commande.remarque or "").strip()
+
+                prefix = f"Reportée au {date_formatee}"
+                if not remarque_initiale.startswith(prefix):
+                    nouvelle_remarque_existante = f"{prefix}\n{remarque_initiale}".strip()
+                else:
+                    nouvelle_remarque_existante = remarque_initiale
+
                 commande.statut_livraison = 'Reportée'
-                remarque_prefixe = f"Reportée au {date_formatee}"
-                commande.remarque = f"{remarque_prefixe}\n{commande.remarque or ''}".strip()
+                commande.remarque = nouvelle_remarque_existante
                 commande.save()
 
-                # 2. Cloner la commande
                 nouvelle_commande = Commande.objects.create(
                     client=commande.client,
                     page=commande.page,
-                    remarque=commande.remarque,
-                    statut_vente='En attente',
+                    remarque=remarque_initiale,         # pas de "Reportée..." copié
+                    statut_vente=statut_vente_initial,  # on conserve
                     statut_livraison='En attente',
                     frais_livraison=commande.frais_livraison,
-                    date_livraison=nouvelle_date,
-                    livreur=None,  # réinitialisé
+                    date_livraison=nouvelle_date_obj,
+                    livreur=None,
                     frais_livreur=commande.frais_livreur,
                     paiement_frais_livreur='Non payée'
                 )
 
-                # 3. Cloner les lignes de commande
-                for ligne in commande.lignes_commandes.all():
-                    LigneCommande.objects.create(
+                lignes = [
+                    LigneCommande(
                         commande=nouvelle_commande,
                         article=ligne.article,
                         prix_unitaire=ligne.prix_unitaire,
-                        quantite=ligne.quantite
+                        prix_achat=ligne.prix_achat,
+                        quantite=ligne.quantite,
                     )
+                    for ligne in commande.lignes_commandes.all()
+                ]
+                LigneCommande.objects.bulk_create(lignes)
 
-            messages.success(request, f"{commandes.count()} commande(s) reportée(s) au {nouvelle_date}.")
-        
-        else:
-            messages.error(request, "Action non reconnue.")
-
+        messages.success(
+            request,
+            f"{commandes.count()} commande(s) reportée(s) au {nouvelle_date_obj.strftime('%Y-%m-%d')}."
+        )
         return redirect('mise_a_jour_statuts_livraisons')
+
+    # ---------------------------
+    # Action inconnue
+    # ---------------------------
+    messages.error(request, "Action non reconnue.")
+    return redirect('mise_a_jour_statuts_livraisons')
 
 @login_required
 def liste_livreurs(request):
@@ -414,7 +466,7 @@ def ajouter_livreur(request):
         form = LivreurForm(request.POST)
         if form.is_valid():
             form.save()
-    return _redir_to_next_or(_redir_livreurs(), request)
+    return redirect('liste_livreurs')
 
 @login_required
 @admin_required
@@ -424,19 +476,15 @@ def modifier_livreur(request, id):
         form = LivreurForm(request.POST, instance=livreur)
         if form.is_valid():
             form.save()
-            messages.success(request, f"Livreur « {livreur.nom} » modifié.")
-    return _redir_to_next_or(_redir_livreurs(), request)
+    return redirect('liste_livreurs')
 
 @login_required
 @admin_required
 def supprimer_livreur(request, id):
-    livreur = Livreur.objects.filter(id=id).first()
-    if livreur:
-        nom = livreur.nom
-        livreur.delete()
-        messages.success(request, f"Livreur « {nom} » supprimé.")
-
-    return _redir_to_next_or(_redir_livreurs(), request)
+    livreur = get_object_or_404(Livreur, id=id)
+    if request.method == 'POST':
+        livreur.soft_delete(user=request.user)
+    return redirect('liste_livreurs')
 
 @login_required
 def frais_livraison_list(request):
@@ -457,7 +505,7 @@ def frais_livraison_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Construction de extra_querystring propre
+    # Extra querystring propre (sans page)
     params = request.GET.copy()
     clean_params = QueryDict(mutable=True)
     for key, values in params.lists():
@@ -473,33 +521,65 @@ def frais_livraison_list(request):
         'categorie_filtre': categorie_filtre,
         'extra_querystring': extra_querystring,
         'is_admin': is_admin(request.user),
+        'FRAIS_LIVRAISON_PAR_DEFAUT': FRAIS_LIVRAISON_PAR_DEFAUT,
+        'FRAIS_LIVREUR_PAR_DEFAUT': FRAIS_LIVREUR_PAR_DEFAUT,
     })
 
 @login_required
 @require_POST
 def frais_livraison_ajouter(request):
-    lieu = request.POST.get('lieu')
-    categorie = request.POST.get('categorie')
-    frais = request.POST.get('frais')
+    lieu = request.POST.get('lieu', '').strip()
+    categorie = request.POST.get('categorie', '').strip()
+    frais_livraison = request.POST.get('frais_livraison', '').strip()
+    frais_livreur = request.POST.get('frais_livreur', '').strip()
 
     if not lieu or not categorie:
         return JsonResponse({'error': 'Champs obligatoires manquants.'}, status=400)
 
-    if frais:
-        frais = int(frais)
-    else:
-        frais = FRAIS_PAR_DEFAUT.get(categorie, 3000)
+    try:
+        frais_livraison = int(frais_livraison) if frais_livraison else FRAIS_LIVRAISON_PAR_DEFAUT.get(categorie, 0)
+    except (TypeError, ValueError):
+        frais_livraison = FRAIS_LIVRAISON_PAR_DEFAUT.get(categorie, 0)
 
-    Livraison.objects.create(lieu=lieu, categorie=categorie, frais=frais)
+    try:
+        frais_livreur = int(frais_livreur) if frais_livreur else FRAIS_LIVREUR_PAR_DEFAUT.get(categorie, 0)
+    except (TypeError, ValueError):
+        frais_livreur = FRAIS_LIVREUR_PAR_DEFAUT.get(categorie, 0)
+
+    Livraison.objects.create(
+        lieu=lieu,
+        categorie=categorie,
+        frais_livraison=frais_livraison,
+        frais_livreur=frais_livreur
+    )
     return redirect('frais_livraison_list')
 
 @login_required
 @require_POST
 def frais_livraison_modifier(request, id):
     frais = get_object_or_404(Livraison, id=id)
-    frais.lieu = request.POST.get('lieu')
-    frais.categorie = request.POST.get('categorie')
-    frais.frais = int(request.POST.get('frais', 0))
+
+    lieu = request.POST.get('lieu', '').strip()
+    categorie = request.POST.get('categorie', '').strip()
+    frais_livraison = request.POST.get('frais_livraison', '').strip()
+    frais_livreur = request.POST.get('frais_livreur', '').strip()
+
+    if not lieu or not categorie:
+        return JsonResponse({'error': 'Champs obligatoires manquants.'}, status=400)
+
+    frais.lieu = lieu
+    frais.categorie = categorie
+
+    try:
+        frais.frais_livraison = int(frais_livraison) if frais_livraison else FRAIS_LIVRAISON_PAR_DEFAUT.get(categorie, 0)
+    except (TypeError, ValueError):
+        frais.frais_livraison = FRAIS_LIVRAISON_PAR_DEFAUT.get(categorie, 0)
+
+    try:
+        frais.frais_livreur = int(frais_livreur) if frais_livreur else FRAIS_LIVREUR_PAR_DEFAUT.get(categorie, 0)
+    except (TypeError, ValueError):
+        frais.frais_livreur = FRAIS_LIVREUR_PAR_DEFAUT.get(categorie, 0)
+
     frais.save()
     return redirect('frais_livraison_list')
 
@@ -507,8 +587,9 @@ def frais_livraison_modifier(request, id):
 @admin_required
 def frais_livraison_supprimer(request, id):
     frais = get_object_or_404(Livraison, id=id)
-    frais.delete()
+    frais.soft_delete(user=request.user)
     return redirect('frais_livraison_list')
+
 
 @login_required
 @admin_required
@@ -548,7 +629,7 @@ def paiement_frais_livraisons(request):
     )
 
     # Pagination
-    paginator = Paginator(commandes, 20)
+    paginator = Paginator(commandes, 24)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 

@@ -1,0 +1,62 @@
+{% load custom_tags %}
+
+<div class="d-flex align-items-center justify-content-between mb-2">
+  <h4 class="mb-0">Profil</h4>
+  <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalProfil">
+    <i class="fa fa-edit"></i> Modifier le profil
+  </button>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6"><strong>Nom :</strong> {{ u.last_name|default:"—" }}</div>
+      <div class="col-md-6"><strong>Prénom :</strong> {{ u.first_name|default:"—" }}</div>
+      <div class="col-md-6"><strong>Adresse :</strong> {{ u.adresse|default:"—" }}</div>
+      <div class="col-md-6"><strong>Téléphone :</strong> {{ u.telephone|default:"—" }}</div>
+      <div class="col-md-6"><strong>Email :</strong> {{ u.email|default:"—" }}</div>
+      <div class="col-md-6"><strong>Nom d’utilisateur :</strong> {{ u.username }}</div>
+    </div>
+  </div>
+</div>
+
+{# ---------- Modal édition Profil (intégré) ---------- #}
+<div class="modal fade" id="modalProfil" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'configuration_profil_update' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Modifier le profil</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="{{ form.first_name.id_for_label }}" class="form-label">Prénom</label>
+            {{ form.first_name|add_class:"form-control" }}
+            {% if form.first_name.errors %}<div class="invalid-feedback d-block">{{ form.first_name.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label for="{{ form.last_name.id_for_label }}" class="form-label">Nom</label>
+            {{ form.last_name|add_class:"form-control" }}
+            {% if form.last_name.errors %}<div class="invalid-feedback d-block">{{ form.last_name.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label for="{{ form.adresse.id_for_label }}" class="form-label">Adresse</label>
+            {{ form.adresse|add_class:"form-control" }}
+            {% if form.adresse.errors %}<div class="invalid-feedback d-block">{{ form.adresse.errors|striptags }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label for="{{ form.telephone.id_for_label }}" class="form-label">Téléphone</label>
+            {{ form.telephone|add_class:"form-control" }}
+            {% if form.telephone.errors %}<div class="invalid-feedback d-block">{{ form.telephone.errors|striptags }}</div>{% endif %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

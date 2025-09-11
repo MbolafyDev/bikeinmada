@@ -69,30 +69,21 @@
       </a>
       </li> -->
     
-      
-
-    <!-- Statistiques (Collapsible) -->
-    <li class="nav-item">
-    <a class="nav-link d-flex justify-content-between align-items-center {% if request.resolver_match.url_name in 'rapport_vente compte_de_resultat bilan' %}active{% endif %}" 
-        data-bs-toggle="collapse" href="#collapseStats" role="button" aria-expanded="false" aria-controls="collapseStats">
-        <span><i class="fa fa-chart-bar me-2"></i> Statistiques &#x25BE;</span>
-    </a>
-    <div class="collapse {% if request.resolver_match.url_name in 'rapport_vente compte_de_resultat bilan' %}show{% endif %}" id="collapseStats">
-        <ul class="list-unstyled ps-3">
-        <li><a class="nav-link" href="{% url 'rapport_vente' %}">Rapport de ventes</a></li>
-        <li><a class="nav-link" href="{% url 'compte_de_resultat' %}">Compte de résultat</a></li>
-        <li><a class="nav-link" href="{% url 'bilan' %}">Bilan</a></li>
-        </ul>
-    </div>
-    </li>
 
     <!-- Paramètres (Collapsible) -->
+  <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'statistiques' %}active{% endif %}" href="{% url 'statistiques' %}">
+          <span><i class="fa fa-chart-bar me-2"></i> Statistiques</span>
+        </a>
+    </li>
 
     <li class="nav-item">
       <a class="nav-link {% if request.resolver_match.url_name == 'configuration' %}active{% endif %}" href="{% url 'configuration' %}">
         <span><i class="fa fa-gear me-2"></i> Paramètres</span>
       </a>
     </li>
+    
+
 
 
   </ul>

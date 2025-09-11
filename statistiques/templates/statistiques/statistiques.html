@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+{% load nombre %}
+{% load extras %}
+
+{% block title %}Statistiques{% endblock %}
+
+{% block content %}
+
+{% now "Y" as cur_year %}
+{% now "m" as cur_month %}
+
+<div class="container-fluid mb-3">
+  {% comment %} <h2 class="text-center my-3">Statistiques</h2> {% endcomment %}
+
+  <div class="row g-3">
+    <!-- Sidebar -->
+    <div class="col-12 col-lg-4 col-xl-3">
+      <nav id="statsSidebar" class="list-group position-sticky" style="top: 80px;">
+        <a href="{% url 'statistiques' %}?tab=rapport"
+           class="list-group-item list-group-item-action d-flex align-items-center gap-2 {% if active_tab == 'rapport' %}active {% endif %}"
+           hx-get="{% url 'statistiques_section' 'rapport' %}?{{ request.GET.urlencode }}"
+           hx-target="#statsContent"
+           hx-swap="innerHTML"
+           hx-push-url="true"
+           hx-vals='{"year":"{{ year|default:cur_year }}","month":"{{ month|default:cur_month }}"}'>
+          <i class="fa fa-chart-line"></i> Rapport de vente
+        </a>
+
+        <a href="{% url 'statistiques' %}?tab=compte"
+           class="list-group-item list-group-item-action d-flex align-items-center gap-2 {% if active_tab == 'compte' %}active {% endif %}"
+           hx-get="{% url 'statistiques_section' 'compte' %}?{{ request.GET.urlencode }}"
+           hx-target="#statsContent"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+          <i class="fa fa-table"></i> Compte de résultat
+        </a>
+
+        <a href="{% url 'statistiques' %}?tab=bilan"
+           class="list-group-item list-group-item-action d-flex align-items-center gap-2 {% if active_tab == 'bilan' %}active {% endif %}"
+           hx-get="{% url 'statistiques_section' 'bilan' %}?{{ request.GET.urlencode }}"
+           hx-target="#statsContent"
+           hx-swap="innerHTML"
+           hx-push-url="true">
+          <i class="fa fa-balance-scale"></i> Bilan
+        </a>
+      </nav>
+    </div>
+
+    <!-- Content -->
+    <div class="col-12 col-lg-8 col-xl-9">
+      <div id="statsContent">
+        {# Rendu initial (SSR) pour le tab actif #}
+        {% if active_tab == 'compte' %}
+          {% include "statistiques/compte_de_resultat.html" %}
+        {% elif active_tab == 'bilan' %}
+          {% include "statistiques/bilan.html" %}
+        {% else %}
+          {% include "statistiques/rapport_vente.html" %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

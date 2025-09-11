@@ -1,0 +1,22 @@
+{# templates/ventes/includes/facturation_list_wrapper.html #}
+{% load nombre %}
+
+{% if commandes %}
+  {% if display_mode == 'table' %}
+    <div class="d-none d-lg-block">
+      {% include "ventes/includes/facturation_table.html" %}
+    </div>
+    <div class="d-lg-none">
+      {% include "ventes/includes/facturation_cards.html" %}
+    </div>
+  {% else %}
+    <div class="d-none d-lg-block">
+      {% include "ventes/includes/facturation_cards.html" %}
+    </div>
+    <div class="d-lg-none">
+      {% include "ventes/includes/facturation_cards.html" %}
+    </div>
+  {% endif %}
+{% else %}
+  <div class="alert alert-info">Aucune commande trouvée pour cette date.</div>
+{% endif %}

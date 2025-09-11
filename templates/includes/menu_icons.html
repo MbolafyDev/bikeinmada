@@ -108,33 +108,14 @@
   </a>
 </li>
 
-<!-- <li class="nav-item">
+<li class="nav-item">
   <a
-    class="nav-link {% if request.resolver_match.url_name == 'liste_commandes_services' %}active{% endif %}"
-    href="{% url 'liste_commandes_services' %}"
-    data-title="Services"
-  >
-    <i class="fa fa-puzzle-piece"></i>
-  </a>
-</li> -->
-
-<li class="nav-item dropdown">
-  <a
-    class="nav-link dropdown-toggle {% if request.resolver_match.url_name in 'rapport_vente compte_de_resultat bilan' %}active{% endif %}"
-    href="#"
-    id="statsDropdown"
-    role="button"
-    data-bs-toggle="dropdown"
-    aria-expanded="false"
-    data-title="Statistiques"
+    class="nav-link {% if request.resolver_match.url_name == 'statistiques' %}active{% endif %}"
+    href="{% url 'statistiques' %}"
+    data-title="Paramètres"
   >
     <i class="fa fa-chart-bar"></i>
   </a>
-  <ul class="dropdown-menu" aria-labelledby="statsDropdown">
-    <li><a class="dropdown-item" href="{% url 'rapport_vente' %}">Rapport de ventes</a></li>
-    <li><a class="dropdown-item" href="{% url 'compte_de_resultat' %}">Compte de résultat</a></li>
-    <li><a class="dropdown-item" href="{% url 'bilan' %}">Bilan</a></li>
-  </ul>
 </li>
 
 <li class="nav-item">

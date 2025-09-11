@@ -1,0 +1,110 @@
+<div class="d-flex align-items-center justify-content-between mb-2">
+  <h4 class="mb-0">Plan des comptes</h4>
+  <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalPlan" {% if not is_admin %}disabled{% endif %}>
+    <i class="fa fa-plus"></i> Ajouter un compte
+  </button>
+</div>
+
+{% if plans %}
+<div class="table-responsive">
+  <table class="table table-bordered table-striped align-middle">
+    <thead class="table-success">
+      <tr>
+        <th>Numéro</th>
+        <th>Libellé</th>
+        <th class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for plan in plans %}
+      <tr {% if plan.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+        <td>{{ plan.compte_numero }}</td>
+        <td>{{ plan.libelle }}</td>
+        <td class="text-end" style="white-space: nowrap">
+          <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editPlanModal{{ plan.id }}" {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeletePlanModal{{ plan.id }}" {% if not is_admin %}disabled{% endif %}>
+            <i class="fa fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+
+      <!-- Modal modifier Plan -->
+      <div class="modal fade" id="editPlanModal{{ plan.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="post" action="{% url 'modifier_plan' plan.id %}">
+              {% csrf_token %}
+              <div class="modal-header">
+                <h5 class="modal-title">Modifier Compte</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <label>Numéro</label>
+                <input type="text" name="compte_numero" class="form-control mb-2" value="{{ plan.compte_numero }}" required>
+                <label>Libellé</label>
+                <input type="text" name="libelle" class="form-control" value="{{ plan.libelle }}" required>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-success">Enregistrer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal suppression Plan -->
+      <div class="modal fade" id="confirmDeletePlanModal{{ plan.id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <form method="post" action="{% url 'supprimer_plan' plan.id %}">
+              {% csrf_token %}
+              <div class="modal-header">
+                <h5 class="modal-title text-danger">Confirmation de suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <p>Supprimer le compte <strong>{{ plan.compte_numero }} - {{ plan.libelle }}</strong> ?</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-danger">Supprimer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  <div class="alert alert-info">Aucun compte enregistré.</div>
+{% endif %}
+
+{# ---------- Modal ajout Plan (intégré) ---------- #}
+<div class="modal fade" id="modalPlan" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'ajouter_plan' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Ajouter un compte</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label>Numéro</label>
+          <input type="text" name="compte_numero" class="form-control mb-2" required>
+          <label>Libellé</label>
+          <input type="text" name="libelle" class="form-control" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

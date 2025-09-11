@@ -1,5 +1,10 @@
+{# livraison/liste_livraisons.html #}
+{% extends "base.html" %}
+{% load static %}
 {% load nombre %}
 
+{% block title %}Liste des livraisons{% endblock %}
+{% block content %}
 <div class="container mb-2">
 
   <h2 class="mb-2 text-center">Liste des livraisons</h2>
@@ -228,3 +233,4 @@
   }
 })();
 </script>
+{% endblock content %}
