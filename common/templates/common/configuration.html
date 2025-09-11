@@ -15,7 +15,7 @@
 
 {% block content %}
 <div class="container-fluid mb-4">
-  <h2 class="text-center mb-3">Configuration</h2>
+  <!-- <h2 class="text-center mb-3">Configuration</h2> -->
   {% include "includes/messages_alert.html" %}
 
   <div class="row">
@@ -41,6 +41,12 @@
            class="list-group-item list-group-item-action {% if active_tab == 'plans' %}active list-group-item-success{% endif %}">
           <i class="fa fa-book"></i> Plan des comptes
         </a>
+
+        <!-- livreurs -->
+         <a href="{% url 'configuration' %}?tab=livreurs#tab-livreurs" class="list-group-item list-group-item-action  {% if active_tab == 'livreurs' %}active list-group-item-success{% endif %}">
+        Liste des livreurs
+        </a>
+
       </div>
     </div>
 
@@ -75,6 +81,13 @@
             {% include "common/includes/configuration_plans.html" with plans=plans_page %}
           </div>
         </div>
+
+        <!-- Livreurs -->
+        <div class="tab-pane fade {% if active_tab == 'livreurs' %}show active{% endif %}" id="tab-livreurs">
+        {% include "livraison/liste_livreurs.html" %}
+        </div>
+
+
       </div>
     </div>
   </div>

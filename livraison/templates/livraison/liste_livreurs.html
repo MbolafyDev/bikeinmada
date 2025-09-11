@@ -6,8 +6,6 @@
 <div class="container mb-2 mt-4">
     <h2 class="mb-4 text-center">Liste des livreurs</h2>
 
-    {% include "includes/messages_alert.html" %}
-
     <!-- Bouton ajouter -->
     <button class="btn btn-success my-3" data-bs-toggle="modal" data-bs-target="#modalAjout" {% if not is_admin %}disabled{% endif %}>
         <i class="fa fa-plus"></i> Ajouter un livreur
@@ -47,6 +45,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% include "common/includes/pagination.html" with page_obj=livreurs_page page_param="page_livreurs" extra_querystring=livreurs_qs_params anchor="#tab-livreurs" hx_target="#livreurs-wrapper" %}
     </div>
 
     <!-- CARTES - petits écrans -->
@@ -73,7 +72,9 @@
                 </div>
             </div>
             {% endfor %}
+            {% include "common/includes/pagination.html" with page_obj=livreurs_page page_param="page_livreurs" extra_querystring=livreurs_qs_params anchor="#tab-livreurs" hx_target="#livreurs-wrapper" %}
         </div>
+        
     </div>
 
     <!-- Modals édition & suppression -->
@@ -84,6 +85,7 @@
                 <div class="modal-content">
                     <form method="post" action="{% url 'modifier_livreur' l.id %}">
                         {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ base_url }}{{ current_page }}#tab-livreurs">
                         <div class="modal-header">
                             <h5 class="modal-title">Modifier Livreur</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -118,6 +120,7 @@
                 <div class="modal-content">
                     <form method="post" action="{% url 'supprimer_livreur' l.id %}">
                         {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ base_url }}{{ current_page }}#tab-livreurs">
                         <div class="modal-header">
                             <h5 class="modal-title text-danger">Confirmer la suppression</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -144,6 +147,7 @@
             <div class="modal-content">
                 <form method="post" action="{% url 'ajouter_livreur' %}">
                     {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'configuration' %}?tab=livreurs#tab-livreurs">
                     <div class="modal-header">
                         <h5 class="modal-title">Nouveau Livreur</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

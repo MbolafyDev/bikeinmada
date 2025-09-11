@@ -17,6 +17,17 @@ from ventes.models import Commande, LigneCommande
 from charges.models import Charge
 from .forms import LivreurForm
 from datetime import datetime
+from django.http import HttpResponseRedirect
+
+def _redir_to_next_or(default_response, request):
+  
+    nxt = request.POST.get('next')
+    if nxt:
+        return HttpResponseRedirect(nxt)
+    return default_response
+
+def _redir_livreurs():
+    return HttpResponseRedirect(f"{reverse('configuration')}?tab=livreurs#tab-livreurs")
 
 @login_required
 def liste_livraisons(request): 
@@ -403,7 +414,7 @@ def ajouter_livreur(request):
         form = LivreurForm(request.POST)
         if form.is_valid():
             form.save()
-    return redirect('liste_livreurs')
+    return _redir_to_next_or(_redir_livreurs(), request)
 
 @login_required
 @admin_required
@@ -413,15 +424,19 @@ def modifier_livreur(request, id):
         form = LivreurForm(request.POST, instance=livreur)
         if form.is_valid():
             form.save()
-    return redirect('liste_livreurs')
+            messages.success(request, f"Livreur « {livreur.nom} » modifié.")
+    return _redir_to_next_or(_redir_livreurs(), request)
 
 @login_required
 @admin_required
 def supprimer_livreur(request, id):
-    livreur = get_object_or_404(Livreur, id=id)
-    if request.method == 'POST':
+    livreur = Livreur.objects.filter(id=id).first()
+    if livreur:
+        nom = livreur.nom
         livreur.delete()
-    return redirect('liste_livreurs')
+        messages.success(request, f"Livreur « {nom} » supprimé.")
+
+    return _redir_to_next_or(_redir_livreurs(), request)
 
 @login_required
 def frais_livraison_list(request):

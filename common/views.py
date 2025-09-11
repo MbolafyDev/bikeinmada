@@ -8,6 +8,8 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.core.paginator import Paginator
+from livraison.models import Livreur
+from livraison.forms import LivreurForm
 
 def _redir_to_next_or(default_response, request):
   
@@ -25,7 +27,6 @@ def _redir_caisses():
 def _redir_plans():
     return HttpResponseRedirect(f"{reverse('configuration')}?tab=plans#tab-plans")
 
-
 @login_required
 @admin_required
 def configuration_view(request):
@@ -37,15 +38,19 @@ def configuration_view(request):
     caisses_qs = Caisse.objects.all().order_by('nom')
     plans_qs   = PlanDesComptes.objects.all().order_by('compte_numero')
 
+    livreurs_qs = Livreur.objects.all().order_by('nom')
+
     # Tailles par page (avec valeurs par défaut)
     per_pages   = int(request.GET.get('pp_pages', 3))
     per_caisses = int(request.GET.get('pp_caisses', 3))
     per_plans   = int(request.GET.get('pp_plans', 3))
+    per_livreurs  = int(request.GET.get('pp_livreurs', 3))
 
     # Paginators
     pages_p   = Paginator(pages_qs, per_pages)
     caisses_p = Paginator(caisses_qs, per_caisses)
     plans_p   = Paginator(plans_qs, per_plans)
+    livreurs_p  = Paginator(livreurs_qs, per_livreurs)
 
     # ✅ Accepte aussi ?page=... pour l'onglet actif (fallback si page_X non fourni)
     generic_page = request.GET.get('page')
@@ -53,16 +58,21 @@ def configuration_view(request):
     pages_num   = request.GET.get('page_pages')   or (generic_page if active_tab == 'pages'   else 1)
     caisses_num = request.GET.get('page_caisses') or (generic_page if active_tab == 'caisses' else 1)
     plans_num   = request.GET.get('page_plans')   or (generic_page if active_tab == 'plans'   else 1)
+    livreurs_num  = request.GET.get('page_livreurs')  or (generic_page if active_tab == 'livreurs'  else 1)
 
     # Page objects
     pages_page   = pages_p.get_page(pages_num)
     caisses_page = caisses_p.get_page(caisses_num)
     plans_page   = plans_p.get_page(plans_num)
+    livreurs_page  = livreurs_p.get_page(livreurs_num)
 
     # QS minimales pour rester sur le bon onglet
     pages_qs_params   = "tab=pages"
     caisses_qs_params = "tab=caisses"
     plans_qs_params   = "tab=plans"
+    livreurs_qs_params  = "tab=livreurs"
+
+    livreur_form = LivreurForm()
 
     return render(request, 'common/configuration.html', {
         'user': request.user,
@@ -76,10 +86,15 @@ def configuration_view(request):
         'caisses_page': caisses_page,
         'plans_page': plans_page,
 
+        'livreurs_page': livreurs_page,
+        'livreur_form': livreur_form,
+        'livreurs': livreurs_page.object_list,
+
         # querystrings pour la pagination
         'pages_qs_params': pages_qs_params,
         'caisses_qs_params': caisses_qs_params,
         'plans_qs_params': plans_qs_params,
+        'livreurs_qs_params': livreurs_qs_params,
     })
 
 @login_required
