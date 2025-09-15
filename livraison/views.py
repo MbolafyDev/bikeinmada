@@ -19,6 +19,16 @@ from ventes.models import Commande, LigneCommande
 from charges.models import Charge
 from .forms import LivreurForm
 from datetime import datetime
+from django.contrib.auth import authenticate
+
+def _check_password(request) -> bool:
+    """Vérifie le mot de passe saisi dans un POST (champ 'password')."""
+    password = (request.POST.get("password") or "").strip()
+    if not password:
+        return False
+    user = authenticate(username=request.user.username, password=password)
+    return user is not None
+
 
 @login_required
 def liste_livraisons(request): 
@@ -482,8 +492,22 @@ def modifier_livreur(request, id):
 @admin_required
 def supprimer_livreur(request, id):
     livreur = get_object_or_404(Livreur, id=id)
-    if request.method == 'POST':
-        livreur.soft_delete(user=request.user)
+    livreur.soft_delete(user=request.user)
+    messages.success(request, f"Le livreur « {livreur.nom} » a été supprimé (soft delete).")
+    return redirect('liste_livreurs')
+
+@login_required
+@admin_required
+@require_POST
+def restaurer_livreur(request, id):
+    """Restore (avec mot de passe, POST only)."""
+    if not _check_password(request):
+        messages.warning(request, "Mot de passe incorrect. Restauration annulée.")
+        return redirect('liste_livreurs')
+
+    livreur = get_object_or_404(Livreur, id=id)
+    livreur.restore(user=request.user)
+    messages.success(request, f"Le livreur « {livreur.nom} » a été restauré avec succès.")
     return redirect('liste_livreurs')
 
 @login_required

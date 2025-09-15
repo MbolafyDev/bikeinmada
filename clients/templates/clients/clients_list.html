@@ -15,7 +15,7 @@
       <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addClientModal">
         <i class="fa fa-plus"></i> Ajouter un client
       </button>
-      <a class="btn btn-outline-success" href="{% url 'entreprises_list' %}">Entreprises</a>
+      <!-- <a class="btn btn-outline-success" href="{% url 'entreprises_list' %}">Entreprises</a> -->
     </div>
 
     {# Toggle d’affichage (>= lg) #}
@@ -94,6 +94,10 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
+            <label class="form-label">Référence client</label>
+            <input type="text" class="form-control" name="reference_client" placeholder="Ex: CLT-0001" maxlength="100">
+          </div>
+          <div class="mb-3">
             <label class="form-label">Nom</label>
             <input type="text" class="form-control" name="nom" required>
           </div>
@@ -114,6 +118,7 @@
             <label class="form-label">Contact</label>
             <input type="text" class="form-control" name="contact" required>
           </div>
+
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Annuler</button>

@@ -7,7 +7,7 @@ register = template.Library()
 def intpoint(value):
     try:
         value = int(value)
-        return f"{value:,}".replace(",", ".")
+        return f"{value:,}".replace(",", "'")
     except (ValueError, TypeError):
         return value
 

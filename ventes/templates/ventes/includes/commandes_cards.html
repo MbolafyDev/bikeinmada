@@ -103,8 +103,13 @@
                     data-bs-toggle="modal" data-bs-target="#ouvrirDetailCommande_{{ commande.id }}">
               <i class="fa fa-eye"></i>
             </button>
-            <button type="button" class="btn btn-sm btn-outline-success" title="Modifier"
-                    onclick="window.location.href='{% url 'commande_edit' commande.id %}'"
+
+            <!-- EDIT (Cards -> prefix Card) -->
+            <button type="button"
+                    class="btn btn-sm btn-outline-success"
+                    title="Modifier"
+                    data-bs-toggle="modal"
+                    data-bs-target="#commandeEditModalCard-{{ commande.id }}"
                     {% if commande.actions_desactivees %}disabled{% endif %}>
               <i class="fa fa-edit"></i>
             </button>
@@ -115,19 +120,29 @@
                 <i class="fa fa-undo"></i>
               </button>
             {% else %}
-              <button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"
-                      data-bs-toggle="modal" data-bs-target="#deleteCommandeModal"
-                      data-id="{{ commande.id }}" data-numero="{{ commande.numero_facture }}"
+              <button type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      title="Supprimer"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteCommandeModal"
+                      data-id="{{ commande.id }}"
+                      data-numero="{{ commande.numero_facture }}"
+                      data-action="{% url 'commande_delete' commande_id=commande.id %}"
                       {% if not is_admin or commande.actions_desactivees %}disabled{% endif %}>
                 <i class="fa fa-trash"></i>
               </button>
+
             {% endif %}
           </div>
+
         </div>
       </div>
       {% endwith %}
     {% endfor %}
   </div>
+  {% for c in commandes %}
+    {% include 'ventes/edit_commande.html' with commande=c lignes=c.lignes_commandes.all articles=articles pages=pages lieux=lieux modal_prefix='Card' %}
+  {% endfor %}
 
 {% else %}
   <div class="alert alert-info text-center">Aucune commande enregistrée.</div>

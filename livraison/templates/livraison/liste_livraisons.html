@@ -1,11 +1,10 @@
-{# livraison/liste_livraisons.html #}
-{% extends "base.html" %}
-{% load static %}
+{% extends 'base.html' %}
 {% load nombre %}
 
 {% block title %}Liste des livraisons{% endblock %}
+
 {% block content %}
-<div class="container mb-2">
+<div class="container-fluid mb-2">
 
   <h2 class="mb-2 text-center">Liste des livraisons</h2>
 
@@ -24,13 +23,13 @@
             <i class="fa fa-upload me-1"></i> Màj statuts
             </a>
 
-            <!-- <a href="{% url 'liste_livreurs' %}" class="btn btn-outline-success">
+            {% comment %} <a href="{% url 'liste_livreurs' %}" class="btn btn-outline-success">
             Liste des livreurs
-            </a> -->
+            </a>
 
             <a href="{% url 'frais_livraison_list' %}" class="btn btn-outline-success">
             Lieux et frais
-            </a>
+            </a> {% endcomment %}
         </div>
 
         <!-- Toggle à l'extrême droite (visible ≥ lg) -->
@@ -233,4 +232,4 @@
   }
 })();
 </script>
-{% endblock content %}
+{% endblock %}

@@ -8,6 +8,7 @@ class Client(AuditMixin):
     lieu = models.ForeignKey(Livraison, on_delete=models.SET_NULL, null=True)
     precision_lieu = models.CharField(max_length=255, blank=True, null=True)
     contact = models.CharField(max_length=50)
+    reference_client = models.CharField(max_length=100, blank=True, null=True, unique=True)
 
     def __str__(self):
         return self.nom

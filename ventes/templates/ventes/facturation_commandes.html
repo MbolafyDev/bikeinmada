@@ -18,12 +18,12 @@
             data-target-url="{% url 'facturation_commandes_partial' %}"
             data-target="#facturation-table-wrapper">
             <button type="button"
-                    class="btn btn-outline-primary {% if display_mode == 'table' %}active{% endif %}"
+                    class="btn btn-outline-success {% if display_mode == 'table' %}active{% endif %}"
                     data-mode="table" title="Mode Tableau">
             <i class="fa fa-table"></i>
             </button>
             <button type="button"
-                    class="btn btn-outline-primary {% if display_mode == 'cards' %}active{% endif %}"
+                    class="btn btn-outline-success {% if display_mode == 'cards' %}active{% endif %}"
                     data-mode="cards" title="Mode Cartes">
             <i class="fa fa-credit-card"></i>
             </button>
@@ -63,7 +63,7 @@
 
     <!-- Bouton -->
     <div class="col-md-2 d-flex align-items-end">
-      <button type="submit" class="btn btn-outline-primary w-100">
+      <button type="submit" class="btn btn-outline-success w-100">
         <i class="fa fa-filter"></i> Filtrer
       </button>
     </div>

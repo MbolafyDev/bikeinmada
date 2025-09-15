@@ -11,7 +11,7 @@
             <div class="form-check mb-2">
               <input class="form-check-input" type="checkbox" name="commandes" value="{{ commande.id }}" id="cb-{{ commande.id }}">
               <label class="form-check-label" for="cb-{{ commande.id }}">
-                <strong class="text-primary">Facture n° {{ commande.numero_facture }}</strong>
+                <strong class="text-success">Facture n° {{ commande.numero_facture }}</strong>
               </label>
             </div>
             <p class="mb-1"><strong>Date :</strong> {{ commande.date_livraison|date:"d/m/Y" }}</p>
@@ -25,7 +25,7 @@
           {# 👇 Footer actions individuelles (voir / imprimer cette facture uniquement) #}
           <div class="card-footer d-flex justify-content-end gap-2">
             <button type="button"
-                    class="btn btn-sm btn-outline-primary btn-voir-facture"
+                    class="btn btn-sm btn-outline-success btn-voir-facture"
                     data-id="{{ commande.id }}"
                     title="Voir la facture">
               <i class="fa fa-eye"></i>
@@ -43,7 +43,7 @@
   </div>
 
   <div class="mt-2 d-flex flex-wrap gap-2">
-    <button type="submit" formaction="{% url 'voir_factures' %}" formtarget="_blank" class="btn btn-primary">
+    <button type="submit" formaction="{% url 'voir_factures' %}" formtarget="_blank" class="btn btn-success">
       <i class="fa fa-eye"></i> Voir les factures
     </button>
     <button type="button" id="btn-imprimer-cards" class="btn btn-secondary">
@@ -106,3 +106,58 @@
   });
 })();
 </script>
+
+<script>
+(function () {
+  const voirUrl = "{% url 'voir_factures' %}";
+  const imprimerUrl = "{% url 'imprimer_factures' %}";
+
+  function postTo(url, ids, csrfToken) {
+    const f = document.createElement("form");
+    f.method = "POST";
+    f.action = url;
+    f.target = "_blank";
+
+    const csrf = document.createElement("input");
+    csrf.type = "hidden";
+    csrf.name = "csrfmiddlewaretoken";
+    csrf.value = csrfToken;
+    f.appendChild(csrf);
+
+    ids.forEach(id => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "commandes";
+      input.value = id;
+      f.appendChild(input);
+    });
+
+    document.body.appendChild(f);
+    f.submit();
+    document.body.removeChild(f);
+  }
+
+  // Impression groupée (bouton global)
+  document.getElementById("btn-imprimer-cards")?.addEventListener("click", function () {
+    const form = document.getElementById("factures-form-cards");
+    const checked = Array.from(form.querySelectorAll("input[name='commandes']:checked")).map(i => i.value);
+    if (checked.length === 0) { alert("Veuillez sélectionner au moins une commande."); return; }
+    const csrfToken = form.querySelector("input[name='csrfmiddlewaretoken']").value;
+    postTo(imprimerUrl, checked, csrfToken);
+  });
+
+  // Actions individuelles (voir / imprimer)
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".btn-voir-facture, .btn-imprimer-facture");
+    if (!btn) return;
+
+    const form = document.getElementById("factures-form-cards");
+    const csrfToken = form.querySelector("input[name='csrfmiddlewaretoken']").value;
+    const id = btn.dataset.id;
+    const url = btn.classList.contains("btn-voir-facture") ? voirUrl : imprimerUrl;
+
+    postTo(url, [id], csrfToken);
+  });
+})();
+</script>
+

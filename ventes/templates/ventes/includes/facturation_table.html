@@ -5,7 +5,7 @@
   {% csrf_token %}
   <div class="table-responsive mb-3">
     <table class="table table-bordered table-striped align-middle">
-      <thead class="table-primary">
+      <thead class="table-success">
         <tr>
           <th><input type="checkbox" id="select-all"></th>
           <th>Date</th>
@@ -35,7 +35,7 @@
   </div>
 
   <div class="mt-2 d-flex flex-wrap gap-2">
-    <button type="submit" formaction="{% url 'voir_factures' %}" formtarget="_blank" class="btn btn-primary">
+    <button type="submit" formaction="{% url 'voir_factures' %}" formtarget="_blank" class="btn btn-success">
       <i class="fa fa-eye"></i> Voir les factures
     </button>
     <button type="button" id="btn-imprimer" class="btn btn-secondary">
@@ -68,5 +68,44 @@ document.getElementById("btn-imprimer")?.addEventListener("click", function () {
   });
 
   document.body.appendChild(newForm); newForm.submit(); document.body.removeChild(newForm);
+});
+</script>
+
+<script>
+function postTo(url, ids, csrfToken) {
+  const f = document.createElement("form");
+  f.method = "POST";
+  f.action = url;
+  f.target = "_blank";
+
+  const csrf = document.createElement("input");
+  csrf.type = "hidden";
+  csrf.name = "csrfmiddlewaretoken";
+  csrf.value = csrfToken;
+  f.appendChild(csrf);
+
+  ids.forEach(id => {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "commandes";
+    input.value = id;
+    f.appendChild(input);
+  });
+
+  document.body.appendChild(f);
+  f.submit();
+  document.body.removeChild(f);
+}
+
+document.getElementById("select-all")?.addEventListener("change", function() {
+  document.querySelectorAll("input[name='commandes']").forEach(cb => cb.checked = this.checked);
+});
+
+document.getElementById("btn-imprimer")?.addEventListener("click", function () {
+  const form = document.getElementById("factures-form");
+  const checked = Array.from(form.querySelectorAll("input[name='commandes']:checked")).map(i => i.value);
+  if (checked.length === 0) { alert("Veuillez sélectionner au moins une commande."); return; }
+  const csrfToken = form.querySelector("input[name='csrfmiddlewaretoken']").value;
+  postTo("{% url 'imprimer_factures' %}", checked, csrfToken);
 });
 </script>

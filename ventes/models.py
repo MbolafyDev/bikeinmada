@@ -1,6 +1,9 @@
 from django.db import models, transaction, IntegrityError
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 import time
+from typing import Optional
+import re
 
 from clients.models import Client
 from articles.models import Article
@@ -27,6 +30,8 @@ class Commande(AuditMixin):
     
     frais_livraison = models.PositiveIntegerField(null=True, blank=True,default=0)
     date_livraison = models.DateField(null=True, blank=True, default=timezone.now)
+    date_debut_prestation = models.DateField(null=True, blank=True, default=timezone.now)
+    date_fin_prestation = models.DateField(null=True, blank=True, default=timezone.now)
 
     livreur = models.ForeignKey(Livreur, null=True, blank=True, on_delete=models.SET_NULL)
     frais_livreur = models.PositiveIntegerField(null=True, blank=True,default=0)
@@ -35,6 +40,7 @@ class Commande(AuditMixin):
         choices=FRAIS_LIVREUR_CHOIX,
         default='Non payée'
     )
+    cours_devise = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"Facture {self.numero_facture} - {self.client.nom}"
@@ -68,30 +74,50 @@ class Commande(AuditMixin):
         return (
             self.statut_vente in ["Payée", "Annulée", "Reportée", "Supprimée"]
             or self.statut_livraison in ["Livrée", "Annulée", "Reportée", "Supprimée"]
-            or self.statut_publication == "supprimé"
         )
     
-    @classmethod
-    def generer_numero_facture_atomic(cls):
-        with transaction.atomic():
-            prefix = "F"
-            date_str = timezone.now().strftime("%y%m%d")
+    def duree_prestation(self) -> Optional[int]:
+        d1 = self.date_debut_prestation
+        d2 = self.date_fin_prestation
+        if not d1 or not d2:
+            return None
+        if d2 < d1:
+            return 0
+        return (d2 - d1).days + 1
 
+    def clean(self):
+        super().clean()
+        if self.date_debut_prestation and self.date_fin_prestation:
+            if self.date_fin_prestation < self.date_debut_prestation:
+                raise ValidationError({
+                    "date_fin_prestation": "La date de fin ne peut pas être avant la date de début."
+                })
+    
+    @classmethod
+    def generer_numero_facture_atomic(cls, prefix: str = "bim", serie: str = "B", padding: int = 3) -> str:
+        with transaction.atomic():
+            date_str = timezone.now().strftime("%y%m")
+            full_prefix = f"{prefix}{date_str}-{serie}"  # ex: 'bim2509-B'
+
+            # On verrouille les lignes correspondantes pour éviter les collisions
             last_commande = (
                 cls.objects
-                .select_for_update()
-                .filter(numero_facture__startswith=f"{prefix}{date_str}")
-                .order_by('-numero_facture')
+                .select_for_update(skip_locked=True)
+                .filter(numero_facture__startswith=full_prefix)
+                .order_by("-id")  # plus fiable que l'ordre lexicographique sur le code
                 .first()
             )
 
-            if last_commande:
-                last_number = int(last_commande.numero_facture.split("-")[-1])
-            else:
-                last_number = 0
+            last_seq = 0
+            if last_commande and last_commande.numero_facture:
+                # extrait les chiffres terminaux (ex: 'bim2509-B001' -> '001')
+                m = re.search(r'(\d+)$', last_commande.numero_facture)
+                if m:
+                    last_seq = int(m.group(1))  # ex: 1
 
-            new_number = last_number + 1
-            return f"{prefix}{date_str}-{new_number:03d}"
+            new_seq = last_seq + 1
+            return f"{full_prefix}{str(new_seq).zfill(padding)}"  # ex: 'bim2509-B002'
+
 
 
 class LigneCommande(AuditMixin):
@@ -123,8 +149,19 @@ class LigneCommande(AuditMixin):
 class Vente(AuditMixin):
     commande = models.OneToOneField(Commande, on_delete=models.CASCADE, related_name='vente')
     date_encaissement = models.DateField(default=timezone.now)
-    paiement = models.ForeignKey(Caisse, on_delete=models.PROTECT, related_name="ventes_ventes")
-    montant = models.PositiveIntegerField() 
+    paiement = models.ForeignKey(Caisse, on_delete=models.PROTECT, related_name="paiement_ventes")
+    montant = models.PositiveIntegerField()
+    impot_synthetique = models.PositiveIntegerField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.montant:
+            self.impot_synthetique = int(self.montant * 0.05)
+        super().save(*args, **kwargs)
+
+    @property
+    def total(self):
+        """Montant total TTC"""
+        return (self.montant or 0) + (self.impot_synthetique or 0)
 
     def __str__(self):
-        return f"Vente de la commande {self.commande.numero_facture} - {self.montant} Ar"
+        return f"Vente {self.commande.numero_facture} - Total : {self.total} Ar"

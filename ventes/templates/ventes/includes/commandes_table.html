@@ -2,7 +2,6 @@
 {% load static %}
 
 {% if commandes %}
-  <!-- ✅ TABLEAU pour grands écrans -->
   <div class="d-none d-lg-block">
     <div class="table-responsive">
       <table class="table table-bordered table-striped align-middle">
@@ -16,8 +15,6 @@
             <th>Page</th>
             <th>Encaissement</th>
             <th>Livraison</th>
-            {% comment %} <th>Montant</th>
-            <th>Frais</th> {% endcomment %}
             <th>Total</th>
             <th class="text-center">Action</th>
           </tr>
@@ -40,11 +37,8 @@
               <td>{{ commande.page }}</td>
               <td>{{ commande.statut_vente }}</td>
               <td>{{ commande.statut_livraison }}</td>
-              {% comment %} <td class="text-end">{{ commande.montant_commande|intpoint }}</td>
-              <td class="text-end">{{ commande.frais_livraison|intpoint }}</td> {% endcomment %}
               <td class="text-end">{{ commande.total_commande|intpoint }}</td>
               <td class="text-center" style="white-space: nowrap;">
-                <!-- Voir -->
                 <button type="button"
                         class="btn btn-sm btn-outline-primary"
                         title="Voir"
@@ -53,17 +47,17 @@
                   <i class="fa fa-eye"></i>
                 </button>
 
-                <!-- Modifier -->
+                <!-- EDIT (Table -> prefix Table) -->
                 <button type="button"
                         class="btn btn-sm btn-outline-success"
                         title="Modifier"
-                        onclick="window.location.href='{% url 'commande_edit' commande.id %}'"
+                        data-bs-toggle="modal"
+                        data-bs-target="#commandeEditModalTable-{{ commande.id }}"
                         {% if commande.actions_desactivees %}disabled{% endif %}>
                   <i class="fa fa-edit"></i>
                 </button>
 
                 {% if is_admin and commande.statut_publication == "supprimé" %}
-                  <!-- Restaurer -->
                   <button type="button"
                           class="btn btn-sm btn-outline-success"
                           title="Restaurer"
@@ -72,7 +66,6 @@
                     <i class="fa fa-undo"></i>
                   </button>
                 {% else %}
-                  <!-- Supprimer -->
                   <button type="button"
                           class="btn btn-sm btn-outline-danger"
                           title="Supprimer"
@@ -80,9 +73,11 @@
                           data-bs-target="#deleteCommandeModal"
                           data-id="{{ commande.id }}"
                           data-numero="{{ commande.numero_facture }}"
+                          data-action="{% url 'commande_delete' commande_id=commande.id %}"
                           {% if not is_admin or commande.actions_desactivees %}disabled{% endif %}>
                     <i class="fa fa-trash"></i>
                   </button>
+
                 {% endif %}
               </td>
             </tr>
@@ -93,8 +88,6 @@
           <tfoot class="table-primary fw-bold">
             <tr>
               <td colspan="8" class="text-end">Total général :</td>
-              {% comment %} <td class="text-end">{{ total_montant|intpoint }}</td>
-              <td class="text-end">{{ total_frais|intpoint }}</td> {% endcomment %}
               <td class="text-end">{{ total_general|intpoint }}</td>
               <td></td>
             </tr>
@@ -104,6 +97,12 @@
     </div>
   </div>
 
+  {# ===== Rend les modals d'édition une seule fois pour la table, avec préfixe 'Table' ===== #}
+  {% for c in commandes %}
+    {% include 'ventes/edit_commande.html' with commande=c lignes=c.lignes_commandes.all articles=articles pages=pages lieux=lieux modal_prefix='Table' %}
+  {% endfor %}
+
 {% else %}
   <div class="alert alert-info text-center">Aucune commande enregistrée.</div>
 {% endif %}
+

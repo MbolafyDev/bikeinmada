@@ -3,52 +3,34 @@
 {% load nombre %}
 
 {% block extra_css_and_scripts %}
-    <style>
-    /* Liste sous l'image */
-    .article-list {
-        overflow-x: hidden;    /* jamais de barre horizontale */
-        list-style: disc;
-        padding-left: 1.25rem; /* marge pour les puces */
-        margin-bottom: 0;
-    }
-    /* Contenu d'une ligne d'article */
-    .article-line-inner {
-        display: flex;
-        flex-wrap: wrap;       /* autorise le retour à la ligne */
-        align-items: flex-start;
-        gap: .5rem;
-    }
-    /* Texte du nom -> retour à la ligne */
-    .article-name {
-        flex: 1 1 auto;
-        min-width: 0;
-        white-space: normal;        /* wrap */
-        overflow-wrap: anywhere;    /* casse si mot très long */
-        word-break: break-word;     /* sécurité supplémentaire */
-    }
+<style>
+  /* Liste sous l'image */
+  .article-list{
+    overflow-x:hidden; list-style:disc; padding-left:1.25rem; margin-bottom:0;
+  }
+  .article-line-inner{ display:flex; flex-wrap:wrap; align-items:flex-start; gap:.5rem; }
+  .article-name{ flex:1 1 auto; min-width:0; white-space:normal; overflow-wrap:anywhere; word-break:break-word; }
 
-    /* Toggle d’affichage */
-    .view-toggle .btn { padding: .375rem .6rem; }
-    .view-toggle .btn.active { pointer-events: none; }
+  /* Toggle d’affichage */
+  .view-toggle .btn{ padding:.375rem .6rem; }
+  .view-toggle .btn.active{ pointer-events:none; }
 
-    .thumb-120 {
-        height: 120px;
-        background: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;           /* masque ce qui dépasse si besoin */
-        border-radius: .375rem;     /* même rendu que .rounded Bootstrap */
-    }
-    .thumb-120 img {
-        max-height: 100%;
-        max-width: 100%;
-        object-fit: contain;        /* ne déforme pas l'image */
-        object-position: center;    /* centre l'image */
-        display: block;
-        background: #fff;           /* comble en blanc si bords */
-    }
-    </style>
+  .thumb-120{
+    height:120px; background:#fff; display:flex; align-items:center; justify-content:center;
+    overflow:hidden; border-radius:.375rem;
+  }
+  .thumb-120 img{
+    max-height:100%; max-width:100%; object-fit:contain; object-position:center; display:block; background:#fff;
+  }
+
+  /* Garantir le scroll vertical à l'intérieur du body des modales scrollables */
+  .modal-dialog-scrollable .modal-body{ overflow-y:auto !important; max-height:calc(100vh - 6rem); }
+
+  /* Footer toujours visible dans les modals */
+  .modal-dialog-scrollable .modal-footer{
+    position:sticky; bottom:0; background:#fff; z-index:2; border-top:1px solid rgba(0,0,0,.1);
+  }
+</style>
 {% endblock %}
 
 {% block title %}Journal des commandes{% endblock %}
@@ -56,313 +38,523 @@
 {% block content %}
 <div class="container-fluid mb-2">
 
-    <h2 class="text-center">Journal des commandes</h2>
+  <h2 class="text-center">Journal des commandes</h2>
 
-    {% include "includes/messages_alert.html" %}
+  {% include "includes/messages_alert.html" %}
 
-    <!-- Barre d'actions -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <a class="btn btn-primary" href="{% url 'commande_create' %}">
-            <i class="fa fa-plus"></i> Enregistrer une commande
-        </a>
+  <!-- Barre d'actions -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#commandeCreateModal">
+      <i class="fa fa-plus"></i> Nouvelle commande
+    </button>
 
-        <div class="d-flex align-items-center gap-2">
-            <!-- Bascule d’affichage (icônes en haut à droite, >= lg) -->
-            <div class="view-toggle d-none d-lg-flex gap-1"
-                 data-storage-key="zr_display_commandes"
-                 data-target-url="{% url 'liste_commandes_partial' %}"
-                 data-target="#commandes-table-wrapper">
-                <button type="button"
-                        class="btn btn-outline-primary {% if display_mode == 'table' %}active{% endif %}"
-                        data-mode="table" title="Mode Tableau">
-                    <i class="fa fa-table"></i>
-                </button>
-                <button type="button"
-                        class="btn btn-outline-primary {% if display_mode == 'cards' %}active{% endif %}"
-                        data-mode="cards" title="Mode Cartes">
-                    <i class="fa fa-credit-card"></i>
-                </button>
-            </div>
+    <div class="d-flex align-items-center gap-2">
+      <!-- Bascule d’affichage (icônes en haut à droite, >= lg) -->
+      <div class="view-toggle d-none d-lg-flex gap-1"
+           data-storage-key="zr_display_commandes"
+           data-target-url="{% url 'liste_commandes_partial' %}"
+           data-target="#commandes-table-wrapper">
+        <button type="button"
+                class="btn btn-outline-success {% if display_mode == 'table' %}active{% endif %}"
+                data-mode="table" title="Mode Tableau">
+          <i class="fa fa-table"></i>
+        </button>
+        <button type="button"
+                class="btn btn-outline-success {% if display_mode == 'cards' %}active{% endif %}"
+                data-mode="cards" title="Mode Cartes">
+          <i class="fa fa-credit-card"></i>
+        </button>
+      </div>
 
-            <!-- Bouton filtre visible seulement sur mobile/tablette -->
-            <button class="btn btn-outline-primary d-lg-none" type="button"
-                    data-bs-toggle="collapse" data-bs-target="#filtersCollapse"
-                    aria-expanded="false" aria-controls="filtersCollapse">
-                <i class="fa fa-filter"></i>
-            </button>
-        </div>
+      <!-- Bouton filtre visible seulement sur mobile/tablette -->
+      <button class="btn btn-outline-primary d-lg-none" type="button"
+              data-bs-toggle="collapse" data-bs-target="#filtersCollapse"
+              aria-expanded="false" aria-controls="filtersCollapse">
+        <i class="fa fa-filter"></i>
+      </button>
     </div>
+  </div>
 
-    <!-- Filtres : replié sur mobile, visible en permanence sur ≥ lg -->
-    <div id="filtersCollapse" class="collapse d-lg-block">
-        <div class="row m-1">
-            <form id="filtersForm" method="get" class="row g-2 mb-2"
-                  hx-get="{% url 'liste_commandes_partial' %}"
-                  hx-target="#commandes-table-wrapper"
-                  hx-push-url="true"
-                  hx-trigger="change delay:300ms, submit">
+  <!-- Filtres -->
+  <div id="filtersCollapse" class="collapse d-lg-block">
+    <div class="row m-1">
+      <form id="filtersForm" method="get" class="row g-2 mb-2"
+            hx-get="{% url 'liste_commandes_partial' %}"
+            hx-target="#commandes-table-wrapper"
+            hx-push-url="true"
+            hx-trigger="change delay:300ms, submit">
 
-                <!-- Date livraison -->
-                <div class="col-md-6 col-lg-2">
-                    <label for="date_livraison" class="form-label fw-bold d-none d-lg-block">Date de livraison</label>
-                    <div class="input-group">
-                        <span class="input-group-text d-lg-none"><i class="fa fa-calendar"></i></span>
-                        <input type="date" name="date_livraison" id="date_livraison" class="form-control"
-                               value="{{ filtre_date_livraison }}">
-                    </div>
-                </div>
-
-                <!-- Article -->
-                <div class="col-md-6 col-lg-3">
-                    <label for="article_id" class="form-label fw-bold d-none d-lg-block">Article</label>
-                    <div class="input-group">
-                        <span class="input-group-text d-lg-none"><i class="fa fa-box-open"></i></span>
-                        <select name="article_id" id="article_id" class="form-select">
-                            <option value="">Tous les articles</option>
-                            {% for a in articles %}
-                                <option value="{{ a.id }}" {% if filtre_article_id == a.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ a.nom }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Page -->
-                <div class="col-md-6 col-lg-2">
-                    <label for="page_id_filter" class="form-label fw-bold d-none d-lg-block">Page</label>
-                    <div class="input-group">
-                        <span class="input-group-text d-lg-none"><i class="fa fa-shop"></i></span>
-                        <select name="page_id_filter" id="page_id_filter" class="form-select">
-                            <option value="">Toutes les pages</option>
-                            {% for p in pages %}
-                                <option value="{{ p.id }}" {% if filtre_page == p.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ p.nom }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Statut vente -->
-                <div class="col-md-6 col-lg-2">
-                    <label for="statut_vente" class="form-label fw-bold d-none d-lg-block">Statut vente</label>
-                    <div class="input-group">
-                        <span class="input-group-text d-lg-none"><i class="fa fa-wallet"></i></span>
-                        <select name="statut_vente" id="statut_vente" class="form-select">
-                            <option value="">Tous les encaissements</option>
-                            <option value="En attente" {% if filtre_statut_vente == "En attente" %}selected{% endif %}>En attente</option>
-                            <option value="Payée" {% if filtre_statut_vente == "Payée" %}selected{% endif %}>Payée</option>
-                            <option value="Annulée" {% if filtre_statut_vente == "Annulée" %}selected{% endif %}>Annulée</option>
-                            <option value="Supprimée" {% if filtre_statut_vente == "Supprimée" %}selected{% endif %}>Supprimée</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Statut livraison -->
-                <div class="col-md-6 col-lg-2">
-                    <label for="statut_livraison" class="form-label fw-bold d-none d-lg-block">Statut livraison</label>
-                    <div class="input-group">
-                        <span class="input-group-text d-lg-none"><i class="fa fa-bicycle"></i></span>
-                        <select name="statut_livraison" id="statut_livraison" class="form-select">
-                            <option value="">Toutes les livraisons</option>
-                            <option value="En attente" {% if filtre_statut_livraison == "En attente" %}selected{% endif %}>En attente</option>
-                            <option value="Planifiée" {% if filtre_statut_livraison == "Planifiée" %}selected{% endif %}>Planifiée</option>
-                            <option value="Livrée" {% if filtre_statut_livraison == "Livrée" %}selected{% endif %}>Livrée</option>
-                            <option value="Annulée" {% if filtre_statut_livraison == "Annulée" %}selected{% endif %}>Annulée</option>
-                            <option value="Reportée" {% if filtre_statut_livraison == "Reportée" %}selected{% endif %}>Reportée</option>
-                            <option value="Supprimée" {% if filtre_statut_livraison == "Supprimée" %}selected{% endif %}>Supprimée</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Bouton -->
-                <div class="col-md-6 col-lg-1 d-flex align-items-end">
-                    <button type="submit" class="btn btn-outline-primary w-100">
-                        <i class="fa fa-filter"></i> Filtrer
-                    </button>
-                </div>
-
-                <!-- Champ caché pour préserver le mode d’affichage -->
-                <input type="hidden" name="display" id="display_input" value="{{ display_mode }}">
-                <input type="hidden" name="page" id="page_input" value="{{ page_obj.number }}">
-
-            </form>
+        <!-- Date livraison -->
+        <div class="col-md-6 col-lg-2">
+          <label for="date_livraison" class="form-label fw-bold d-none d-lg-block">Date de livraison</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-calendar"></i></span>
+            <input type="date" name="date_livraison" id="date_livraison" class="form-control"
+                   value="{{ filtre_date_livraison }}">
+          </div>
         </div>
-    </div>
 
-    {# Wrapper d’affichage (choisit table/cards selon display_mode en >= lg, cartes en < lg) #}
-    {% include "ventes/includes/commandes_list_wrapper.html" %}
-
-    {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
-
-    {# Modals inclus "offline" #}
-    {% for commande in commandes %}
-        {% include "ventes/includes/commande_detail_modal_content.html" with commande=commande %}
-        {% include "ventes/includes/modal_restauration_commande.html" %}
-    {% endfor %}
-
-    <!-- Modal de confirmation de suppression -->
-    <div class="modal fade" id="deleteCommandeModal" tabindex="-1" ia-labelledby="deleteCommandeLabel" ia-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="post" id="deleteCommandeForm">
-                    {% csrf_token %}
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteCommandeLabel">Supprimer la commande</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" ia-label="Fermer"></button>
-                    </div>
-                    <div class="modal-body">
-                        Êtes-vous sûr de vouloir supprimer la commande relative à la facture <strong id="commandeNum"></strong> ?
-                        {% comment %} <p class="text-danger mt-2">Cette action est irréversible.</p> {% endcomment %}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-danger">Supprimer</button>
-                    </div>
-                </form>
-            </div>
+        <!-- Article -->
+        <div class="col-md-6 col-lg-3">
+          <label for="article_id" class="form-label fw-bold d-none d-lg-block">Article</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-box-open"></i></span>
+            <select name="article_id" id="article_id" class="form-select">
+              <option value="">Tous les articles</option>
+              {% for a in articles %}
+                <option value="{{ a.id }}" {% if filtre_article_id == a.id|stringformat:"s" %}selected{% endif %}>
+                  {{ a.nom }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
+
+        <!-- Page -->
+        <div class="col-md-6 col-lg-2">
+          <label for="page_id_filter" class="form-label fw-bold d-none d-lg-block">Page</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-shop"></i></span>
+            <select name="page_id_filter" id="page_id_filter" class="form-select">
+              <option value="">Toutes les pages</option>
+              {% for p in pages %}
+                <option value="{{ p.id }}" {% if filtre_page == p.id|stringformat:"s" %}selected{% endif %}>
+                  {{ p.nom }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Statut vente -->
+        <div class="col-md-6 col-lg-2">
+          <label for="statut_vente" class="form-label fw-bold d-none d-lg-block">Statut vente</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-wallet"></i></span>
+            <select name="statut_vente" id="statut_vente" class="form-select">
+              <option value="">Tous les encaissements</option>
+              <option value="En attente" {% if filtre_statut_vente == "En attente" %}selected{% endif %}>En attente</option>
+              <option value="Payée" {% if filtre_statut_vente == "Payée" %}selected{% endif %}>Payée</option>
+              <option value="Annulée" {% if filtre_statut_vente == "Annulée" %}selected{% endif %}>Annulée</option>
+              <option value="Supprimée" {% if filtre_statut_vente == "Supprimée" %}selected{% endif %}>Supprimée</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Statut livraison -->
+        <div class="col-md-6 col-lg-2">
+          <label for="statut_livraison" class="form-label fw-bold d-none d-lg-block">Statut livraison</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-bicycle"></i></span>
+            <select name="statut_livraison" id="statut_livraison" class="form-select">
+              <option value="">Toutes les livraisons</option>
+              <option value="En attente"   {% if filtre_statut_livraison == "En attente" %}selected{% endif %}>En attente</option>
+              <option value="Planifiée"    {% if filtre_statut_livraison == "Planifiée" %}selected{% endif %}>Planifiée</option>
+              <option value="Livrée"       {% if filtre_statut_livraison == "Livrée" %}selected{% endif %}>Livrée</option>
+              <option value="Annulée"      {% if filtre_statut_livraison == "Annulée" %}selected{% endif %}>Annulée</option>
+              <option value="Reportée"     {% if filtre_statut_livraison == "Reportée" %}selected{% endif %}>Reportée</option>
+              <option value="Supprimée"    {% if filtre_statut_livraison == "Supprimée" %}selected{% endif %}>Supprimée</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Bouton -->
+        <div class="col-md-6 col-lg-1 d-flex align-items-end">
+          <button type="submit" class="btn btn-outline-primary w-100">
+            <i class="fa fa-filter"></i> Filtrer
+          </button>
+        </div>
+
+        <!-- Préserver le mode d’affichage et la page -->
+        <input type="hidden" name="display" id="display_input" value="{{ display_mode }}">
+        <input type="hidden" name="page" id="page_input" value="{{ page_obj.number }}">
+      </form>
     </div>
+  </div>
+
+  {# Wrapper d’affichage #}
+  {% include "ventes/includes/commandes_list_wrapper.html" %}
+
+  {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
+
+  {# Modals pré-générés (detail/restauration) #}
+  {% for commande in commandes %}
+    {% include "ventes/includes/commande_detail_modal_content.html" with commande=commande %}
+    {% include "ventes/includes/modal_restauration_commande.html" %}
+  {% endfor %}
+
+  <!-- Modal de confirmation de suppression -->
+  <div class="modal fade" id="deleteCommandeModal" tabindex="-1" aria-labelledby="deleteCommandeLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post" id="deleteCommandeForm">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteCommandeLabel">Supprimer la commande</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            Êtes-vous sûr de vouloir supprimer la commande relative à la facture <strong id="commandeNum"></strong> ?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-danger">Supprimer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
 </div>
 
 <script>
-    // --- Modal de suppression ---
-    document.addEventListener('DOMContentLoaded', function () {
-        const deleteModal = document.getElementById('deleteCommandeModal');
-        if (deleteModal) {
-            deleteModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                const commandeId = button && button.getAttribute('data-id');
-                const commandeNum = button && button.getAttribute('data-numero');
+(function(){
+  // ---- Données articles pour lignes dynamiques
+  const ARTICLES = (window.ARTICLES_GLOBAL) ? window.ARTICLES_GLOBAL : {{ articles_json|safe }};
 
-                const form = document.getElementById('deleteCommandeForm');
-                const numLabel = document.getElementById('commandeNum');
+  // ---- Utils
+  const fmt = n => (n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const parseN = v => {
+    if (typeof v !== 'string') v = (v ?? '').toString();
+    return parseFloat(v.replace(/\s+/g,'')) || 0;
+  };
 
-                if (commandeId && form) {
-                    form.action = `/commandes/${commandeId}/supprimer/`;
-                }
-                if (numLabel) numLabel.textContent = commandeNum || '';
-            });
-        }
+  function buildLineHtml(){
+    const options = ARTICLES.map(a => `
+      <option value="${a.id}" data-prix="${a.prix_vente}" data-stock="${a.stock}" data-livraison="${a.livraison}">${a.nom}</option>
+    `).join('');
+    return `
+      <div class="row g-3 align-items-end mb-3" data-line>
+        <div class="col-lg-3">
+          <label class="form-label">Article</label>
+          <select name="article" class="form-select" required data-role="article">
+            <option value="">-- Choisir --</option>
+            ${options}
+          </select>
+        </div>
+        <div class="col-lg-2">
+          <label class="form-label">P.U</label>
+          <input type="number" name="pu" class="form-control" step="100">
+        </div>
+        <div class="col-lg-1">
+          <label class="form-label">Qté</label>
+          <input type="number" name="quantite" class="form-control" value="1" min="1">
+        </div>
+        <div class="col-lg-1">
+          <label class="form-label">Stock</label>
+          <div data-name="stock_display" class="form-control-plaintext fw-bold text-center">-</div>
+        </div>
+        <div class="col-lg-2">
+          <label class="form-label">Livraison</label>
+          <input type="text" name="livraison" class="form-control" readonly>
+        </div>
+        <div class="col-lg-2">
+          <label class="form-label">Montant</label>
+          <input type="number" name="montant" class="form-control" readonly>
+        </div>
+        <div class="col-lg-1 d-grid">
+          <button type="button" class="btn btn-danger btn-sm" data-action="remove-line">✖</button>
+        </div>
+      </div>`;
+  }
+
+  function handleModalUpdate(modalEl){
+    const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
+    if(instance && typeof instance.handleUpdate==='function'){ instance.handleUpdate(); }
+  }
+  function scrollModalBodyToBottom(modalEl){
+    const body = modalEl.querySelector('.modal-body');
+    if(!body) return;
+    requestAnimationFrame(()=> body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' }));
+  }
+
+  // ---- Initialisation d'UNE modale (création OU édition)
+  function initCommandeModalByElement(modal, prefix){
+    if (!modal) return;
+
+    const root   = modal;
+    const lignes = root.querySelector(`#${prefix}_lignesCommande`);
+    const addBtn = root.querySelector('[data-action="add-line"]');
+
+    // IMPORTANT : on cible par "name" (robuste aux IDs suffixés)
+    const selLieu          = root.querySelector('select[name="lieu"]');
+    const inFraisLivraison = root.querySelector('input[name="frais_livraison"]');
+    const inFraisLivreur   = root.querySelector('input[name="frais_livreur"]');
+
+    function majTotaux(){
+      let totalArticles = 0;
+      root.querySelectorAll('input[name="montant"]').forEach(inp => totalArticles += parseN(inp.value));
+      const fl = parseN(inFraisLivraison?.value || 0);
+      const total = totalArticles + fl;
+
+      const ta  = root.querySelector('[data-name="total_articles"]');
+      const tfl = root.querySelector('[data-name="total_frais_livraison"]');
+      const tap = root.querySelector('[data-name="total_a_payer"]');
+      if(ta)  ta.textContent  = fmt(totalArticles);
+      if(tfl) tfl.textContent = fmt(fl);
+      if(tap) tap.textContent = fmt(total);
+    }
+
+    function verifLivraisonGratuite(){
+      // Valeur par défaut depuis le lieu
+      const defaultFL = selLieu?.selectedOptions?.[0]?.getAttribute('data-frais_livraison') || 0;
+      let gratuite = false;
+      root.querySelectorAll('select[name="article"]').forEach(s=>{
+        const liv = s.selectedOptions?.[0]?.getAttribute('data-livraison') || '';
+        if(liv.trim().toLowerCase() === 'gratuite') gratuite = true;
+      });
+      if(inFraisLivraison){
+        inFraisLivraison.value = gratuite ? 0 : defaultFL;
+      }
+      majTotaux();
+    }
+
+    function calcLigne(row){
+      const pu  = parseN(row.querySelector('input[name="pu"]').value);
+      const qte = parseN(row.querySelector('input[name="quantite"]').value);
+      row.querySelector('input[name="montant"]').value = Math.trunc((pu||0) * (qte||0));
+      majTotaux();
+    }
+
+    function onArticleChange(select){
+      const opt = select.selectedOptions[0];
+      const row = select.closest('[data-line]') || select.closest('.row');
+      if(!opt || !row) return;
+
+      const pu   = opt.getAttribute('data-prix');
+      const stk  = parseInt(opt.getAttribute('data-stock'))||0;
+      const livr = opt.getAttribute('data-livraison')||'';
+
+      row.querySelector('input[name="pu"]').value        = pu || '';
+      row.querySelector('input[name="livraison"]').value = livr;
+
+      const stockDisplay = row.querySelector('[data-name="stock_display"]');
+      if(stockDisplay){
+        stockDisplay.textContent = stk;
+        stockDisplay.classList.toggle('text-success', stk>0);
+        stockDisplay.classList.toggle('text-danger',  stk<=0);
+      }
+      calcLigne(row);
+      verifLivraisonGratuite();
+    }
+
+    function addLine(){
+      if(!lignes) return;
+      lignes.insertAdjacentHTML('beforeend', buildLineHtml());
+      handleModalUpdate(modal);
+      scrollModalBodyToBottom(modal);
+    }
+
+    // --- Events
+    addBtn?.addEventListener('click', addLine);
+
+    root.addEventListener('click', (e)=>{
+      if(e.target.matches('[data-action="remove-line"]')){
+        const row = e.target.closest('[data-line]') || e.target.closest('.row');
+        row?.remove();
+        verifLivraisonGratuite();
+        majTotaux();
+        handleModalUpdate(modal);
+      }
     });
 
-    // --- Surbrillance bleue de l'article correspondant à la slide active ---
-    document.addEventListener('slid.bs.carousel', function (e) {
-        var carouselEl = e.target;
-        var listSelector = carouselEl.dataset.listTarget;
-        if (!listSelector) return;
+    root.addEventListener('change', (e)=>{
+      if(e.target.matches('select[name="article"]')) onArticleChange(e.target);
 
-        var listEl = document.querySelector(listSelector);
-        if (!listEl) return;
+      if(e.target.matches('input[name="pu"], input[name="quantite"]')){
+        const row = e.target.closest('[data-line]') || e.target.closest('.row');
+        calcLigne(row); handleModalUpdate(modal);
+      }
 
-        var count = parseInt(listEl.dataset.count || '0', 10);
-        if (count <= 1) return; // 👈 pas de mise en bleu si un seul article
+      if(e.target === selLieu){
+        const opt = selLieu.selectedOptions?.[0];
+        const fL  = opt?.getAttribute('data-frais_livraison');
+        const fR  = opt?.getAttribute('data-frais_livreur');
+        if(inFraisLivraison && fL !== null) inFraisLivraison.value = fL;
+        if(inFraisLivreur   && fR !== null) inFraisLivreur.value   = fR;
+        verifLivraisonGratuite(); handleModalUpdate(modal);
+      }
+    });
 
-        var activeItem = e.relatedTarget || carouselEl.querySelector('.carousel-item.active');
-        if (!activeItem) return;
+    ['input','change'].forEach(evt =>
+      inFraisLivraison?.addEventListener(evt, ()=>{ majTotaux(); handleModalUpdate(modal); })
+    );
 
-        var idx = activeItem.getAttribute('data-index');
+    // A l'ouverture → calculer totaux des lignes existantes (édition)
+    modal.addEventListener('shown.bs.modal', ()=>{
+      handleModalUpdate(modal);
+      // Si création et aucune ligne, en ajouter 1 par défaut
+      if(lignes && !lignes.querySelector('[data-line]') && prefix === 'create'){
+        addLine();
+      }
+      // Recalcule à partir des valeurs déjà présentes (édition)
+      root.querySelectorAll('[data-line]').forEach(row => calcLigne(row));
+      verifLivraisonGratuite();
+      majTotaux();
+      scrollModalBodyToBottom(modal);
+    });
 
-        // Retire l'état actif
-        listEl.querySelectorAll('.item-text').forEach(function (el) {
-            el.classList.remove('text-primary','fw-semibold');
-        });
-
-        // Active l'élément correspondant et le garde visible
-        var target = listEl.querySelector('li[data-index="'+ idx +'"] .item-text');
-        if (target) {
-            target.classList.add('text-primary','fw-semibold');
-            var li = target.closest('li');
-            if (li && li.scrollIntoView) {
-                li.scrollIntoView({behavior:'smooth', block:'nearest'});
+    // Soumission AJAX
+    const form = root.querySelector('form');
+    if(form){
+      form.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const btn = form.querySelector('button[type="submit"]');
+        btn?.setAttribute('disabled','disabled');
+        try{
+          const resp = await fetch(form.action, { method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:new FormData(form) });
+          if(resp.ok){
+            bootstrap.Modal.getOrCreateInstance(modal).hide();
+            const url = "{{ request.build_absolute_uri|slice:':-1' }}{% url 'liste_commandes_partial' %}";
+            if(window.htmx){
+              htmx.ajax('GET', url, { target:'#commandes-table-wrapper', swap:'outerHTML' });
+            }else{
+              window.location.reload();
             }
-        }
-    });
-
-    // --- Clic sur un item -> aller à la slide correspondante (inchangé) ---
-    document.addEventListener('click', function (e) {
-        var li = e.target.closest('ul[data-role="liste-articles"] li[data-index]');
-        if (!li) return;
-
-        var ul = li.closest('ul[data-role="liste-articles"]');
-        var card = ul.closest('.card');
-        var carouselEl = card && card.querySelector('.carousel');
-        if (!carouselEl) return;
-
-        var idx = parseInt(li.getAttribute('data-index'), 10) || 0;
-        var instance = bootstrap.Carousel.getOrCreateInstance(carouselEl);
-        instance.to(idx);
-    });
-
-    // --- Gestion du toggle (mémorisation + rafraîchissement HTMX) ---
-    (function() {
-        const toggle = document.querySelector('.view-toggle');
-        const form = document.getElementById('filtersForm');
-        const displayInput = document.getElementById('display_input');
-
-        if (!toggle || !form || !displayInput) return;
-
-        // utilitaires
-        const getUrlPage = () => (new URLSearchParams(location.search)).get('page') || '';
-        const getOrMakePageInput = () => {
-        let el = document.getElementById('page_input');
-        if (!el) {
-            el = document.createElement('input');
-            el.type = 'hidden';
-            el.name = 'page';
-            el.id = 'page_input';
-            form.appendChild(el);
-        }
-        return el;
-        };
-
-        // 1) Clic toggle => mémoriser display, conserver page courante, soumettre le form (HTMX)
-        toggle.addEventListener('click', function(e) {
-        const btn = e.target.closest('button[data-mode]');
-        if (!btn) return;
-
-        const mode = btn.dataset.mode;
-        // UI
-        toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        // mémorise localStorage
-        const storageKey = toggle.dataset.storageKey || 'display_mode';
-        localStorage.setItem(storageKey, mode);
-
-        // met à jour champs form
-        displayInput.value = mode;
-        const pageInput = getOrMakePageInput();
-        pageInput.value = getUrlPage(); // ⬅️ conserve la page courante
-
-        // soumet via HTMX (hx-get + hx-push-url du form)
-        if (form.requestSubmit) form.requestSubmit(); else form.submit();
-        });
-
-        // 2) Quand un filtre change, on remet page à vide ⇒ retour page 1
-        const filterIds = ['date_livraison','article_id','page_id_filter','statut_vente','statut_livraison'];
-        filterIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.addEventListener('change', () => {
-            const pageInput = getOrMakePageInput();
-            pageInput.value = ''; // pas de ?page => Paginator retournera page 1
-        });
-        });
-
-        // 3) Après chaque swap du wrapper, resynchroniser #page_input avec l’URL (utile si pagination cliquée)
-        if (window.htmx) {
-        htmx.on('htmx:afterSwap', function (evt) {
-            if (evt.target && evt.target.id === 'commandes-table-wrapper') {
-            const pageInput = getOrMakePageInput();
-            pageInput.value = getUrlPage();
+          }else{
+            const html = await resp.text();
+            const tmp = document.createElement('div'); tmp.innerHTML = html;
+            const sameId = modal.getAttribute('id');
+            const replacement = tmp.querySelector(`#${CSS.escape(sameId)}`);
+            if(replacement){
+              modal.replaceWith(replacement);
+              initCommandeModalByElement(replacement, prefix);
+              bootstrap.Modal.getOrCreateInstance(replacement).show();
+            }else{
+              alert("Impossible d'enregistrer la commande (réponse inattendue).");
             }
-        });
+          }
+        }catch(err){
+          console.error(err);
+          alert("Erreur réseau lors de l'enregistrement.");
+        }finally{
+          btn?.removeAttribute('disabled');
         }
-    })();
+      });
+    }
+  }
 
+  // ---- Initialiser toutes les modales présentes (création + toutes les éditions)
+  document.addEventListener('DOMContentLoaded', function(){
+    const create = document.getElementById('commandeCreateModal');
+    if (create) initCommandeModalByElement(create, 'create');
+
+    document.querySelectorAll('[id^="commandeEditModal"]').forEach(m => {
+      initCommandeModalByElement(m, 'edit');
+    });
+  });
+})();
 </script>
 
+<script>
+document.addEventListener('show.bs.modal', function (e) {
+  const m = e.target;
+  if (m && m.id === 'deleteCommandeModal') {
+    const btn = e.relatedTarget;
+    if (!btn) return;
+
+    const action = btn.getAttribute('data-action');    // <- URL Django préparée
+    const numero = btn.getAttribute('data-numero') || '';
+
+    const form = m.querySelector('#deleteCommandeForm');
+    const span = m.querySelector('#commandeNum');
+
+    if (form && action) form.action = action;          // <- on fixe l'action !
+    if (span) span.textContent = numero;               // <- on affiche la facture
+  }
+});
+</script>
+
+<script>
+(function(){
+  // Bascule TABLE / CARDS en haut de page
+  const toggle = document.querySelector('.view-toggle');
+  if(!toggle) return;
+
+  const STORAGE_KEY = toggle.getAttribute('data-storage-key') || 'zr_display_commandes';
+  const TARGET      = toggle.getAttribute('data-target') || '#commandes-table-wrapper';
+  const TARGET_URL  = toggle.getAttribute('data-target-url');
+
+  const form        = document.getElementById('filtersForm');
+  const inputDisplay= document.getElementById('display_input');
+  const inputPage   = document.getElementById('page_input');
+
+  // Applique l'état "active" visuel
+  function setActive(mode){
+    toggle.querySelectorAll('button[data-mode]').forEach(b=>{
+      b.classList.toggle('active', b.getAttribute('data-mode') === mode);
+    });
+  }
+
+  // Déclenche le rechargement de la liste
+  function reloadList(mode){
+    if(inputDisplay) inputDisplay.value = mode;
+    if(inputPage)    inputPage.value    = 1; // on repart page 1
+    localStorage.setItem(STORAGE_KEY, mode);
+    setActive(mode);
+
+    // Construit la querystring depuis le form des filtres
+    const params = new URLSearchParams(new FormData(form));
+    params.set('display', mode);
+    params.set('page', '1');
+
+    const url = TARGET_URL + '?' + params.toString();
+
+    if (window.htmx) {
+      htmx.ajax('GET', url, { target: TARGET, swap: 'outerHTML', pushUrl: true });
+    } else {
+      // Fallback sans HTMX
+      window.location.href = url;
+    }
+  }
+
+  // Click sur les boutons
+  toggle.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-mode]');
+    if(!btn) return;
+    const mode = btn.getAttribute('data-mode');
+    if(!mode) return;
+    e.preventDefault();
+    reloadList(mode);
+  });
+
+  // Au chargement, on lit localStorage (optionnel)
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved && inputDisplay && inputDisplay.value !== saved){
+      // on synchronise visuel seulement; pas de reload auto
+      setActive(saved);
+    }else{
+      // synchronise visuel avec la valeur initiale du template
+      setActive(inputDisplay?.value || 'table');
+    }
+  });
+})();
+</script>
+
+<script>
+  // Re-init après refresh HTMX de la liste
+  document.body.addEventListener('htmx:afterSwap', function (e) {
+    const tgt = e.target;
+    if (!tgt) return;
+
+    // Quand la zone des commandes est remplacée, ré-attacher les comportements
+    if (tgt.id === 'commandes-table-wrapper') {
+      // Modale de création (si présente)
+      const create = document.getElementById('commandeCreateModal');
+      if (create) initCommandeModalByElement(create, 'create');
+
+      // Toutes les modales d’édition (Table + Card)
+      document.querySelectorAll('[id^="commandeEditModal"]').forEach(m => {
+        initCommandeModalByElement(m, 'edit');
+      });
+    }
+  }, false);
+</script>
+
+
+
+
+
+{% include 'ventes/creer_commande.html' %}
 {% endblock %}

@@ -8,10 +8,10 @@
         <th>Client</th>
         <th>Lieu</th>
         <th>Contact</th>
-        <th class="text-end">Total</th>
         <th>Statut</th>
         <th>Livreur</th>
-        <th class="text-end">Frais livreur</th>
+        <th class="text-end">Total</th>
+        <th class="text-end">Frais</th>
         <th class="text-center">Action</th>
       </tr>
     </thead>
@@ -22,9 +22,9 @@
         <td>{{ commande.client.nom }}</td>
         <td>{{ commande.client.lieu.lieu }}</td>
         <td>{{ commande.client.contact }}</td>
-        <td class="text-end">{{ commande.total_commande|intpoint }}</td>
         <td>{{ commande.statut_livraison }}</td>
         <td>{{ commande.livreur.nom }}</td>
+        <td class="text-end">{{ commande.total_commande|intpoint }}</td>
         <td class="text-end">{{ commande.frais_livreur|intpoint }}</td>
         <td class="text-center">
           <button class="btn btn-sm btn-outline-success"

@@ -5,6 +5,18 @@
 
 {% block title %}Statistiques{% endblock %}
 
+{% block css_files %}
+  <style>
+  #statsSidebar .list-group-item.active {
+    background-color: #198754;
+    border-color: #198754;
+    color: #fff;
+    font-weight: 600;
+  }
+  #statsSidebar .list-group-item.active i { color: #fff; }
+</style>
+{% endblock css_files %}
+
 {% block content %}
 
 {% now "Y" as cur_year %}
@@ -63,3 +75,27 @@
   </div>
 </div>
 {% endblock %}
+
+{% block script_files %}
+  <script>
+  document.body.addEventListener('htmx:afterOnLoad', function (e) {
+    // Ne traite que les swaps qui ont touché la zone stats
+    if (!document.querySelector('#statsContent')?.contains(e.detail.target)) return;
+
+    // Reconstruire l'URL de la requête HTMX pour récupérer ?tab=...
+    const base = window.location.origin;
+    const qs = e.detail.pathInfo.requestParameters
+      ? '?' + new URLSearchParams(e.detail.pathInfo.requestParameters)
+      : '';
+    const url = new URL(e.detail.pathInfo.requestPath + qs, base);
+    const tab = url.searchParams.get('tab');
+
+    // Mettre à jour l'actif
+    document.querySelectorAll('#statsSidebar a').forEach(a => a.classList.remove('active'));
+    const activeLink =
+      (tab && document.querySelector(`#statsSidebar a[href$="tab=${tab}"]`)) ||
+      (tab && document.querySelector(`#statsSidebar a[href$="/${tab}"]`));
+    if (activeLink) activeLink.classList.add('active');
+  });
+</script>
+{% endblock script_files %}

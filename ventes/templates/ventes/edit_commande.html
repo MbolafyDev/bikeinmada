@@ -1,0 +1,204 @@
+{# ventes/edit_commande.html #}
+{% if commande and commande.id %}
+{% with mp=modal_prefix|default:"" %}
+<div class="modal fade"
+     id="commandeEditModal{{ mp }}-{{ commande.id }}"
+     tabindex="-1"
+     aria-labelledby="commandeEditModalLabel{{ mp }}-{{ commande.id }}"
+     aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <form method="post" action="{% url 'commande_edit' commande_id=commande.id %}">
+        {% csrf_token %}
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="commandeEditModalLabel{{ mp }}-{{ commande.id }}">
+            Modifier la commande <span class="text-secondary">({{ commande.numero_facture }})</span>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+
+        <div class="modal-body">
+          {% include "includes/messages_alert.html" %}
+
+          <!-- Informations client -->
+          <div class="card mb-4">
+            <div class="card-header bg-success text-white">Informations sur le client</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="edit_nom_{{ commande.id }}" class="form-label">Nom *</label>
+                  <input type="text" class="form-control" name="nom" id="edit_nom_{{ commande.id }}" value="{{ commande.client.nom }}" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="edit_contact_{{ commande.id }}" class="form-label">Contact *</label>
+                  <input type="text" class="form-control" name="contact" id="edit_contact_{{ commande.id }}" value="{{ commande.client.contact }}" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="edit_lieu_{{ commande.id }}" class="form-label">Lieu *</label>
+                  <select name="lieu" id="edit_lieu_{{ commande.id }}" class="form-select" required>
+                    <option value="" disabled>Choisir un lieu</option>
+                    {% for l in lieux %}
+                      <option value="{{ l.id }}"
+                              data-frais_livraison="{{ l.frais_livraison }}"
+                              data-frais_livreur="{{ l.frais_livreur }}"
+                              {% if commande.client.lieu.id == l.id %}selected{% endif %}>
+                        {{ l.lieu }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="edit_precision_lieu_{{ commande.id }}" class="form-label">Précision lieu</label>
+                  <input type="text" class="form-control" name="precision_lieu" id="edit_precision_lieu_{{ commande.id }}" value="{{ commande.client.precision_lieu }}">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Informations livraison -->
+          <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">Informations sur la livraison</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="edit_date_livraison_{{ commande.id }}" class="form-label">Date de livraison</label>
+                  <input type="date" class="form-control" name="date_livraison" id="edit_date_livraison_{{ commande.id }}" value="{{ commande.date_livraison|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-6">
+                  <label for="edit_remarque_{{ commande.id }}" class="form-label">Remarque</label>
+                  <input type="text" class="form-control" name="remarque" id="edit_remarque_{{ commande.id }}" value="{{ commande.remarque|default_if_none:'' }}">
+                </div>
+                <div class="col-md-6">
+                  <label for="edit_date_debut_prestation_{{ commande.id }}" class="form-label">Date début de prestation</label>
+                  <input type="date" class="form-control" name="date_debut_prestation" id="edit_date_debut_prestation_{{ commande.id }}" value="{{ commande.date_debut_prestation|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-6">
+                  <label for="edit_date_fin_prestation_{{ commande.id }}" class="form-label">Date fin de prestation</label>
+                  <input type="date" class="form-control" name="date_fin_prestation" id="edit_date_fin_prestation_{{ commande.id }}" value="{{ commande.date_fin_prestation|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-6">
+                  <label for="edit_frais_livraison_{{ commande.id }}" class="form-label">Frais de livraison</label>
+                  <input type="text" class="form-control" name="frais_livraison" id="edit_frais_livraison_{{ commande.id }}" value="{{ commande.frais_livraison }}">
+                </div>
+                <div class="col-md-6">
+                  <label for="edit_frais_livreur_{{ commande.id }}" class="form-label">Frais livreur</label>
+                  <input type="text" class="form-control" name="frais_livreur" id="edit_frais_livreur_{{ commande.id }}" value="{{ commande.frais_livreur }}">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Informations commande / Lignes -->
+          <div class="card mb-4">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+              Informations sur la commande
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="edit_date_commande_{{ commande.id }}" class="form-label">Date de commande</label>
+                  <input type="date" class="form-control" name="date_commande" id="edit_date_commande_{{ commande.id }}" value="{{ commande.date_commande|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-6">
+                  <label for="edit_page_{{ commande.id }}" class="form-label">Page</label>
+                  <select name="page" id="edit_page_{{ commande.id }}" class="form-select" required>
+                    <option value="">-- Choisir une page --</option>
+                    {% for p in pages %}
+                      <option value="{{ p.id }}" {% if commande.page.id == p.id %}selected{% endif %}>{{ p.nom }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <hr class="my-4">
+
+              <div id="edit_lignesCommande">
+                {% for ligne in lignes %}
+                <div class="row g-3 align-items-end mb-3" data-line>
+                  <div class="col-lg-3">
+                    <label class="form-label">Article</label>
+                    <select name="article" class="form-select" required data-role="article">
+                      <option value="">-- Choisir --</option>
+                      {% for article in articles %}
+                        <option value="{{ article.id }}"
+                                data-prix="{{ article.prix_vente }}"
+                                data-stock="{{ article.stock }}"
+                                data-livraison="{{ article.livraison }}"
+                                {% if article.id == ligne.article.id %}selected{% endif %}>
+                          {{ article.nom }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-lg-2">
+                    <label class="form-label">P.U</label>
+                    <input type="number" name="pu" class="form-control" step="100" value="{{ ligne.prix_unitaire }}">
+                  </div>
+                  <div class="col-lg-1">
+                    <label class="form-label">Qté</label>
+                    <input type="number" name="quantite" class="form-control" min="1" value="{{ ligne.quantite }}">
+                  </div>
+                  <div class="col-lg-1">
+                    <label class="form-label">Stock</label>
+                    <div data-name="stock_display"
+                         class="form-control-plaintext fw-bold text-center {% if ligne.stock > 0 %}text-success{% else %}text-danger{% endif %}">
+                      {{ ligne.stock }}
+                    </div>
+                  </div>
+                  <div class="col-lg-2">
+                    <label class="form-label">Livraison</label>
+                    <input type="text" name="livraison" class="form-control" value="{{ ligne.article.livraison }}" readonly>
+                  </div>
+                  <div class="col-lg-2">
+                    <label class="form-label">Montant</label>
+                    <input type="number" name="montant" class="form-control" value="{{ ligne.montant }}" readonly>
+                  </div>
+                  <div class="col-lg-1 d-grid">
+                    <button type="button" class="btn btn-danger btn-sm" data-action="remove-line">✖</button>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+
+              <button type="button" class="btn btn-sm btn-outline-success" data-action="add-line">+ Ajouter un article</button>
+
+              <hr class="my-4">
+
+              <div class="row">
+                <div class="col-12">
+                  <table class="table table-bordered w-100 mb-0">
+                    <tbody>
+                      <tr>
+                        <th>Total des articles</th>
+                        <td class="text-end"><span data-name="total_articles">0</span> Ar</td>
+                      </tr>
+                      <tr>
+                        <th>Frais de livraison</th>
+                        <td class="text-end"><span data-name="total_frais_livraison">0</span> Ar</td>
+                      </tr>
+                      <tr>
+                        <th>Total à payer</th>
+                        <td class="fw-bold text-end"><span data-name="total_a_payer">0</span> Ar</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer d-flex justify-content-end">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+          <button type="submit" class="btn btn-success">Mettre à jour</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endwith %}
+{% endif %}

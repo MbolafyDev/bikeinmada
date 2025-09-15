@@ -78,6 +78,7 @@ def client_create(request):
     lieu_id = request.POST.get("lieu")
     precision_lieu = request.POST.get("precision_lieu", "")
     contact = request.POST.get("contact")
+    reference_client = request.POST.get("reference_client")
 
     if nom and lieu_id and contact:
         lieu_obj = get_object_or_404(Livraison, id=lieu_id)
@@ -85,7 +86,8 @@ def client_create(request):
             nom=nom,
             lieu=lieu_obj,
             precision_lieu=precision_lieu,
-            contact=contact
+            contact=contact,
+            reference_client=reference_client
         )
     return redirect("clients_list")
 
@@ -102,6 +104,7 @@ def client_update(request, client_id):
     client.lieu = get_object_or_404(Livraison, id=lieu_id)
     client.precision_lieu = request.POST.get("precision_lieu", "")
     client.contact = request.POST.get("contact")
+    client.reference_client = request.POST.get("reference_client")
     client.save()
     return redirect("clients_list")
 

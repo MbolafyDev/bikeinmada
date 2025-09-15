@@ -71,6 +71,20 @@
       color: #198754; /* blue if active */
     }
   </style>
+  <style>
+  /* Style "success" pour l'élément actif du menu config */
+  #configSidebar .list-group-item.active {
+    background-color: #198754;  /* vert Bootstrap "success" */
+    border-color: #198754;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* Pour les icônes dans l’élément actif */
+  #configSidebar .list-group-item.active i {
+    color: #fff;
+  }
+</style>
 </head>
 
 <body>
@@ -229,6 +243,31 @@
   })();
 
 </script>
+<script>
+  // Après un swap HTMX, synchroniser l’onglet actif selon l’URL (?tab=...)
+  document.body.addEventListener('htmx:afterOnLoad', function (e) {
+    // Reconstruit l’URL de la requête HTMX pour récupérer ?tab=...
+    const base = window.location.origin;
+    const qs = e.detail.pathInfo.requestParameters
+      ? '?' + new URLSearchParams(e.detail.pathInfo.requestParameters)
+      : '';
+    const url = new URL(e.detail.pathInfo.requestPath + qs, base);
+    const tab = url.searchParams.get('tab');
+
+    // Si c’est un chargement lié au bloc des stats, mettre à jour l’actif
+    if (document.querySelector('#statsContent')?.contains(e.detail.target)) {
+      document.querySelectorAll('#statsSidebar a').forEach(a => a.classList.remove('active'));
+
+      // Essaie de retrouver le lien via ?tab=xxx ou via /xxx à la fin du href
+      const activeLink =
+        (tab && document.querySelector(`#statsSidebar a[href$="tab=${tab}"]`)) ||
+        (tab && document.querySelector(`#statsSidebar a[href$="/${tab}"]`));
+
+      if (activeLink) activeLink.classList.add('active');
+    }
+  });
+</script>
+{% block script_files %}{% endblock script_files %}
 
 </body>
 </html>
