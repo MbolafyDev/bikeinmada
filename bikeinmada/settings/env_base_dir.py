@@ -1,4 +1,4 @@
-# zarastore/settings/env_base_dir.py
+
 from pathlib import Path
 import os
 

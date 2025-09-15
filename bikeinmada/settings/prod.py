@@ -4,7 +4,7 @@ import os
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['zarastore.pythonanywhere.com']
+ALLOWED_HOSTS = ['bikeinmada.pythonanywhere.com']
 
 DATABASES = {
     'default': {
