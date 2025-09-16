@@ -33,4 +33,16 @@ urlpatterns = [
     path('frais/ajouter/', views.frais_livraison_ajouter, name='frais_livraison_ajouter'),
     path('frais/modifier/<int:id>/', views.frais_livraison_modifier, name='frais_livraison_modifier'),
     path('frais/supprimer/<int:id>/', views.frais_livraison_supprimer, name='frais_livraison_supprimer'),
+
+    path('articles/ajouter-categorie/', views.ajouter_categorie, name="ajouter_categorie"),
+    path('articles/<int:pk>/modifier-categorie/', views.modifier_categorie, name="modifier_categorie"),
+    path('articles/<int:pk>/supprimer-categorie/', views.supprimer_categorie, name="supprimer_categorie"),
+
+    path('articles/ajouter-taille/', views.ajouter_taille, name="ajouter_taille"),
+    path('articles/<int:pk>/modifier-taille/', views.modifier_taille, name="modifier_taille"),
+    path('articles/<int:pk>/supprimer-taille/', views.supprimer_taille, name="supprimer_taille"),
+
+    path('articles/ajouter-couleur/', views.ajouter_couleur, name="ajouter_couleur"),
+    path('articles/<int:pk>/modifier-couleur/', views.modifier_couleur, name="modifier_couleur"),
+    path('articles/<int:pk>/supprimer-couleur/', views.supprimer_couleur, name="supprimer_couleur"),
 ]

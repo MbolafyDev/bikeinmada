@@ -6,10 +6,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import authenticate
 from django.db.models.deletion import ProtectedError
+
 from common.decorators import admin_required
-from common.utils import is_admin, resolve_display_mode  
-from .models import Article, Service
+from common.utils import is_admin, resolve_display_mode
+
+from .models import Article, Service, Taille, Couleur, Categorie
 from .forms import ArticleForm, ServiceForm
+
 
 def build_articles_context(request):
     articles = Article.objects.all().order_by('nom')
@@ -55,6 +58,11 @@ def build_articles_context(request):
     # Mode d’affichage (GET > session > défaut)
     display_mode = resolve_display_mode(request, session_key="display_articles", default="cards")
 
+    # 👇 Injecter les listes pour les <select> des modaux
+    tailles = Taille.objects.all().order_by('taille')
+    couleurs = Couleur.objects.all().order_by('couleur')
+    categories = Categorie.objects.all().order_by('categorie')
+
     return {
         'articles': page_obj.object_list,
         'page_obj': page_obj,
@@ -65,30 +73,39 @@ def build_articles_context(request):
         'extra_querystring': extra_querystring,
         'display_mode': display_mode,
         'is_admin': is_admin(request.user),
+
+        # 👇 pour les modaux (create/edit)
+        'tailles': tailles,
+        'couleurs': couleurs,
+        'categories': categories,
     }
+
 
 @login_required
 def article_list(request):
     context = build_articles_context(request)
     return render(request, 'articles/articles_list.html', context)
 
+
 @login_required
 def article_list_partial(request):
     context = build_articles_context(request)
-
-    # Si ce n’est pas un appel HTMX, renvoyer la page complète
     if request.headers.get('HX-Request') != 'true':
         return render(request, 'articles/articles_list.html', context)
-
-    # Sinon, ne renvoyer que le wrapper (choisit table/cartes)
     return render(request, 'articles/includes/articles_list_wrapper.html', context)
+
 
 @admin_required
 def article_create(request):
     if request.method == 'POST':
-        form = ArticleForm(request.POST, request.FILES)  
+        form = ArticleForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            # ⚠️ Au cas où ArticleForm n’a pas (taille, couleur, categorie)
+            article = form.save(commit=False)
+            article.taille_id = request.POST.get('taille') or None
+            article.couleur_id = request.POST.get('couleur') or None
+            article.categorie_id = request.POST.get('categorie') or None
+            article.save()
             messages.success(request, "Article créé avec succès.")
             return redirect('article_list')
         else:
@@ -100,14 +117,20 @@ def article_create(request):
 def article_edit(request, pk):
     article = get_object_or_404(Article, pk=pk)
     if request.method == 'POST':
-        form = ArticleForm(request.POST, request.FILES, instance=article)  
+        form = ArticleForm(request.POST, request.FILES, instance=article)
         if form.is_valid():
-            form.save()
+            article = form.save(commit=False)
+            # idem : sécuriser l’affectation des FK
+            article.taille_id = request.POST.get('taille') or None
+            article.couleur_id = request.POST.get('couleur') or None
+            article.categorie_id = request.POST.get('categorie') or None
+            article.save()
             messages.success(request, "Article modifié avec succès.")
             return redirect('article_list')
         else:
             messages.error(request, "Veuillez corriger les erreurs du formulaire.")
     return redirect('article_list')
+
 
 @admin_required
 def article_delete(request, pk):
@@ -117,13 +140,13 @@ def article_delete(request, pk):
         messages.success(request, "Article supprimé temporairement.")
     return redirect('article_list')
 
+
 @admin_required
 def article_delete_definitive(request, pk):
     article = get_object_or_404(Article, pk=pk)
     if request.method == 'POST':
         password = request.POST.get('password')
         user = authenticate(username=request.user.username, password=password)
-
         if user is not None:
             try:
                 article.delete()
@@ -137,31 +160,29 @@ def article_delete_definitive(request, pk):
             messages.warning(request, "Mot de passe incorrect. Suppression annulée.")
     return redirect('article_list')
 
+
 @admin_required
 def article_restore(request, pk):
     article = get_object_or_404(Article, pk=pk)
-
     if request.method == 'POST':
         password = request.POST.get('password')
-
         user = authenticate(username=request.user.username, password=password)
         if user is not None:
             article.restore(user=request.user)
             messages.success(request, f"L’article « {article.nom} » a été restauré avec succès.")
         else:
             messages.warning(request, "Mot de passe incorrect. Restauration annulée.")
-
     return redirect('article_list')
 
+
+# ---- Services (inchangé) ----
 @login_required
 def service_list(request):
     services = Service.objects.all()
-
     query = request.GET.get('q', '')
     tarif_min = request.GET.get('tarif_min')
     tarif_max = request.GET.get('tarif_max')
 
-    # Filtres
     if query:
         services = services.filter(nom__icontains=query)
 
@@ -177,7 +198,6 @@ def service_list(request):
         except ValueError:
             pass
 
-    # Pagination
     paginator = Paginator(services, 30)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -200,6 +220,7 @@ def service_list(request):
         'extra_querystring': extra_querystring,
     })
 
+
 @admin_required
 def service_create(request):
     if request.method == 'POST':
@@ -209,8 +230,8 @@ def service_create(request):
             return redirect('service_list')
     else:
         form = ServiceForm()
+    return redirect('service_list')
 
-    return redirect('service_list')  # ou renvoyer un formulaire modal si utilisé
 
 @admin_required
 def service_edit(request, pk):
@@ -223,6 +244,7 @@ def service_edit(request, pk):
     else:
         form = ServiceForm(instance=service)
     return redirect('service_list')
+
 
 @admin_required
 def service_delete(request, pk):

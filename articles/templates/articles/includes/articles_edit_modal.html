@@ -24,7 +24,7 @@
 
             <label for="image{{ article.id }}" class="form-label">Nouvelle image (optionnel)</label>
             <input type="file" class="form-control" id="image{{ article.id }}" name="image" accept="image/*"
-                  data-preview-target="#preview-{{ article.id }}">
+                   data-preview-target="#preview-{{ article.id }}">
             <div class="form-text">Laissez vide pour conserver l’image actuelle.</div>
 
             <!-- Aperçu live (nouvelle sélection) -->
@@ -53,13 +53,66 @@
               <option value="Gratuite" {% if article.livraison == "Gratuite" %}selected{% endif %}>Gratuite</option>
             </select>
           </div>
+
+          <!-- 👇 Ajouts : Catégorie / Taille / Couleur -->
+          <div class="mb-3">
+            <label for="categorie{{ article.id }}" class="form-label">Catégorie</label>
+            <select class="form-select" id="categorie{{ article.id }}" name="categorie">
+              <option value="">— Aucune —</option>
+              {% for c in categories %}
+                <option value="{{ c.id }}" {% if article.categorie_id == c.id %}selected{% endif %}>{{ c.categorie }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="taille{{ article.id }}" class="form-label">Taille</label>
+            <select class="form-select" id="taille{{ article.id }}" name="taille">
+              <option value="">— Aucune —</option>
+              {% for t in tailles %}
+                <option value="{{ t.id }}" {% if article.taille_id == t.id %}selected{% endif %}>{{ t.taille }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="couleur{{ article.id }}" class="form-label">Couleur</label>
+            <select class="form-select" id="couleur{{ article.id }}" name="couleur">
+              <option value="">— Aucune —</option>
+              {% for cl in couleurs %}
+                <option value="{{ cl.id }}" {% if article.couleur_id == cl.id %}selected{% endif %}>{{ cl.couleur }}</option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-          <button type="submit" class="btn btn-primary">Enregistrer</button>
+          <button type="submit" class="btn btn-success">Modifier</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+  // Aperçu d'image pour ce modal d'édition (scopé par article.id)
+  (function () {
+    const input = document.getElementById('image{{ article.id }}');
+    if (!input) return;
+    input.addEventListener('change', function (e) {
+      const targetSel = e.target.getAttribute('data-preview-target');
+      const preview = document.querySelector(targetSel);
+      if (!preview) return;
+
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        preview.classList.remove('d-none');
+        preview.src = URL.createObjectURL(file);
+      } else {
+        preview.classList.add('d-none');
+        preview.removeAttribute('src');
+      }
+    });
+  })();
+</script>

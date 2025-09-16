@@ -10,6 +10,7 @@ from django.contrib import messages
 
 from common.decorators import admin_required
 from common.models import Pages, Caisse, PlanDesComptes
+from articles.models import Categorie, Taille, Couleur
 
 # Profil (depuis l’app users)
 from users.forms import ProfilForm
@@ -27,7 +28,8 @@ from livraison.forms import LivreurForm
 # -------------------------------
 # Sections disponibles
 # -------------------------------
-SECTIONS = ("pages", "caisses", "plans", "profil", "livreurs", "frais")
+SECTIONS = ("pages", "caisses", "plans", "profil", "livreurs", "frais",
+            "categories", "taille", "couleurs")
 
 
 # -------------------------------
@@ -67,6 +69,24 @@ def _get_section_context(request, section):
         return ("configuration/includes/configuration_livreurs.html", {
             "livreurs": Livreur.objects.all().order_by("nom"),
             "is_admin": is_admin_flag,
+        })
+    
+    if section == "categories":
+        return ("configuration/includes/configuration_categorie.html", {
+            "categories": Categorie.objects.all().order_by("categorie"),
+            "is_admin": is_admin_flag
+        })
+    
+    if section == "taille":
+        return ("configuration/includes/configuration_taille.html", {
+            "tailles": Taille.objects.all().order_by("taille"),
+            "is_admin": is_admin_flag
+        })
+    
+    if section == "couleurs":
+        return ("configuration/includes/configuration_couleur.html", {
+            "couleurs": Couleur.objects.all().order_by("couleur"),
+            "is_admin": is_admin_flag
         })
 
     if section == "frais":
@@ -444,3 +464,118 @@ def frais_livraison_supprimer(request, id):
     except Exception as e:
         messages.warning(request, f"Erreur lors de la suppression : {e}")
     return redirect(f"{reverse('configuration')}?tab=frais")
+
+
+@login_required
+@admin_required
+@require_POST
+def ajouter_categorie(request):
+    try:
+        Categorie.objects.create(categorie=request.POST['categorie'])
+        messages.success(request, "Catégorie ajoutée avec succès ✅")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de l’ajout de la catégorie : {e}")
+    return redirect(f"{reverse('configuration')}?tab=articles")
+
+@login_required
+@admin_required
+@require_POST
+def modifier_categorie(request, pk):
+    try:
+        categorie = get_object_or_404(Categorie, pk=pk)
+        categorie.categorie = request.POST.get("categorie")
+        categorie.save()
+        messages.success(request, f"Catégorie « {categorie.categorie} » modifiée ✅")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de la modification : {e}")
+    return redirect(f"{reverse('configuration')}?tab=articles")
+
+
+@login_required
+@admin_required
+@require_POST
+def supprimer_categorie(request, pk):
+    try:
+        categorie = get_object_or_404(Categorie, pk=pk)
+        nom = categorie.categorie
+        categorie.soft_delete(user=request.user)
+        messages.success(request, f"Catégorie « {nom} » supprimée 🗑️")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de la suppression : {e}")
+    return redirect(f"{reverse('configuration')}?tab=articles")
+
+
+@login_required
+@admin_required
+@require_POST
+def ajouter_taille(request):
+    try:
+        Taille.objects.create(taille=request.POST['taille'])
+        messages.success(request, "Taille ajoutée avec succès ✅")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de l’ajout de la taille : {e}")
+    return redirect(f"{reverse('configuration')}?tab=articles")
+
+@login_required
+@admin_required
+@require_POST
+def modifier_taille(request, pk):
+    try:
+        taille = get_object_or_404(Taille, pk=pk)
+        taille.taille = request.POST.get("taille")
+        taille.save()
+        messages.success(request, f"Taille « {taille.taille} » modifiée ✅")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de la modification : {e}")
+    return redirect(f"{reverse('configuration')}?tab=articles")
+
+@login_required
+@admin_required
+@require_POST
+def supprimer_taille(request, pk):
+    try:
+        taille = get_object_or_404(Taille, pk=pk)
+        nom = taille.taille
+        taille.soft_delete(user=request.user)
+        messages.success(request, f"Taille « {nom} » supprimée 🗑️")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de la suppression : {e}")
+    return redirect(f"{reverse('configuration')}?tab=articles")
+
+
+@login_required
+@admin_required
+@require_POST
+def ajouter_couleur(request):
+    try:
+        Couleur.objects.create(couleur=request.POST['couleur'])
+        messages.success(request, "Couleur ajoutée avec succès ✅")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de l’ajout de la couleur : {e}")
+    return redirect(f"{reverse('configuration')}?tab=articles")
+
+@login_required
+@admin_required
+@require_POST
+def modifier_couleur(request, pk):
+    try:
+        couleur = get_object_or_404(Couleur, pk=pk)
+        couleur.couleur = request.POST.get("couleur")
+        couleur.save()
+        messages.success(request, f"Couleur « {couleur.couleur} » modifiée ✅")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de la modification : {e}")
+    return redirect(f"{reverse('configuration')}?tab=articles")
+
+@login_required
+@admin_required
+@require_POST
+def supprimer_couleur(request, pk):
+    try:
+        couleur = get_object_or_404(Couleur, pk=pk)
+        nom = couleur.couleur
+        couleur.soft_delete(user=request.user)
+        messages.success(request, f"Couleur « {nom} » supprimée 🗑️")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de la suppression : {e}")
+    return redirect(f"{reverse('configuration')}?tab=articles")
