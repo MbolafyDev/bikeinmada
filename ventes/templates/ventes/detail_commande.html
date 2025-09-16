@@ -9,7 +9,7 @@
     <h2 class="text-center mt-4">Détail de la commande</h2>
 
     <div class="mb-2">
-        <a class="btn btn-primary" href="{% url 'commande_create' %}">
+        <a class="btn btn-success" href="{% url 'commande_create' %}">
             <i class="fa fa-plus"></i> Enregistrer une commande
         </a>
     </div>
@@ -18,7 +18,7 @@
 
     <!-- Informations générales -->
     <div class="card mt-4 mb-4">
-        <div class="card-header bg-primary text-white">Informations sur la commande</div>
+        <div class="card-header bg-success text-white">Informations sur la commande</div>
         <div class="card-body">
             <p><strong>Numéro de facture :</strong> {{ commande.numero_facture }}</p>
             <p><strong>Date de la commande :</strong> {{ commande.date_commande|date:"d/m/Y" }}</p>
@@ -99,13 +99,13 @@
     <div class="text-center">
         <form action="{% url 'commande_edit' commande.id %}" method="get" class="d-inline">
             <button type="submit"
-                    class="btn btn-primary"
+                    class="btn btn-success"
                     title="Modifier"
                     {% if not is_admin %}disabled{% endif %}>
                 <i class="fa fa-edit"></i> Modifier
             </button>
         </form>
-        <a href="{% url 'liste_commandes' %}" class="btn btn-outline-primary">← Retour à la liste</a>
+        <a href="{% url 'liste_commandes' %}" class="btn btn-outline-success">← Retour à la liste</a>
     </div>
 </div>
 {% endblock %}

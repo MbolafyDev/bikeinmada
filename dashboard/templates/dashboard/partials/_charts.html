@@ -1,0 +1,63 @@
+{% load nombre %}
+<div id="charts-wrapper"
+     hx-get="{% url 'dashboard:charts' %}?{{ request.GET.urlencode }}"
+     hx-trigger="revealed from:body"
+     hx-target="#charts-wrapper"
+     hx-swap="outerHTML">
+
+  <div class="row g-3 mb-3">
+    <!-- Évolution du CA -->
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">Évolution du CA</div>
+        <div class="card-body" style="height: 300px;">
+          <canvas id="chartEvolution"
+            data-labels='[
+              {% for p in evolution %}
+                "{% if p.d %}{{ p.d|date:"Y-m-d" }}{% elif p.m %}{{ p.m|date:"Y-m" }}{% endif %}"
+                {% if not forloop.last %},{% endif %}
+              {% endfor %}
+            ]'
+            data-values='[
+              {% for p in evolution %}{{ p.total|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}
+            ]'></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Encaissements par caisse -->
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">Encaissements par caisse</div>
+        <div class="card-body" style="height: 300px;">
+          <canvas id="chartCaisses"
+            data-labels='[
+              {% for e in encaissements_par_caisse %}"{{ e.paiement__nom }}"{% if not forloop.last %},{% endif %}{% endfor %}
+            ]'
+            data-values='[
+              {% for e in encaissements_par_caisse %}{{ e.total|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}
+            ]'></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top 5 articles -->
+  <div class="row g-3 mb-3">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">Top 5 articles (quantités vendues)</div>
+        <div class="card-body" style="height: 300px;">
+          <canvas id="chartTopArticles"
+            data-labels='[
+              {% for t in top_articles %}"{{ t.article__nom }}"{% if not forloop.last %},{% endif %}{% endfor %}
+            ]'
+            data-values='[
+              {% for t in top_articles %}{{ t.qte|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}
+            ]'></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -25,7 +25,7 @@
             </select>
         </div>
         <div class="col-md-4 d-flex align-items-end">
-            <button type="submit" class="btn btn-outline-primary w-100">
+            <button type="submit" class="btn btn-outline-success w-100">
                 <i class="fa fa-filter"></i> Filtrer
             </button>
         </div>
@@ -37,7 +37,7 @@
         <!-- Table pour grands écrans -->
         <div class="table-responsive d-none d-lg-block mb-4">
             <table class="table table-bordered table-striped align-middle">
-                <thead class="table-primary">
+                <thead class="table-success">
                     <tr>
                         <th><input type="checkbox" id="selectAll"></th>
                         <th>Date</th>
@@ -75,7 +75,7 @@
                         <div class="card-body">
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" name="commandes" value="{{ commande.id }}">
-                                <label class="form-check-label text-primary fw-bold">Commande du {{ commande.date_livraison|date:"d/m/Y" }}</label>
+                                <label class="form-check-label text-success fw-bold">Commande du {{ commande.date_livraison|date:"d/m/Y" }}</label>
                             </div>
                             <p class="mb-1"><strong>Facture :</strong> {{ commande.numero_facture }}</p>
                             <p class="mb-1"><strong>Client :</strong> {{ commande.client.nom }}</p>
@@ -93,7 +93,7 @@
         {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
 
         <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
-            <button type="submit" name="action" value="en_attente" class="btn btn-primary" {% if not is_admin %}disabled{% endif %}>
+            <button type="submit" name="action" value="en_attente" class="btn btn-success" {% if not is_admin %}disabled{% endif %}>
                 <i class="fa fa-hourglass"></i> En attente
             </button>
             <button type="submit" name="action" value="annulée" class="btn btn-danger" {% if not is_admin %}disabled{% endif %}>

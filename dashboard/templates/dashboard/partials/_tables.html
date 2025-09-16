@@ -1,0 +1,96 @@
+{% load nombre %}
+<div id="tables-wrapper"
+     hx-get="{% url 'dashboard:tables' %}?{{ request.GET.urlencode }}"
+     hx-trigger="revealed from:body"
+     hx-target="#tables-wrapper"
+     hx-swap="outerHTML">
+
+  <div class="row g-3">
+    <!-- Commandes récentes -->
+    <div class="col-12 col-xl-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-success text-white">Commandes récentes</div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm table-striped align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Facture</th>
+                  <th>Client</th>
+                  <th>Page</th>
+                  <th>Date</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for c in commandes_recentes %}
+                <tr>
+                  <td>{{ c.numero_facture }}</td>
+                  <td>{{ c.client.nom }}</td>
+                  <td>
+                    {% if c.page %}
+                      {{ c.page.nom }}
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ c.date_commande|date:"d/m/Y" }}</td>
+                  <td class="text-end">{{ c.total_commande|intpoint }} Ar</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-3">Aucune commande</td></tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Livraisons en cours -->
+    <div class="col-12 col-xl-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-success text-white">Livraisons en cours</div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm table-striped align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Facture</th>
+                  <th>Client</th>
+                  <th>Statut</th>
+                  <th>Livreur</th>
+                  <th>Date liv.</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for c in livraisons_en_cours %}
+                <tr>
+                  <td>{{ c.numero_facture }}</td>
+                  <td>{{ c.client.nom }}</td>
+                  <td>
+                    <span class="badge {% if c.statut_livraison == 'Livrée' %}bg-success{% elif c.statut_livraison == 'En attente' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                      {{ c.statut_livraison }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if c.livreur %}
+                      {{ c.livreur.nom }}
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ c.date_livraison|date:"d/m/Y" }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-3">Aucune livraison en cours</td></tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

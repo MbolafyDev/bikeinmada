@@ -1,0 +1,67 @@
+{% load nombre %}
+<div id="cards-wrapper" class="row g-3 mb-3"
+     hx-get="{% url 'dashboard:cards' %}?{{ request.GET.urlencode }}"
+     hx-trigger="revealed from:body"
+     hx-target="#cards-wrapper"
+     hx-swap="outerHTML">
+  <!-- CA période -->
+  <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-secondary">CA (période)</div>
+        <div class="fs-4 fw-bold">{{ kpi.ca_periode|default:0|intpoint }} Ar</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CA jour -->
+  <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-secondary">CA aujourd’hui</div>
+        <div class="fs-4 fw-bold">{{ kpi.ca_jour|default:0|intpoint }} Ar</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Commandes -->
+  <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-secondary">Commandes (période)</div>
+        <div class="fs-4 fw-bold">{{ kpi.nb_commandes }}</div>
+        <div class="small text-warning">En attente : {{ kpi.nb_commandes_en_attente }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Marge brute -->
+  <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-secondary">Marge brute estimée</div>
+        <div class="fs-4 fw-bold">{{ marge_brute|default:0|intpoint }} Ar</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Achats -->
+  <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-secondary">Achats (période)</div>
+        <div class="fs-5 fw-bold">{{ kpi.achats_periode|default:0|intpoint }} Ar</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charges -->
+  <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-secondary">Charges (période)</div>
+        <div class="fs-5 fw-bold">{{ kpi.charges_periode|default:0|intpoint }} Ar</div>
+      </div>
+    </div>
+  </div>
+</div>

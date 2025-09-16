@@ -23,7 +23,8 @@ from pwa import views as pwa_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('ventes.urls')),
+    path('', include('dashboard.urls', namespace='dashboard')),
+    path('ventes/', include('ventes.urls')),
     path('users/', include('users.urls')),
     path('articles/', include('articles.urls')),
     path('achats/', include('achats.urls')),
