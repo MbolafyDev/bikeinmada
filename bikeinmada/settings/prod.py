@@ -4,7 +4,7 @@ import os
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['bikeinmada.pythonanywhere.com']
+ALLOWED_HOSTS = ['bikeinmada1.pythonanywhere.com']
 
 DATABASES = {
     'default': {

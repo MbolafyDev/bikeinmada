@@ -12,7 +12,7 @@
     {% include "includes/messages_alert.html" %}
 
     <div class="d-flex justify-content mb-2">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal" {% if not is_admin %}disabled{% endif %}>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createModal" {% if not is_admin %}disabled{% endif %}>
             <i class="fa fa-plus"></i> Ajouter un service
         </button>
     </div>
@@ -28,7 +28,7 @@
             <input type="number" name="tarif_max" class="form-control" step="100" placeholder="Tarif <=" value="{{ tarif_max }}">
         </div>
         <div class="col-md-6 col-lg-2">
-            <button type="submit" class="btn btn-outline-primary w-100"><i class="fa fa-filter"></i> Filtrer</button>
+            <button type="submit" class="btn btn-outline-success w-100"><i class="fa fa-filter"></i> Filtrer</button>
         </div>
     </form>
 
@@ -37,7 +37,7 @@
     <div class="d-none d-lg-block">
         <div class="table-responsive">
             <table class="table table-bordered table-striped align-middle">
-                <thead class="table-primary">
+                <thead class="table-success">
                     <tr>
                         <th>Nom</th>
                         <th>Référence</th>
@@ -52,7 +52,7 @@
                         <td>{{ service.reference }}</td>
                         <td class="text-end">{{ service.tarif|intpoint }}</td>
                         <td class="text-center" style="white-space: nowrap">
-                            <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ service.id }}" {% if not is_admin or service.statut_publication == 'supprimé' %}disabled{% endif %}>
+                            <button class="btn btn-sm btn-outline-success me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ service.id }}" {% if not is_admin or service.statut_publication == 'supprimé' %}disabled{% endif %}>
                                 <i class="fa fa-edit"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ service.id }}" {% if not is_admin or service.statut_publication == 'supprimé' %}disabled{% endif %}>
@@ -73,12 +73,12 @@
             <div class="col-md-6 mb-4">
                 <div class="card h-100 shadow-sm" {% if service.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
                     <div class="card-body">
-                        <h5 class="card-title text-primary">{{ service.nom }}</h5>
+                        <h5 class="card-title text-success">{{ service.nom }}</h5>
                         <p class="card-text mb-1"><strong>Référence:</strong> {{ service.reference }}</p>
                         <p class="card-text mb-2"><strong>Tarif:</strong> {{ service.tarif|intpoint }} Ar</p>
                     </div>
                     <div class="card-footer text-end">
-                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ service.id }}" {% if not is_admin or service.statut_publication == 'supprimé' %}disabled{% endif %}>
+                        <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editModal{{ service.id }}" {% if not is_admin or service.statut_publication == 'supprimé' %}disabled{% endif %}>
                             <i class="fa fa-edit"></i>
                         </button>
                         <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ service.id }}" {% if not is_admin or service.statut_publication == 'supprimé' %}disabled{% endif %}>
@@ -130,7 +130,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Ajouter le service</button>
+                    <button type="submit" class="btn btn-success">Ajouter le service</button>
                 </div>
             </form>
         </div>

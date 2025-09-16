@@ -29,10 +29,10 @@
   <!-- Barre d’actions -->
   <div class="d-flex justify-content-between align-items-center mb-2">
     <div class="d-flex">
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal" {% if not is_admin %}disabled{% endif %}>
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createModal" {% if not is_admin %}disabled{% endif %}>
         <i class="fa fa-plus"></i> Ajouter un article
       </button>
-      <!-- <a class="btn btn-outline-primary ms-2" href="{% url 'service_list' %}">Services</a> -->
+      <!-- <a class="btn btn-outline-success ms-2" href="{% url 'service_list' %}">Services</a> -->
     </div>
 
     <div class="d-flex align-items-center gap-2">
@@ -42,19 +42,19 @@
            data-target-url="{% url 'article_list_partial' %}"
            data-target="#articles-list-wrapper">
         <button type="button"
-                class="btn btn-outline-primary {% if display_mode == 'table' %}active{% endif %}"
+                class="btn btn-outline-success {% if display_mode == 'table' %}active{% endif %}"
                 data-mode="table" title="Mode Tableau">
           <i class="fa fa-table"></i>
         </button>
         <button type="button"
-                class="btn btn-outline-primary {% if display_mode == 'cards' %}active{% endif %}"
+                class="btn btn-outline-success {% if display_mode == 'cards' %}active{% endif %}"
                 data-mode="cards" title="Mode Cartes">
           <i class="fa fa-credit-card"></i>
         </button>
       </div>
 
       <!-- Bouton filtre (mobile/tablette) -->
-      <button class="btn btn-outline-primary d-lg-none" type="button"
+      <button class="btn btn-outline-success d-lg-none" type="button"
               data-bs-toggle="collapse" data-bs-target="#filtersCollapse"
               aria-expanded="false" aria-controls="filtersCollapse">
         <i class="fa fa-filter"></i>
@@ -87,7 +87,7 @@
         </select>
       </div>
       <div class="col-md-6 col-lg-2">
-        <button type="submit" class="btn btn-outline-primary w-100"><i class="fa fa-filter"></i> Filtrer</button>
+        <button type="submit" class="btn btn-outline-success w-100"><i class="fa fa-filter"></i> Filtrer</button>
       </div>
 
       <!-- Champs cachés: conservent le mode + page courante -->
