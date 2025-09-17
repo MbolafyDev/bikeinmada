@@ -94,4 +94,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 APPEND_SLASH = True
 
-APP_VERSION = "2025-08-27.3"
+APP_VERSION = "2025-09-17.1"
