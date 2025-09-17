@@ -5,212 +5,253 @@
 
 {% block content %}
 <div class="container-fluid mb-2">
-    <h2 class="mb-2 text-center">Paiement des frais de livraisons</h2>
+  <h2 class="mb-2 text-center">Paiement des frais de livraisons</h2>
 
-    {% include "includes/messages_alert.html" %}
+  {% include "includes/messages_alert.html" %}
 
-    <!-- Formulaire de filtre -->
-    <div class="row m-1">
-        <form method="get" class="row g-2 mb-2">
-            <div class="col-md-6 col-lg-3">
-                <label for="date" class="form-label fw-bold ">Date de livraison</label>
-                <input type="date" name="date" id="date" class="form-control" value="{{ selected_date }}">
-            </div>
-            <div class="col-md-6 col-lg-2">
-                <label for="livreur" class="form-label fw-bold ">Livreur</label>
-                <select name="livreur" id="livreur" class="form-select">
-                    <option value="">Tous les livreurs</option>
-                    {% for livreur in livreurs %}
-                        <option value="{{ livreur.id }}" {% if livreur.id|stringformat:"s" == selected_livreur %}selected{% endif %}>
-                            {{ livreur.nom }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-4 col-lg-3">
-                <label for="statut_livraison" class="form-label fw-bold ">Statut livraison</label>
-                <select name="statut_livraison" id="statut_livraison" class="form-select">
-                    <option value="">Tous les statuts</option>
-                    <option value="En attente" {% if selected_statut == "En attente" %}selected{% endif %}>En attente</option>
-                    <option value="Planifiée" {% if selected_statut == "Planifiée" %}selected{% endif %}>Planifiée</option>
-                    <option value="Livrée" {% if selected_statut == "Livrée" %}selected{% endif %}>Livrée</option>
-                    <option value="Annulée" {% if selected_statut == "Annulée" %}selected{% endif %}>Annulée</option>
-                </select>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <label for="paiement_frais" class="form-label fw-bold">Paiement frais</label>
-                <select name="paiement_frais" id="paiement_frais" class="form-select">
-                    <option value="">Tous les paiements</option>
-                    <option value="Non payée" {% if selected_paiement_frais == "Non payée" %}selected{% endif %}>Non payée</option>
-                    <option value="Payée" {% if selected_paiement_frais == "Payée" %}selected{% endif %}>Payée</option>
-                    <option value="N/A" {% if selected_paiement_frais == "N/A" %}selected{% endif %}>N/A</option>
-                </select>
-            </div>
-            <div class="col-md-4 col-lg-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-outline-success w-100">
-                    <i class="fa fa-filter"></i> Filtrer
-                </button>
-            </div>
-        </form>
+  <!-- Bouton FILTRES (mobile & tablettes) -->
+  <div class="d-flex align-items-center mb-2">
+    <button class="btn btn-outline-success ms-auto d-lg-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#filtersCollapse"
+            aria-expanded="false"
+            aria-controls="filtersCollapse">
+      <i class="fa fa-filter me-1"></i> Filtres
+    </button>
+  </div>
+
+  <!-- Formulaire de filtre (collapse en < lg, visible en ≥ lg) -->
+  <div class="row m-1">
+    <div id="filtersCollapse" class="collapse d-lg-block">
+      <form method="get" class="row g-2 mb-2" id="feesFiltersForm">
+        <div class="col-md-6 col-lg-3">
+          <label for="date" class="form-label fw-bold d-none d-lg-block">Date de livraison</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-calendar"></i></span>
+            <input type="date" name="date" id="date" class="form-control" value="{{ selected_date }}">
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-2">
+          <label for="livreur" class="form-label fw-bold d-none d-lg-block">Livreur</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-user"></i></span>
+            <select name="livreur" id="livreur" class="form-select">
+              <option value="">Tous les livreurs</option>
+              {% for livreur in livreurs %}
+                <option value="{{ livreur.id }}" {% if livreur.id|stringformat:"s" == selected_livreur %}selected{% endif %}>
+                  {{ livreur.nom }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+          <label for="statut_livraison" class="form-label fw-bold d-none d-lg-block">Statut livraison</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-bicycle"></i></span>
+            <select name="statut_livraison" id="statut_livraison" class="form-select">
+              <option value="">Tous les statuts</option>
+              <option value="En attente" {% if selected_statut == "En attente" %}selected{% endif %}>En attente</option>
+              <option value="Planifiée" {% if selected_statut == "Planifiée" %}selected{% endif %}>Planifiée</option>
+              <option value="Livrée" {% if selected_statut == "Livrée" %}selected{% endif %}>Livrée</option>
+              <option value="Annulée" {% if selected_statut == "Annulée" %}selected{% endif %}>Annulée</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-4 col-lg-2">
+          <label for="paiement_frais" class="form-label fw-bold d-none d-lg-block">Paiement frais</label>
+          <div class="input-group">
+            <span class="input-group-text d-lg-none"><i class="fa fa-money-bill"></i></span>
+            <select name="paiement_frais" id="paiement_frais" class="form-select">
+              <option value="">Tous les paiements</option>
+              <option value="Non payée" {% if selected_paiement_frais == "Non payée" %}selected{% endif %}>Non payée</option>
+              <option value="Payée" {% if selected_paiement_frais == "Payée" %}selected{% endif %}>Payée</option>
+              <option value="N/A" {% if selected_paiement_frais == "N/A" %}selected{% endif %}>N/A</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-4 col-lg-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-outline-success w-100">
+            <i class="fa fa-filter"></i> Filtrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if commandes %}
+  <form method="post" action="{% url 'paiement_frais_livraisons_groupes' %}">
+    {% csrf_token %}
+
+    <!-- ✅ TABLEAU -->
+    <div class="table-responsive d-none d-lg-block">
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-success">
+          <tr>
+            <th><input type="checkbox" id="select-all"></th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Lieu</th>
+            <th>Page</th>
+            <th>Statut</th>
+            <th>Livreur</th>
+            <th class="text-end">Frais</th>
+            <th>Paiement</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for commande in commandes %}
+          <tr>
+            <td><input type="checkbox" name="commandes" value="{{ commande.id }}"></td>
+            <td>{{ commande.date_livraison|date:"d/m/Y" }}</td>
+            <td>{{ commande.client.nom }}</td>
+            <td>{{ commande.client.lieu.lieu }}</td>
+            <td>{{ commande.page.nom }}</td>
+            <td>{{ commande.statut_livraison }}</td>
+            <td>{{ commande.livreur.nom }}</td>
+            <td class="text-end">{{ commande.frais_livreur|intpoint }}</td>
+            <td>{{ commande.paiement_frais_livreur }}</td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editModal{{ commande.id }}" {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-edit"></i>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="table-success fw-bold">
+            <td colspan="7" class="text-end">Total frais</td>
+            <td class="text-end">{{ total_frais|intpoint }}</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
 
-    {% if commandes %}
-    <form method="post" action="{% url 'paiement_frais_livraisons_groupes' %}"> 
-        {% csrf_token %}
-
-        <!-- ✅ TABLEAU -->
-        <div class="table-responsive d-none d-lg-block">
-            <table class="table table-bordered table-striped align-middle">
-                <thead class="table-success">
-                    <tr>
-                        <th><input type="checkbox" id="select-all"></th>
-                        <th>Date</th>
-                        <th>Client</th>
-                        <th>Lieu</th>
-                        <th>Page</th>
-                        <th>Statut</th>
-                        <th>Livreur</th>
-                        <th>Frais</th>
-                        <th>Paiement</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for commande in commandes %}
-                    <tr>
-                        <td><input type="checkbox" name="commandes" value="{{ commande.id }}"></td>
-                        <td>{{ commande.date_livraison|date:"d/m/Y" }}</td>
-                        <td>{{ commande.client.nom }}</td>
-                        <td>{{ commande.client.lieu.lieu }}</td>
-                        <td>{{ commande.page.nom }}</td>
-                        <td>{{ commande.statut_livraison }}</td>
-                        <td>{{ commande.livreur.nom }}</td>
-                        <td class="text-end">{{ commande.frais_livreur|intpoint }}</td>
-                        <td>{{ commande.paiement_frais_livreur }}</td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editModal{{ commande.id }}" {% if not is_admin %}disabled{% endif %}>
-                                <i class="fa fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot>
-                    <tr class="table-success fw-bold">
-                        <td colspan="7" class="text-end">Total frais</td>
-                        <td class="text-end">{{ total_frais|intpoint }}</td>
-                        <td colspan="2"></td>
-                    </tr>
-                </tfoot>
-            </table>
+    <!-- 📱 CARTES Mobile -->
+    <div class="d-lg-none">
+      <div class="row">
+        {% for commande in commandes %}
+        <div class="col-md-6 mb-3">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" name="commandes" value="{{ commande.id }}" id="cb-{{ commande.id }}">
+                <label class="form-check-label" for="cb-{{ commande.id }}"><strong>Livraison du {{ commande.date_livraison|date:"d/m/Y" }}</strong></label>
+              </div>
+              <p class="mb-1"><strong>Client :</strong> {{ commande.client.nom }}</p>
+              <p class="mb-1"><strong>Lieu :</strong> {{ commande.client.lieu }}</p>
+              <p class="mb-1"><strong>Page :</strong> {{ commande.page.nom }}</p>
+              <p class="mb-1"><strong>Statut :</strong> {{ commande.statut_livraison }}</p>
+              <p class="mb-1"><strong>Livreur :</strong> {{ commande.livreur.nom }}</p>
+              <p class="mb-1"><strong>Frais :</strong> {{ commande.frais_livreur|intpoint }}</p>
+              <p class="mb-0"><strong>Paiement :</strong> {{ commande.paiement_frais_livreur }}</p>
+            </div>
+            <div class="card-footer d-flex justify-content-end">
+              <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editModal{{ commande.id }}" {% if not is_admin %}disabled{% endif %}>
+                <i class="fa fa-edit"></i>
+              </button>
+            </div>
+          </div>
         </div>
+        {% endfor %}
+      </div>
+    </div>
 
-        <!-- 📱 CARTES Mobile -->
-        <div class="d-lg-none">
-            <div class="row">
-                {% for commande in commandes %}
-                <div class="col-md-6 mb-3">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="commandes" value="{{ commande.id }}" id="cb-{{ commande.id }}">
-                                <label class="form-check-label" for="cb-{{ commande.id }}">
-                                    <strong>Livraison du {{ commande.date_livraison|date:"d/m/Y" }}</strong>
-                                </label>
-                            </div>
-                            <p class="mb-1"><strong>Client :</strong> {{ commande.client.nom }}</p>
-                            <p class="mb-1"><strong>Lieu :</strong> {{ commande.client.lieu }}</p>
-                            <p class="mb-1"><strong>Page :</strong> {{ commande.page.nom }}</p>
-                            <p class="mb-1"><strong>Statut :</strong> {{ commande.statut_livraison }}</p>
-                            <p class="mb-1"><strong>Livreur :</strong> {{ commande.livreur.nom }}</p>
-                            <p class="mb-1"><strong>Frais :</strong> {{ commande.frais_livreur|intpoint }}</p>
-                            <p class="mb-0"><strong>Paiement :</strong> {{ commande.paiement_frais_livreur }}</p>
-                        </div>
-                        <div class="card-footer d-flex justify-content-end">
-                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editModal{{ commande.id }}" {% if not is_admin %}disabled{% endif %}>
-                                <i class="fa fa-edit"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+    <!-- 📄 Paiement -->
+    <div class="row mb-3 mt-3">
+      <div class="col-md-4">
+        <label for="paiement" class="form-label fw-bold">Mode de paiement :</label>
+        <select name="paiement" id="paiement" class="form-select" required>
+          <option value="">-- Choisir une caisse --</option>
+          {% for caisse in caisses %}
+            <option value="{{ caisse.id }}">{{ caisse.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label for="date_paiement" class="form-label fw-bold">Date de paiement :</label>
+        <input type="date" name="date_paiement" id="date_paiement" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <button type="submit" class="btn btn-success w-100 mt-2" {% if not is_admin %}disabled{% endif %}>
+          <i class="fa fa-save"></i> Enregistrer le paiement
+        </button>
+      </div>
+    </div>
 
-        <!-- 📄 Paiement -->
-        <div class="row mb-3 mt-3">
-            <div class="col-md-4">
-                <label for="paiement" class="form-label fw-bold">Mode de paiement :</label>
-                <select name="paiement" id="paiement" class="form-select" required>
-                    <option value="">-- Choisir une caisse --</option>
-                    {% for caisse in caisses %}
-                        <option value="{{ caisse.id }}">{{ caisse.nom }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label for="date_paiement" class="form-label fw-bold">Date de paiement :</label>
-                <input type="date" name="date_paiement" id="date_paiement" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
-            </div>
-            <div class="col-md-4 d-flex align-items-end">
-                <button type="submit" class="btn btn-success w-100 mt-2" {% if not is_admin %}disabled{% endif %}>
-                    <i class="fa fa-save"></i> Enregistrer le paiement
-                </button>
-            </div>
-        </div>
+  </form>
+  {% else %}
+    <div class="alert alert-info">Aucune livraison trouvée.</div>
+  {% endif %}
 
-    </form>
-    {% else %}
-        <div class="alert alert-info">Aucune livraison trouvée.</div>
-    {% endif %}
-
-    {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
-
+  {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
 </div>
 
 <!-- 🖋️ MODALS -->
 {% for commande in commandes %}
 <div class="modal fade" id="editModal{{ commande.id }}" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-        <form method="post" action="{% url 'modifier_frais_livraisons' commande.id %}">
-            {% csrf_token %}
-            <div class="modal-header">
-                <h5 class="modal-title">Modifier la livraison</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <label>Livreur</label>
-                <select name="livreur" class="form-select mb-2" required>
-                    {% for livreur in livreurs %}
-                    <option value="{{ livreur.id }}" {% if commande.livreur.id == livreur.id %}selected{% endif %}>{{ livreur.nom }}</option>
-                    {% endfor %}
-                </select>
-
-                <label>Frais de livraison</label>
-                <input type="number" name="frais_livreur" class="form-control" step="500" value="{{ commande.frais_livreur }}" required>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="submit" class="btn btn-success">Enregistrer</button>
-            </div>
-        </form>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'modifier_frais_livraisons' commande.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Modifier la livraison</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
+        <div class="modal-body">
+          <label>Livreur</label>
+          <select name="livreur" class="form-select mb-2" required>
+            {% for livreur in livreurs %}
+              <option value="{{ livreur.id }}" {% if commande.livreur.id == livreur.id %}selected{% endif %}>{{ livreur.nom }}</option>
+            {% endfor %}
+          </select>
+
+          <label>Frais de livraison</label>
+          <input type="number" name="frais_livreur" class="form-control" step="500" value="{{ commande.frais_livreur }}" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 {% endfor %}
 
-<!-- JS pour sélectionner tout -->
+<!-- JS -->
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+  // Select all
+  document.addEventListener("DOMContentLoaded", function () {
     const selectAll = document.getElementById("select-all");
     if (selectAll) {
-        selectAll.addEventListener("change", function () {
-            const checkboxes = document.querySelectorAll("input[name='commandes']");
-            checkboxes.forEach(cb => cb.checked = this.checked);
-        });
+      selectAll.addEventListener("change", function () {
+        const checkboxes = document.querySelectorAll("input[name='commandes']");
+        checkboxes.forEach(cb => cb.checked = this.checked);
+      });
     }
-});
-</script>
+  });
 
+  // Fermer automatiquement le collapse sur mobile après submit
+  (function(){
+    const form = document.getElementById('feesFiltersForm');
+    const collapseEl = document.getElementById('filtersCollapse');
+    const isMobile = () => window.matchMedia('(max-width: 991.98px)').matches; // < lg
+    if (!form || !collapseEl) return;
+
+    form.addEventListener('submit', function(){
+      if (!isMobile()) return;
+      const bsCollapse = bootstrap.Collapse.getOrCreateInstance(collapseEl, {toggle: false});
+      bsCollapse.hide();
+    });
+  })();
+</script>
 {% endblock %}
