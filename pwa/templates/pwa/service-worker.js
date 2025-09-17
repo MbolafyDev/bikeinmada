@@ -1,8 +1,8 @@
 // ----- ZaraStore Service Worker (lecture offline des listes) -----
 // Ce fichier est rendu par Django (Template), APP_VERSION vient de settings.APP_VERSION
-const APP_VERSION = "{{ APP_VERSION }}";
-const PRECACHE = `zarastore-precache-${APP_VERSION}`;
-const RUNTIME  = `zarastore-runtime-${APP_VERSION}`;
+const APP_VERSION = "bim-2025-09-17";
+const PRECACHE = `bikeinmada-precache-${APP_VERSION}`;
+const RUNTIME  = `bikeinmada-runtime-${APP_VERSION}`;
 
 // 1) Pré-cache : pages clés pour garantir un minimum de contenu offline
 const PRECACHE_URLS = [
@@ -56,18 +56,23 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((k) =>
-          // on garde seulement les caches courants
-          (k.startsWith("zarastore-") && k !== PRECACHE && k !== RUNTIME)
-            ? caches.delete(k)
-            : null
-        )
-      )
-    )
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.map((k) => {
+          // ❗ Supprimer les anciens caches 'zarastore-' et vieilles versions
+          if (
+            k.startsWith("zarastore-") ||
+            (!k.includes(APP_VERSION) && (k.startsWith("bikeinmada-") || k.startsWith("zarastore-")))
+          ) {
+            return caches.delete(k);
+          }
+          return null;
+        })
+      );
+      await self.clients.claim();
+    })()
   );
-  self.clients.claim();
 });
 
 // --- Fetch ---
