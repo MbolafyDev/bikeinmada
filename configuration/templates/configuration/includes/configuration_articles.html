@@ -1,0 +1,385 @@
+{# configuration/includes/configuration_articles.html #}
+{% load nombre %}
+
+<style>
+  /* Nav-pills en vert success quand actif */
+</style>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="mb-0">Articles : Catégories • Tailles • Couleurs</h4>
+  <div class="d-none d-lg-flex gap-2">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAjoutCategorie" {% if not is_admin %}disabled{% endif %}>
+      <i class="fa fa-tags"></i> Nouvelle catégorie
+    </button>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAjoutTaille" {% if not is_admin %}disabled{% endif %}>
+      <i class="fa fa-text-height"></i> Nouvelle taille
+    </button>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAjoutCouleur" {% if not is_admin %}disabled{% endif %}>
+      <i class="fa fa-palette"></i> Nouvelle couleur
+    </button>
+  </div>
+  <div class="d-lg-none">
+    <div class="btn-group">
+      <button class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" {% if not is_admin %}disabled{% endif %}>
+        <i class="fa fa-plus"></i> Ajouter
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalAjoutCategorie">Catégorie</a></li>
+        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalAjoutTaille">Taille</a></li>
+        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalAjoutCouleur">Couleur</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+{# --- Onglets pour naviguer rapidement entre les 3 sous-sections --- #}
+<ul class="nav nav-pills-success mb-3" id="articlesTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="tab-categories" data-bs-toggle="tab" data-bs-target="#pane-categories" type="button" role="tab" style="color: #000 !important;">
+      <i class="fa fa-tags"></i> Catégories
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="tab-tailles" data-bs-toggle="tab" data-bs-target="#pane-tailles" type="button" role="tab" style="color: #000 !important;">
+      <i class="fa fa-text-height"></i> Tailles
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="tab-couleurs" data-bs-toggle="tab" data-bs-target="#pane-couleurs" type="button" role="tab" style="color: #000 !important;">
+      <i class="fa fa-palette"></i> Couleurs
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content">
+
+  {# ===================== CATEGORIES ===================== #}
+  <div class="tab-pane fade show active" id="pane-categories" role="tabpanel" aria-labelledby="tab-categories">
+
+    {% if categories %}
+      <!-- TABLE (lg+) -->
+      <div class="d-none d-lg-block">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-success">
+            <tr>
+              <th>Nom</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for c in categories %}
+            <tr {% if c.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+              <td>{{ c.categorie }}</td>
+              <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editCategorie{{ c.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCategorie{{ c.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-trash"></i></button>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- CARTES (mobile) -->
+      <div class="d-lg-none">
+        <div class="row">
+        {% for c in categories %}
+          <div class="col-12 col-md-6 mb-3">
+            <div class="card shadow-sm {% if c.statut_publication == 'supprimé' %}opacity-75{% endif %}">
+              <div class="card-body">
+                <h5 class="card-title text-success mb-0" {% if c.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+                  {{ c.categorie }}
+                </h5>
+              </div>
+              <div class="card-footer text-end">
+                <button type="button" class="btn btn-sm btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#editCategorie{{ c.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCategorie{{ c.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-trash"></i></button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+        </div>
+      </div>
+
+      {# Modals Catégories #}
+      {% for c in categories %}
+      <div class="modal fade" id="editCategorie{{ c.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="post" action="{% url 'modifier_categorie' c.id %}">
+              {% csrf_token %}
+              <div class="modal-header"><h5 class="modal-title">Modifier Catégorie</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">
+                <label>Nom de la catégorie</label>
+                <input type="text" name="categorie" class="form-control mb-2" value="{{ c.categorie }}" required>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-success">Enregistrer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="deleteCategorie{{ c.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="post" action="{% url 'supprimer_categorie' c.id %}">
+              {% csrf_token %}
+              <div class="modal-header"><h5 class="modal-title text-danger">Confirmer la suppression</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">Supprimer la catégorie <strong>{{ c.categorie }}</strong> ?</div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-danger">Supprimer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="alert alert-info">Aucune catégorie enregistrée.</div>
+    {% endif %}
+
+  </div>
+
+  {# ===================== TAILLES ===================== #}
+  <div class="tab-pane fade" id="pane-tailles" role="tabpanel" aria-labelledby="tab-tailles">
+
+    {% if tailles %}
+      <div class="d-none d-lg-block">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-success">
+            <tr>
+              <th>Nom</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for t in tailles %}
+            <tr {% if t.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+              <td>{{ t.taille }}</td>
+              <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editTaille{{ t.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaille{{ t.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-trash"></i></button>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-lg-none">
+        <div class="row">
+        {% for t in tailles %}
+          <div class="col-12 col-md-6 mb-3">
+            <div class="card shadow-sm {% if t.statut_publication == 'supprimé' %}opacity-75{% endif %}">
+              <div class="card-body">
+                <h5 class="card-title text-success mb-0" {% if t.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+                  {{ t.taille }}
+                </h5>
+              </div>
+              <div class="card-footer text-end">
+                <button type="button" class="btn btn-sm btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#editTaille{{ t.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaille{{ t.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-trash"></i></button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+        </div>
+      </div>
+
+      {# Modals Tailles #}
+      {% for t in tailles %}
+      <div class="modal fade" id="editTaille{{ t.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="post" action="{% url 'modifier_taille' t.id %}">
+              {% csrf_token %}
+              <div class="modal-header"><h5 class="modal-title">Modifier Taille</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">
+                <label>Nom de la taille</label>
+                <input type="text" name="taille" class="form-control mb-2" value="{{ t.taille }}" required>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-success">Enregistrer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="deleteTaille{{ t.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="post" action="{% url 'supprimer_taille' t.id %}">
+              {% csrf_token %}
+              <div class="modal-header"><h5 class="modal-title text-danger">Confirmer la suppression</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">Supprimer la taille <strong>{{ t.taille }}</strong> ?</div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-danger">Supprimer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="alert alert-info">Aucune taille enregistrée.</div>
+    {% endif %}
+
+  </div>
+
+  {# ===================== COULEURS ===================== #}
+  <div class="tab-pane fade" id="pane-couleurs" role="tabpanel" aria-labelledby="tab-couleurs">
+
+    {% if couleurs %}
+      <div class="d-none d-lg-block">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-success">
+            <tr>
+              <th>Nom</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for clr in couleurs %}
+            <tr {% if clr.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+              <td>{{ clr.couleur }}</td>
+              <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editCouleur{{ clr.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCouleur{{ clr.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-trash"></i></button>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-lg-none">
+        <div class="row">
+        {% for clr in couleurs %}
+          <div class="col-12 col-md-6 mb-3">
+            <div class="card shadow-sm {% if clr.statut_publication == 'supprimé' %}opacity-75{% endif %}">
+              <div class="card-body">
+                <h5 class="card-title text-success mb-0" {% if clr.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
+                  {{ clr.couleur }}
+                </h5>
+              </div>
+              <div class="card-footer text-end">
+                <button type="button" class="btn btn-sm btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#editCouleur{{ clr.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCouleur{{ clr.id }}" {% if not is_admin %}disabled{% endif %}><i class="fa fa-trash"></i></button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+        </div>
+      </div>
+
+      {# Modals Couleurs #}
+      {% for clr in couleurs %}
+      <div class="modal fade" id="editCouleur{{ clr.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="post" action="{% url 'modifier_couleur' clr.id %}">
+              {% csrf_token %}
+              <div class="modal-header"><h5 class="modal-title">Modifier Couleur</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">
+                <label>Nom de la couleur</label>
+                <input type="text" name="couleur" class="form-control mb-2" value="{{ clr.couleur }}" required>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-success">Enregistrer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="deleteCouleur{{ clr.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="post" action="{% url 'supprimer_couleur' clr.id %}">
+              {% csrf_token %}
+              <div class="modal-header"><h5 class="modal-title text-danger">Confirmer la suppression</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">Supprimer la couleur <strong>{{ clr.couleur }}</strong> ?</div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-danger">Supprimer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="alert alert-info">Aucune couleur enregistrée.</div>
+    {% endif %}
+
+  </div>
+</div>
+
+{# Modals d’ajout (communs) #}
+<!-- Catégorie -->
+<div class="modal fade" id="modalAjoutCategorie" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'ajouter_categorie' %}">
+        {% csrf_token %}
+        <div class="modal-header"><h5 class="modal-title">Nouvelle catégorie</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <label>Nom de la catégorie</label>
+          <input type="text" name="categorie" class="form-control mb-2" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Taille -->
+<div class="modal fade" id="modalAjoutTaille" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'ajouter_taille' %}">
+        {% csrf_token %}
+        <div class="modal-header"><h5 class="modal-title">Nouvelle taille</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <label>Nom de la taille</label>
+          <input type="text" name="taille" class="form-control mb-2" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Couleur -->
+<div class="modal fade" id="modalAjoutCouleur" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'ajouter_couleur' %}">
+        {% csrf_token %}
+        <div class="modal-header"><h5 class="modal-title">Nouvelle couleur</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <label>Nom de la couleur</label>
+          <input type="text" name="couleur" class="form-control mb-2" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

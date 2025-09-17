@@ -43,26 +43,11 @@
                   <i class="fa fa-list-ol"></i> Plan des comptes
                 </a>
 
-                <!-- Nouveaux onglets Articles -->
-                <a href="{% url 'configuration' %}?tab=categories"
-                  class="list-group-item list-group-item-action d-flex align-items-center gap-2 {% if selected_section == 'categories' %}active{% endif %}"
-                  hx-get="{% url 'configuration_section' 'categories' %}"
+                <a href="{% url 'configuration' %}?tab=articles"
+                  class="list-group-item list-group-item-action d-flex align-items-center gap-2 {% if selected_section == 'articles' %}active{% endif %}"
+                  hx-get="{% url 'configuration_section' 'articles' %}"
                   hx-target="#configContent" hx-swap="innerHTML" hx-push-url="true">
-                  <i class="fa fa-tags"></i> Catégories
-                </a>
-
-                <a href="{% url 'configuration' %}?tab=taille"
-                  class="list-group-item list-group-item-action d-flex align-items-center gap-2 {% if selected_section == 'taille' %}active{% endif %}"
-                  hx-get="{% url 'configuration_section' 'taille' %}"
-                  hx-target="#configContent" hx-swap="innerHTML" hx-push-url="true">
-                  <i class="fa fa-text-height"></i> Tailles
-                </a>
-
-                <a href="{% url 'configuration' %}?tab=couleurs"
-                  class="list-group-item list-group-item-action d-flex align-items-center gap-2 {% if selected_section == 'couleurs' %}active{% endif %}"
-                  hx-get="{% url 'configuration_section' 'couleurs' %}"
-                  hx-target="#configContent" hx-swap="innerHTML" hx-push-url="true">
-                  <i class="fa fa-palette"></i> Couleurs
+                  <i class="fa fa-boxes-stacked"></i> Gestion d'Articles
                 </a>
                 <!-- /Nouveaux onglets -->
 

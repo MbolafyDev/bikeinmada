@@ -29,14 +29,13 @@ from livraison.forms import LivreurForm
 # Sections disponibles
 # -------------------------------
 SECTIONS = ("pages", "caisses", "plans", "profil", "livreurs", "frais",
-            "categories", "taille", "couleurs")
+            "articles")
 
 
 # -------------------------------
 # Helper : construire le contexte d’une section
 # -------------------------------
 def _get_section_context(request, section):
-    """Retourne (template_partial, context) pour la section demandée."""
     is_admin_flag = request.user.is_superuser or request.user.is_staff
 
     if section == "pages":
@@ -70,27 +69,17 @@ def _get_section_context(request, section):
             "livreurs": Livreur.objects.all().order_by("nom"),
             "is_admin": is_admin_flag,
         })
-    
-    if section == "categories":
-        return ("configuration/includes/configuration_categorie.html", {
+
+    if section == "articles":  # ✅ nouveau hub
+        return ("configuration/includes/configuration_articles.html", {
             "categories": Categorie.objects.all().order_by("categorie"),
-            "is_admin": is_admin_flag
-        })
-    
-    if section == "taille":
-        return ("configuration/includes/configuration_taille.html", {
             "tailles": Taille.objects.all().order_by("taille"),
-            "is_admin": is_admin_flag
-        })
-    
-    if section == "couleurs":
-        return ("configuration/includes/configuration_couleur.html", {
             "couleurs": Couleur.objects.all().order_by("couleur"),
-            "is_admin": is_admin_flag
+            "is_admin": is_admin_flag,
         })
 
     if section == "frais":
-        # Filtres/pagination comme dans ta vue d’origine
+        # (inchangé)
         lieu_recherche = request.GET.get('lieu', '').strip()
         categorie_filtre = request.GET.get('categorie', '')
 
@@ -105,9 +94,8 @@ def _get_section_context(request, section):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        # Extra querystring propre (sans page)
         params = request.GET.copy()
-        params["tab"] = "frais"  # ✅ garder l’onglet dans l’URL
+        params["tab"] = "frais"
         clean_params = QueryDict(mutable=True)
         for key, values in params.lists():
             if key == 'page':
