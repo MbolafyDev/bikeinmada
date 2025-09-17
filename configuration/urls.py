@@ -5,6 +5,7 @@ urlpatterns = [
     # Vue principale Configuration
     path('', views.configuration_view, name='configuration'),
     path("section/<str:section>/", views.configuration_section, name="configuration_section"),
+    path("utilisateurs/<int:user_id>/update/", views.config_user_update, name="config_user_update"),
 
     # Profil (dans Configuration)
     path("profil/update/", views.configuration_profil_update, name="configuration_profil_update"),

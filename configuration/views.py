@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.http import Http404, JsonResponse, QueryDict
+from django.http import Http404, JsonResponse, QueryDict, HttpResponse
 from django.core.paginator import Paginator
 from django.contrib import messages
 
@@ -14,6 +14,8 @@ from articles.models import Categorie, Taille, Couleur
 
 # Profil (depuis l’app users)
 from users.forms import ProfilForm
+from django.db.models import Q
+
 
 # Livraison (modèles + constantes + formulaire)
 from livraison.models import (
@@ -24,8 +26,8 @@ from livraison.models import (
 )
 from livraison.forms import LivreurForm
 
-# ✅ Rôles (depuis users)
-from users.models import Role
+# ✅ Rôles & Utilisateurs (depuis users)
+from users.models import Role, CustomUser
 
 
 # -------------------------------
@@ -48,8 +50,17 @@ def _has_admin_role(user) -> bool:
 # -------------------------------
 # Sections disponibles
 # -------------------------------
-SECTIONS = ("pages", "caisses", "plans", "profil", "livreurs", "frais",
-            "articles", "roles")  # ✅ ajout "roles"
+SECTIONS = (
+    "pages",
+    "caisses",
+    "plans",
+    "profil",
+    "livreurs",
+    "frais",
+    "articles",
+    "roles",
+    "utilisateurs",  # ✅ nouvelle section
+)
 
 
 # -------------------------------
@@ -137,9 +148,55 @@ def _get_section_context(request, section):
             "FRAIS_LIVREUR_PAR_DEFAUT": FRAIS_LIVREUR_PAR_DEFAUT,
         })
 
-    if section == "roles":  # ✅ nouvelle section
+    if section == "roles":  # ✅ existant
         return ("configuration/includes/configuration_roles.html", {
             "roles": Role.objects.all().order_by("role"),
+            "is_admin": is_admin_flag or is_super_flag,
+        })
+
+    if section == "utilisateurs":  # ✅ NOUVELLE SECTION
+        q = (request.GET.get("q") or "").strip()
+        role_id = request.GET.get("role") or ""
+        only_active = request.GET.get("only_active") == "on"
+        only_waiting_validation = request.GET.get("only_waiting_validation") == "on"
+
+        users_qs = CustomUser.objects.select_related("role").all()
+
+        if q:
+            users_qs = users_qs.filter(
+                # username, email, first_name, last_name, telephone, adresse
+                (
+                    (Q(username__icontains=q)) |
+                    (Q(email__icontains=q)) |
+                    (Q(first_name__icontains=q)) |
+                    (Q(last_name__icontains=q)) |
+                    (Q(telephone__icontains=q)) |
+                    (Q(adresse__icontains=q))
+                )
+            )
+
+        if role_id:
+            users_qs = users_qs.filter(role_id=role_id)
+
+        if only_active:
+            users_qs = users_qs.filter(is_active=True)
+
+        if only_waiting_validation:
+            users_qs = users_qs.filter(is_validated_by_admin=False)
+
+        users_qs = users_qs.order_by("username")
+
+        paginator = Paginator(users_qs, 25)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
+        return ("configuration/includes/configuration_utilisateurs.html", {
+            "page_obj": page_obj,
+            "roles": Role.objects.all().order_by("role"),
+            "q": q,
+            "role_id": role_id,
+            "only_active": only_active,
+            "only_waiting_validation": only_waiting_validation,
             "is_admin": is_admin_flag or is_super_flag,
         })
 
@@ -149,6 +206,8 @@ def _get_section_context(request, section):
 # -------------------------------
 # Page Configuration (shell) + endpoint HTMX pour sections
 # -------------------------------
+from django.db.models import Q  # (utilisé dans _get_section_context)
+
 @login_required
 def configuration_view(request):
     # section initiale choisie via ?tab=
@@ -156,10 +215,10 @@ def configuration_view(request):
     if section not in SECTIONS:
         section = "pages"
 
-    # Sécurité : empêcher l’accès direct à /configuration?tab=roles si non-admin
-    can_manage_roles = _has_admin_role(request.user)
-    if section == "roles" and not can_manage_roles:
-        messages.warning(request, "Accès refusé : vous n’avez pas les droits pour gérer les rôles.")
+    # Autorisations (onglets restreints)
+    can_manage_admin_things = _has_admin_role(request.user)
+    if section in {"roles", "utilisateurs"} and not can_manage_admin_things:
+        messages.warning(request, "Accès refusé : vous n’avez pas les droits pour cette section.")
         section = "pages"
 
     partial_tpl, partial_ctx = _get_section_context(request, section)
@@ -167,7 +226,7 @@ def configuration_view(request):
     ctx = {
         "selected_section": section,
         "partial_template": partial_tpl,
-        "can_manage_roles": can_manage_roles,   # ✅ pour désactiver l’onglet côté UI
+        "can_manage_admin_things": can_manage_admin_things,  # pour masquer/désactiver onglets
         **partial_ctx
     }
     return render(request, "configuration/configuration.html", ctx)
@@ -178,10 +237,10 @@ def configuration_section(request, section: str):
     if section not in SECTIONS:
         raise Http404("Section inconnue")
 
-    # Sécurité : empêcher l’accès via HTMX si non-admin
-    if section == "roles" and not _has_admin_role(request.user):
+    # Sécurité : empêcher l’accès via HTMX si non-admin (roles/utilisateurs)
+    if section in {"roles", "utilisateurs"} and not _has_admin_role(request.user):
         if not request.headers.get("HX-Request"):
-            messages.warning(request, "Accès refusé : vous n’avez pas les droits pour gérer les rôles.")
+            messages.warning(request, "Accès refusé : vous n’avez pas les droits pour cette section.")
             return redirect(f"{reverse('configuration')}?tab=pages")
         # Rejeter en HTMX
         response = JsonResponse({"error": "forbidden", "message": "Permissions insuffisantes."})
@@ -195,7 +254,7 @@ def configuration_section(request, section: str):
         ctx = {
             "selected_section": section,
             "partial_template": partial_tpl,
-            "can_manage_roles": _has_admin_role(request.user),
+            "can_manage_admin_things": _has_admin_role(request.user),
             **partial_ctx
         }
         return render(request, "configuration/configuration.html", ctx)
@@ -251,7 +310,7 @@ def supprimer_page(request, pk):
     try:
         page = get_object_or_404(Pages, pk=pk)
         nom = page.nom
-        page.soft_delete(user=request.user)()
+        page.soft_delete(user=request.user)
         messages.success(request, f"Page « {nom} » supprimée 🗑️")
     except Exception as e:
         messages.warning(request, f"Erreur lors de la suppression : {e}")
@@ -300,7 +359,7 @@ def supprimer_caisse(request, pk):
     try:
         caisse = get_object_or_404(Caisse, pk=pk)
         nom = caisse.nom
-        caisse.soft_delete(user=request.user)()
+        caisse.soft_delete(user=request.user)
         messages.success(request, f"Caisse « {nom} » supprimée 🗑️")
     except Exception as e:
         messages.warning(request, f"Erreur lors de la suppression : {e}")
@@ -347,7 +406,7 @@ def supprimer_plan(request, pk):
     try:
         plan = get_object_or_404(PlanDesComptes, pk=pk)
         num = plan.compte_numero
-        plan.soft_delete(user=request.user)()
+        plan.soft_delete(user=request.user)
         messages.success(request, f"Compte « {num} » supprimé 🗑️")
     except Exception as e:
         messages.warning(request, f"Erreur lors de la suppression : {e}")
@@ -681,3 +740,54 @@ def supprimer_role(request, pk):
     except Exception as e:
         messages.warning(request, f"Erreur lors de la suppression du rôle : {e}")
     return redirect(f"{reverse('configuration')}?tab=roles")
+
+
+# -------------------------------
+# ✅ Actions UTILISATEURS (inline via HTMX)
+# -------------------------------
+@login_required
+@admin_required
+@require_POST
+def config_user_update(request, user_id: int):
+    """
+    Met à jour is_active, is_validated_by_admin, role (un par un ou plusieurs champs).
+    Utilisé par des <form hx-post=... hx-trigger="change" hx-swap="none">.
+    Retourne 204 (No Content) pour ne rien remplacer côté HTMX.
+    """
+    u: CustomUser = get_object_or_404(CustomUser, pk=user_id)
+    changed = False
+
+    # role
+    if "role_id" in request.POST:
+        role_id = request.POST.get("role_id") or None
+        if role_id:
+            role = get_object_or_404(Role, pk=role_id)
+        else:
+            role = None
+        if u.role_id != (role.id if role else None):
+            u.role = role
+            changed = True
+
+    # is_active
+    if "is_active" in request.POST:
+        # checkbox renvoie "on" quand cochée, sinon champ absent → mais on envoie toujours via formulaire dédié
+        new_active = request.POST.get("is_active") == "on"
+        if bool(u.is_active) != new_active:
+            u.is_active = new_active
+            changed = True
+
+    # is_validated_by_admin
+    if "is_validated_by_admin" in request.POST:
+        new_valid = request.POST.get("is_validated_by_admin") == "on"
+        if bool(u.is_validated_by_admin) != new_valid:
+            u.is_validated_by_admin = new_valid
+            # logique : si validé, activer automatiquement
+            if new_valid:
+                u.is_active = True
+            changed = True
+
+    if changed:
+        u.save()
+
+    # 204: HTMX ne remplace rien (hx-swap="none")
+    return HttpResponse(status=204)
