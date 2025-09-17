@@ -27,8 +27,88 @@ from clients.models import Client
 from articles.models import Article
 from livraison.models import Livraison, Livreur
 from .forms import VenteForm
+from django.urls import reverse
+from django.db.models import Q
+
 
 import json
+
+@login_required
+def client_suggest(request):
+    """
+    GET /ventes/client-suggest/?q=xx
+    Renvoie une petite liste des clients correspondant à q (>= 2 chars).
+    """
+    q = (request.GET.get('q') or '').strip()
+    if len(q) < 2:
+        return JsonResponse({'results': []})
+
+    # tu peux mettre istartswith pour resserrer, ou icontains pour être plus permissif
+    qs = (Client.objects
+          .filter(nom__icontains=q)
+          .select_related('lieu')
+          .order_by('-id')[:12])
+
+    results = []
+    for c in qs:
+        results.append({
+            'id': c.id,
+            'nom': c.nom or '',
+            'contact': c.contact or '',
+            'reference_client': getattr(c, 'reference_client', '') or '',
+            'lieu_id': c.lieu_id,
+            'lieu': getattr(c.lieu, 'lieu', '') if getattr(c, 'lieu_id', None) else '',
+            'precision_lieu': getattr(c, 'precision_lieu', '') or '',
+        })
+    return JsonResponse({'results': results})
+
+def _get_existing_client(nom: str, contact: str):
+    """
+    Tente de retrouver un client existant en priorisant le contact (souvent unique).
+    Fallback sur (nom, contact), puis sur nom seul.
+    """
+    qs = Client.objects.all()
+    contact = (contact or '').strip()
+    nom = (nom or '').strip()
+
+    if contact:
+        c = qs.filter(contact__iexact=contact).order_by('-id').first()
+        if c:
+            return c
+
+    if nom and contact:
+        c = qs.filter(nom__iexact=nom, contact__iexact=contact).order_by('-id').first()
+        if c:
+            return c
+
+    if nom:
+        return qs.filter(nom__iexact=nom).order_by('-id').first()
+
+    return None
+
+
+@login_required
+def client_lookup(request):
+    """
+    GET /ventes/client-lookup/?nom=...&contact=...
+    Retourne {found: bool, client: {...}} pour auto-compléter le formulaire.
+    """
+    q_nom = (request.GET.get('nom') or '').strip()
+    q_contact = (request.GET.get('contact') or '').strip()
+
+    client = _get_existing_client(q_nom, q_contact)
+    if not client:
+        return JsonResponse({'found': False})
+
+    data = {
+        'id': client.id,
+        'nom': client.nom or '',
+        'contact': client.contact or '',
+        'reference_client': getattr(client, 'reference_client', '') or '',
+        'lieu_id': client.lieu_id,
+        'precision_lieu': getattr(client, 'precision_lieu', '') or '',
+    }
+    return JsonResponse({'found': True, 'client': data})
 
 
 def build_commandes_context(request):
@@ -72,18 +152,29 @@ def build_commandes_context(request):
 
     # Données nécessaires aux modals inclus (création commande)
     lieux = Livraison.actifs.all().order_by('lieu')
-    articles_qs = Article.actifs.all().order_by('nom')
+
+    # ⚠️ Corrigé : on précharge les FK + on sérialise categorie/taille/couleur en chaînes lisibles
+    articles_qs = (
+        Article.actifs
+        .select_related('categorie', 'taille', 'couleur')
+        .order_by('nom')
+    )
+
     articles_data = []
     for a in articles_qs:
         articles_data.append({
-            'id': a.id,
-            'nom': a.nom,
-            'prix_vente': a.prix_vente,
-            'prix_achat': a.prix_achat,
-            'livraison': a.livraison,
-            'stock': calculer_stock_article(a),
+            "id": a.id,
+            "nom": a.nom or "",
+            "categorie": (a.categorie.categorie if a.categorie else ""),
+            "taille": (a.taille.taille if a.taille else ""),
+            "couleur": (a.couleur.couleur if a.couleur else ""),
+            "livraison": a.livraison or "",
+            "prix_vente": int(getattr(a, "prix_vente", 0) or 0),
+            "prix_achat": int(getattr(a, "prix_achat", 0) or 0),
+            "stock": int(calculer_stock_article(a) or 0),
         })
     articles_json = json.dumps(articles_data, cls=DjangoJSONEncoder)
+
     date_du_jour = date.today().isoformat()
 
     # QS propre (préserve display, enlève page vide, etc.)
@@ -122,7 +213,7 @@ def build_commandes_context(request):
         'extra_querystring': extra_querystring,
         'display_mode': display_mode,
 
-        # Données JS pour le modal de création
+        # Données JS pour le modal de création (✅ contient bien categorie/taille/couleur)
         'articles_json': articles_json,
         'date_du_jour': date_du_jour,
     }
@@ -161,8 +252,12 @@ def detail_commande(request, commande_id):
 
 @login_required
 def creer_commande(request):
-    # jeux de données pour GET et pour (re)afficher le formulaire après erreur
-    articles = Article.actifs.all().order_by('nom')
+    # Jeux de données pour GET et pour (re)afficher le formulaire après erreur
+    articles = (
+        Article.actifs
+        .select_related('categorie', 'taille', 'couleur')
+        .order_by('nom')
+    )
     pages = Pages.actifs.filter(type="VENTE")
     lieux = Livraison.actifs.all().order_by('lieu')
 
@@ -170,9 +265,10 @@ def creer_commande(request):
         # --- Récupération champs ---
         nom = (request.POST.get('nom') or '').strip()
         contact = (request.POST.get('contact') or '').strip()
+        reference_client = (request.POST.get('reference_client') or '').strip()
         lieu_id = request.POST.get('lieu')
-        precision_lieu = request.POST.get('precision_lieu') or ''
-        remarque = request.POST.get('remarque') or ''
+        precision_lieu = (request.POST.get('precision_lieu') or '').strip()
+        remarque = (request.POST.get('remarque') or '').strip()
 
         date_commande = parse_date(request.POST.get('date_commande'))
         date_livraison = parse_date(request.POST.get('date_livraison'))
@@ -191,7 +287,7 @@ def creer_commande(request):
 
         page_id = request.POST.get('page')
 
-        # --- Validations rapides côté serveur (évite None -> crash) ---
+        # --- Validations rapides ---
         if not nom or not contact or not lieu_id or not page_id:
             messages.error(request, "Merci de renseigner Nom, Contact, Lieu et Page.")
         else:
@@ -199,16 +295,40 @@ def creer_commande(request):
             lieu = get_object_or_404(Livraison, id=lieu_id)
             page = get_object_or_404(Pages, id=page_id)
 
-            # --- Client ---
-            client, created = Client.objects.get_or_create(
-                nom=nom,
-                contact=contact,
-                defaults={'lieu': lieu, 'precision_lieu': precision_lieu}
-            )
-            if not created:
-                client.lieu = lieu
-                client.precision_lieu = precision_lieu
+            # --- Client : rechercher existant puis MAJ douce, sinon créer ---
+            client = None
+            # 1) priorité au contact (souvent unique)
+            if contact:
+                client = Client.objects.filter(contact__iexact=contact).order_by('-id').first()
+            # 2) fallback (nom, contact)
+            if not client and nom and contact:
+                client = Client.objects.filter(nom__iexact=nom, contact__iexact=contact).order_by('-id').first()
+            # 3) fallback nom seul
+            if not client and nom:
+                client = Client.objects.filter(nom__iexact=nom).order_by('-id').first()
+
+            if client:
+                # MAJ sans écraser avec des vides
+                if nom and client.nom != nom:
+                    client.nom = nom
+                if contact and client.contact != contact:
+                    client.contact = contact
+                if reference_client:
+                    client.reference_client = reference_client
+                # on prend les valeurs fournies si présentes (sinon on garde l'existant)
+                if lieu:
+                    client.lieu = lieu
+                if precision_lieu:
+                    client.precision_lieu = precision_lieu
                 client.save()
+            else:
+                client = Client.objects.create(
+                    nom=nom,
+                    contact=contact,
+                    lieu=lieu,
+                    precision_lieu=precision_lieu,
+                    reference_client=reference_client
+                )
 
             # --- Commande ---
             commande = Commande.objects.create(
@@ -225,8 +345,8 @@ def creer_commande(request):
 
             # --- Lignes ---
             article_ids = request.POST.getlist('article')
-            quantites = request.POST.getlist('quantite')
-            pu_list   = request.POST.getlist('pu')
+            quantites   = request.POST.getlist('quantite')
+            pu_list     = request.POST.getlist('pu')
 
             for i in range(len(article_ids)):
                 if not article_ids[i]:
@@ -253,17 +373,20 @@ def creer_commande(request):
 
             return redirect('commande_detail', commande_id=commande.id)
 
-    # --- GET (ou POST invalide) : préparer contexte et rendre le formulaire ---
-    # Ajoute le stock actuel de chaque article pour le JS
+    # --- GET (ou POST invalide)
+    # JSON articles pour le JS (valeurs lisibles pour les FK)
     articles_data = []
     for a in articles:
         articles_data.append({
-            'id': a.id,
-            'nom': a.nom,
-            'prix_vente': a.prix_vente,
-            'prix_achat': a.prix_achat,
-            'livraison': a.livraison,
-            'stock': calculer_stock_article(a),
+            "id": a.id,
+            "nom": a.nom or "",
+            "categorie": (a.categorie.categorie if a.categorie else ""),
+            "taille": (a.taille.taille if a.taille else ""),
+            "couleur": (a.couleur.couleur if a.couleur else ""),
+            "livraison": a.livraison or "",
+            "prix_vente": int(getattr(a, "prix_vente", 0) or 0),
+            "prix_achat": int(getattr(a, "prix_achat", 0) or 0),
+            "stock": int(calculer_stock_article(a) or 0),
         })
     articles_json = json.dumps(articles_data, cls=DjangoJSONEncoder)
     date_du_jour = date.today().isoformat()
@@ -294,6 +417,7 @@ def commande_edit(request, commande_id):
         # --- Récupération champs ---
         nom = (request.POST.get('nom') or '').strip()
         contact = (request.POST.get('contact') or '').strip()
+        reference_client = (request.POST.get('reference_client') or '').strip()  # 🆕
         lieu_id = request.POST.get('lieu')
         precision_lieu = request.POST.get('precision_lieu') or ''
         remarque = request.POST.get('remarque') or ''
@@ -346,6 +470,8 @@ def commande_edit(request, commande_id):
             client.contact = contact
             client.lieu = get_object_or_404(Livraison, id=int(lieu_id))
             client.precision_lieu = precision_lieu
+            if reference_client:                      # 🆕 n’écrase que si une valeur est envoyée
+                client.reference_client = reference_client  # 🆕
             client.save()
 
             # Lignes : on remplace proprement
@@ -397,7 +523,7 @@ def commande_edit(request, commande_id):
     } for a in articles]
     articles_json = json.dumps(articles_data, cls=DjangoJSONEncoder)
 
-    return render(request, 'ventes/modifier_commande.html', {
+    return render(request, 'ventes/edit_commande.html', {
         'commande': commande,
         'pages': pages,
         'lignes': lignes,
@@ -616,9 +742,9 @@ def encaissement_ventes(request):
         'selected_date': selected_date or "",
         'selected_statut_livraison': selected_statut_livraison or "",
         'selected_statut_vente': selected_statut_vente or "",
-        'selected_livreur': selected_livreur or "",   # <-- nouveau
+        'selected_livreur': selected_livreur or "",
 
-        'livreurs': livreurs,                         # <-- nouveau
+        'livreurs': livreurs,
 
         'total_montant': total_montant,
         'total_frais': total_frais,

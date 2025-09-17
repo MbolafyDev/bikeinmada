@@ -9,7 +9,7 @@
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
 
-      <form method="post" action="{% url 'commande_edit' commande_id=commande.id %}">
+      <form method="post" action="{% url 'commande_edit' commande_id=commande.id %}" hx-swap="none">
         {% csrf_token %}
 
         <div class="modal-header">
@@ -35,6 +35,18 @@
                   <label for="edit_contact_{{ commande.id }}" class="form-label">Contact *</label>
                   <input type="text" class="form-control" name="contact" id="edit_contact_{{ commande.id }}" value="{{ commande.client.contact }}" required>
                 </div>
+
+                <!-- 🆕 Réf client -->
+                <div class="col-md-6">
+                  <label for="edit_reference_client_{{ commande.id }}" class="form-label">Réf client</label>
+                  <input type="text"
+                         class="form-control"
+                         name="reference_client"
+                         id="edit_reference_client_{{ commande.id }}"
+                         value="{{ commande.client.reference_client|default_if_none:'' }}"
+                         placeholder="Ex : CLT-2025-001">
+                </div>
+
                 <div class="col-md-6">
                   <label for="edit_lieu_{{ commande.id }}" class="form-label">Lieu *</label>
                   <select name="lieu" id="edit_lieu_{{ commande.id }}" class="form-select" required>
@@ -49,7 +61,7 @@
                     {% endfor %}
                   </select>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-12">
                   <label for="edit_precision_lieu_{{ commande.id }}" class="form-label">Précision lieu</label>
                   <input type="text" class="form-control" name="precision_lieu" id="edit_precision_lieu_{{ commande.id }}" value="{{ commande.client.precision_lieu }}">
                 </div>

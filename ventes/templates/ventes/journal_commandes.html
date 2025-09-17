@@ -4,32 +4,15 @@
 
 {% block extra_css_and_scripts %}
 <style>
-  /* Liste sous l'image */
-  .article-list{
-    overflow-x:hidden; list-style:disc; padding-left:1.25rem; margin-bottom:0;
-  }
+  .article-list{ overflow-x:hidden; list-style:disc; padding-left:1.25rem; margin-bottom:0; }
   .article-line-inner{ display:flex; flex-wrap:wrap; align-items:flex-start; gap:.5rem; }
   .article-name{ flex:1 1 auto; min-width:0; white-space:normal; overflow-wrap:anywhere; word-break:break-word; }
-
-  /* Toggle d’affichage */
   .view-toggle .btn{ padding:.375rem .6rem; }
   .view-toggle .btn.active{ pointer-events:none; }
-
-  .thumb-120{
-    height:120px; background:#fff; display:flex; align-items:center; justify-content:center;
-    overflow:hidden; border-radius:.375rem;
-  }
-  .thumb-120 img{
-    max-height:100%; max-width:100%; object-fit:contain; object-position:center; display:block; background:#fff;
-  }
-
-  /* Garantir le scroll vertical à l'intérieur du body des modales scrollables */
+  .thumb-120{ height:120px; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:.375rem; }
+  .thumb-120 img{ max-height:100%; max-width:100%; object-fit:contain; object-position:center; display:block; background:#fff; }
   .modal-dialog-scrollable .modal-body{ overflow-y:auto !important; max-height:calc(100vh - 6rem); }
-
-  /* Footer toujours visible dans les modals */
-  .modal-dialog-scrollable .modal-footer{
-    position:sticky; bottom:0; background:#fff; z-index:2; border-top:1px solid rgba(0,0,0,.1);
-  }
+  .modal-dialog-scrollable .modal-footer{ position:sticky; bottom:0; background:#fff; z-index:2; border-top:1px solid rgba(0,0,0,.1); }
 </style>
 {% endblock %}
 
@@ -49,7 +32,6 @@
     </button>
 
     <div class="d-flex align-items-center gap-2">
-      <!-- Bascule d’affichage (icônes en haut à droite, >= lg) -->
       <div class="view-toggle d-none d-lg-flex gap-1"
            data-storage-key="zr_display_commandes"
            data-target-url="{% url 'liste_commandes_partial' %}"
@@ -66,7 +48,6 @@
         </button>
       </div>
 
-      <!-- Bouton filtre visible seulement sur mobile/tablette -->
       <button class="btn btn-outline-success d-lg-none" type="button"
               data-bs-toggle="collapse" data-bs-target="#filtersCollapse"
               aria-expanded="false" aria-controls="filtersCollapse">
@@ -104,6 +85,9 @@
               {% for a in articles %}
                 <option value="{{ a.id }}" {% if filtre_article_id == a.id|stringformat:"s" %}selected{% endif %}>
                   {{ a.nom }}
+                  {% if a.categorie %}- {{ a.categorie.categorie }}{% endif %}
+                  {% if a.taille %}- {{ a.taille.taille }}{% endif %}
+                  {% if a.couleur %}- {{ a.couleur.couleur }}{% endif %}
                 </option>
               {% endfor %}
             </select>
@@ -165,19 +149,15 @@
           </button>
         </div>
 
-        <!-- Préserver le mode d’affichage et la page -->
         <input type="hidden" name="display" id="display_input" value="{{ display_mode }}">
         <input type="hidden" name="page" id="page_input" value="{{ page_obj.number }}">
       </form>
     </div>
   </div>
 
-  {# Wrapper d’affichage #}
   {% include "ventes/includes/commandes_list_wrapper.html" %}
-
   {% include "common/includes/pagination.html" with page_obj=page_obj extra_querystring=extra_querystring %}
 
-  {# Modals pré-générés (detail/restauration) #}
   {% for commande in commandes %}
     {% include "ventes/includes/commande_detail_modal_content.html" with commande=commande %}
     {% include "ventes/includes/modal_restauration_commande.html" %}
@@ -207,12 +187,32 @@
 
 </div>
 
+{# ====== Données ARTICLES ====== #}
+<script>
+  {% if articles_json %}
+    const ARTICLES = {{ articles_json|safe }};
+  {% else %}
+    const ARTICLES = [
+      {% for a in articles %}
+        {
+          "id": {{ a.id }},
+          "nom": "{{ a.nom|escapejs }}",
+          "categorie": "{{ a.categorie.categorie|default_if_none:''|escapejs }}",
+          "taille": "{{ a.taille.taille|default_if_none:''|escapejs }}",
+          "couleur": "{{ a.couleur.couleur|default_if_none:''|escapejs }}",
+          "livraison": "{{ a.livraison|default_if_none:''|escapejs }}",
+          "prix_vente": {{ a.prix_vente|default:0 }},
+          "prix_achat": {{ a.prix_achat|default:0 }},
+          "stock": {{ a.stock_final|default:0 }}
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ];
+  {% endif %}
+</script>
+
 <script>
 (function(){
-  // ---- Données articles pour lignes dynamiques
-  const ARTICLES = (window.ARTICLES_GLOBAL) ? window.ARTICLES_GLOBAL : {{ articles_json|safe }};
-
-  // ---- Utils
+  const safe = v => (v ?? '') + '';
   const fmt = n => (n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   const parseN = v => {
     if (typeof v !== 'string') v = (v ?? '').toString();
@@ -220,9 +220,18 @@
   };
 
   function buildLineHtml(){
-    const options = ARTICLES.map(a => `
-      <option value="${a.id}" data-prix="${a.prix_vente}" data-stock="${a.stock}" data-livraison="${a.livraison}">${a.nom}</option>
-    `).join('');
+    const options = ARTICLES.map(a => {
+      const lib = [safe(a.nom), safe(a.taille), safe(a.couleur)]
+        .filter(Boolean).join(' - ');
+      return `
+        <option value="${a.id}"
+                data-prix="${safe(a.prix_vente)}"
+                data-stock="${safe(a.stock)}"
+                data-livraison="${safe(a.livraison)}">
+          ${lib}
+        </option>`;
+    }).join('');
+
     return `
       <div class="row g-3 align-items-end mb-3" data-line>
         <div class="col-lg-3">
@@ -268,15 +277,13 @@
     requestAnimationFrame(()=> body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' }));
   }
 
-  // ---- Initialisation d'UNE modale (création OU édition)
-  function initCommandeModalByElement(modal, prefix){
+  window.initCommandeModalByElement = function(modal, prefix){
     if (!modal) return;
 
     const root   = modal;
     const lignes = root.querySelector(`#${prefix}_lignesCommande`);
     const addBtn = root.querySelector('[data-action="add-line"]');
 
-    // IMPORTANT : on cible par "name" (robuste aux IDs suffixés)
     const selLieu          = root.querySelector('select[name="lieu"]');
     const inFraisLivraison = root.querySelector('input[name="frais_livraison"]');
     const inFraisLivreur   = root.querySelector('input[name="frais_livreur"]');
@@ -296,7 +303,6 @@
     }
 
     function verifLivraisonGratuite(){
-      // Valeur par défaut depuis le lieu
       const defaultFL = selLieu?.selectedOptions?.[0]?.getAttribute('data-frais_livraison') || 0;
       let gratuite = false;
       root.querySelectorAll('select[name="article"]').forEach(s=>{
@@ -345,7 +351,6 @@
       scrollModalBodyToBottom(modal);
     }
 
-    // --- Events
     addBtn?.addEventListener('click', addLine);
 
     root.addEventListener('click', (e)=>{
@@ -380,21 +385,17 @@
       inFraisLivraison?.addEventListener(evt, ()=>{ majTotaux(); handleModalUpdate(modal); })
     );
 
-    // A l'ouverture → calculer totaux des lignes existantes (édition)
     modal.addEventListener('shown.bs.modal', ()=>{
       handleModalUpdate(modal);
-      // Si création et aucune ligne, en ajouter 1 par défaut
       if(lignes && !lignes.querySelector('[data-line]') && prefix === 'create'){
         addLine();
       }
-      // Recalcule à partir des valeurs déjà présentes (édition)
       root.querySelectorAll('[data-line]').forEach(row => calcLigne(row));
       verifLivraisonGratuite();
       majTotaux();
       scrollModalBodyToBottom(modal);
     });
 
-    // Soumission AJAX
     const form = root.querySelector('form');
     if(form){
       form.addEventListener('submit', async (e)=>{
@@ -434,7 +435,6 @@
     }
   }
 
-  // ---- Initialiser toutes les modales présentes (création + toutes les éditions)
   document.addEventListener('DOMContentLoaded', function(){
     const create = document.getElementById('commandeCreateModal');
     if (create) initCommandeModalByElement(create, 'create');
@@ -453,21 +453,20 @@ document.addEventListener('show.bs.modal', function (e) {
     const btn = e.relatedTarget;
     if (!btn) return;
 
-    const action = btn.getAttribute('data-action');    // <- URL Django préparée
+    const action = btn.getAttribute('data-action');
     const numero = btn.getAttribute('data-numero') || '';
 
     const form = m.querySelector('#deleteCommandeForm');
     const span = m.querySelector('#commandeNum');
 
-    if (form && action) form.action = action;          // <- on fixe l'action !
-    if (span) span.textContent = numero;               // <- on affiche la facture
+    if (form && action) form.action = action;
+    if (span) span.textContent = numero;
   }
 });
 </script>
 
 <script>
 (function(){
-  // Bascule TABLE / CARDS en haut de page
   const toggle = document.querySelector('.view-toggle');
   if(!toggle) return;
 
@@ -479,21 +478,18 @@ document.addEventListener('show.bs.modal', function (e) {
   const inputDisplay= document.getElementById('display_input');
   const inputPage   = document.getElementById('page_input');
 
-  // Applique l'état "active" visuel
   function setActive(mode){
     toggle.querySelectorAll('button[data-mode]').forEach(b=>{
       b.classList.toggle('active', b.getAttribute('data-mode') === mode);
     });
   }
 
-  // Déclenche le rechargement de la liste
   function reloadList(mode){
     if(inputDisplay) inputDisplay.value = mode;
-    if(inputPage)    inputPage.value    = 1; // on repart page 1
+    if(inputPage)    inputPage.value    = 1;
     localStorage.setItem(STORAGE_KEY, mode);
     setActive(mode);
 
-    // Construit la querystring depuis le form des filtres
     const params = new URLSearchParams(new FormData(form));
     params.set('display', mode);
     params.set('page', '1');
@@ -503,12 +499,10 @@ document.addEventListener('show.bs.modal', function (e) {
     if (window.htmx) {
       htmx.ajax('GET', url, { target: TARGET, swap: 'outerHTML', pushUrl: true });
     } else {
-      // Fallback sans HTMX
       window.location.href = url;
     }
   }
 
-  // Click sur les boutons
   toggle.addEventListener('click', (e)=>{
     const btn = e.target.closest('button[data-mode]');
     if(!btn) return;
@@ -518,14 +512,11 @@ document.addEventListener('show.bs.modal', function (e) {
     reloadList(mode);
   });
 
-  // Au chargement, on lit localStorage (optionnel)
   document.addEventListener('DOMContentLoaded', ()=>{
     const saved = localStorage.getItem(STORAGE_KEY);
     if(saved && inputDisplay && inputDisplay.value !== saved){
-      // on synchronise visuel seulement; pas de reload auto
       setActive(saved);
     }else{
-      // synchronise visuel avec la valeur initiale du template
       setActive(inputDisplay?.value || 'table');
     }
   });
@@ -533,28 +524,220 @@ document.addEventListener('show.bs.modal', function (e) {
 </script>
 
 <script>
-  // Re-init après refresh HTMX de la liste
   document.body.addEventListener('htmx:afterSwap', function (e) {
     const tgt = e.target;
     if (!tgt) return;
 
-    // Quand la zone des commandes est remplacée, ré-attacher les comportements
     if (tgt.id === 'commandes-table-wrapper') {
-      // Modale de création (si présente)
       const create = document.getElementById('commandeCreateModal');
       if (create) initCommandeModalByElement(create, 'create');
 
-      // Toutes les modales d’édition (Table + Card)
       document.querySelectorAll('[id^="commandeEditModal"]').forEach(m => {
         initCommandeModalByElement(m, 'edit');
       });
+
+      // 🔁 Rebind autocomplete après swap
+      bindNameAutocomplete();
     }
   }, false);
 </script>
 
+<!-- ===== Autocomplete clients (avec reset immédiat) ===== -->
+<script>
+// utils
+function debounce(fn, delay=300){
+  let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), delay); };
+}
+const JSON_OK = res => res.ok && (res.headers.get('Content-Type')||'').includes('application/json');
 
+// cache
+const CLIENT_SUGGEST_CACHE = Object.create(null);
 
+// vider les champs liés au client
+function clearClientFields() {
+  const contactEl  = document.getElementById('create_contact');
+  const refEl      = document.getElementById('create_reference_client');
+  const lieuEl     = document.getElementById('create_lieu');
+  const precEl     = document.getElementById('create_precision_lieu');
+  const flEl       = document.getElementById('create_frais_livraison');
+  const frEl       = document.getElementById('create_frais_livreur');
 
+  if (contactEl) contactEl.value = '';
+  if (refEl)     refEl.value     = '';
+  if (precEl)    precEl.value    = '';
+
+  if (lieuEl) {
+    lieuEl.value = '';
+    lieuEl.dispatchEvent(new Event('change', { bubbles:true }));
+  }
+
+  if (flEl) flEl.value = '';
+  if (frEl) frEl.value = '';
+}
+
+// datalist suggestions
+async function fetchClientSuggestions(q){
+  try {
+    const res = await fetch(`/ventes/client-suggest/?q=${encodeURIComponent(q)}`,
+      { headers: { 'X-Requested-With':'XMLHttpRequest' }});
+    if (!JSON_OK(res)) return [];
+    const data = await res.json();
+    return Array.isArray(data.results) ? data.results : [];
+  } catch(e) {
+    console.warn('client-suggest error', e);
+    return [];
+  }
+}
+
+function ensureDatalist(){
+  // on s'assure qu'un <datalist id="clients_datalist"> existe, sinon on le crée
+  let listEl = document.getElementById('clients_datalist');
+  if (!listEl){
+    listEl = document.createElement('datalist');
+    listEl.id = 'clients_datalist';
+    document.body.appendChild(listEl);
+  }
+  // on s'assure que l'input nom pointe vers ce datalist
+  const nomEl = document.getElementById('create_nom');
+  if (nomEl && !nomEl.getAttribute('list')) nomEl.setAttribute('list','clients_datalist');
+  return listEl;
+}
+
+function fillDatalist(listEl, items){
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  const seen = new Set();
+  for (const c of items){
+    const key = (c.nom || '').trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    CLIENT_SUGGEST_CACHE[key] = c;
+    const opt = document.createElement('option');
+    opt.value = c.nom || '';
+    if (c.contact) opt.label = `${c.nom} — ${c.contact}`;
+    listEl.appendChild(opt);
+  }
+}
+
+// auto-remplissage depuis nom
+async function autoFillFromName(){
+  const nomEl = document.getElementById('create_nom');
+  if (!nomEl) return;
+  const nom = (nomEl.value || '').trim();
+  if (!nom) return;
+
+  const lower = nom.toLowerCase();
+  let c = CLIENT_SUGGEST_CACHE[lower];
+
+  if (!c) {
+    try {
+      const res = await fetch(`/ventes/client-lookup/?nom=${encodeURIComponent(nom)}&contact=`,
+        { headers: { 'X-Requested-With':'XMLHttpRequest' }});
+      if (!JSON_OK(res)) return;
+      const data = await res.json();
+      if (data?.found) c = data.client;
+    } catch(e) {
+      console.warn('client-lookup error', e);
+      return;
+    }
+  }
+  if (!c) return;
+
+  const contactEl   = document.getElementById('create_contact');
+  const refEl       = document.getElementById('create_reference_client');
+  const lieuEl      = document.getElementById('create_lieu');
+  const precLieuEl  = document.getElementById('create_precision_lieu');
+
+  if (contactEl && !contactEl.value)     contactEl.value   = c.contact || '';
+  if (refEl && !refEl.value)             refEl.value       = c.reference_client || '';
+  if (precLieuEl && !precLieuEl.value)   precLieuEl.value  = c.precision_lieu || '';
+
+  if (lieuEl && c.lieu_id && !lieuEl.value) {
+    const targetVal = String(c.lieu_id);
+    const hasOption = Array.from(lieuEl.options).some(o => o.value === targetVal);
+    if (hasOption) {
+      lieuEl.value = targetVal;
+      lieuEl.dispatchEvent(new Event('change', { bubbles:true }));
+    }
+  }
+}
+
+// binding
+function bindNameAutocomplete(){
+  const nomEl = document.getElementById('create_nom');
+  if (!nomEl) return;
+
+  const listEl = ensureDatalist();
+
+  // --- handler DEBOUNCÉ (requêtes + suggestions) ---
+  const onTypeDebounced = debounce(async ()=>{
+    const q = (nomEl.value || '').trim();
+
+    if (q.length === 0){
+      listEl.innerHTML = '';
+      clearClientFields();           // ✅ reset champs liés
+      return;
+    }
+    if (q.length < 2){
+      listEl.innerHTML = '';
+      return;
+    }
+    const items = await fetchClientSuggestions(q);
+    fillDatalist(listEl, items);
+  }, 250);
+
+  // --- handler IMMÉDIAT (reset instantané à l'effacement) ---
+  const onTypeImmediate = ()=>{
+    const q = (nomEl.value || '').trim();
+    if (q.length === 0){
+      // reset immédiat (sans attendre le debounce)
+      listEl.innerHTML = '';
+      clearClientFields();           // ✅ reset immédiat
+    }
+  };
+
+  // nettoyer anciens handlers si rebind
+  if (nomEl._inputSuggestImmediate) nomEl.removeEventListener('input', nomEl._inputSuggestImmediate);
+  if (nomEl._inputSuggestDebounced) nomEl.removeEventListener('input', nomEl._inputSuggestDebounced);
+  if (nomEl._blurAutofillHandler)   nomEl.removeEventListener('blur',  nomEl._blurAutofillHandler);
+  if (nomEl._changeAutofillHandler) nomEl.removeEventListener('change',nomEl._changeAutofillHandler);
+
+  // brancher
+  nomEl.addEventListener('input', onTypeImmediate);   // immédiat
+  nomEl._inputSuggestImmediate = onTypeImmediate;
+
+  nomEl.addEventListener('input', onTypeDebounced);   // suggestions/serveur
+  nomEl._inputSuggestDebounced = onTypeDebounced;
+
+  const blurH = ()=>{
+    const q = (nomEl.value || '').trim();
+    if (q.length === 0) {
+      clearClientFields();          // ✅ reset aussi au blur si vide
+    } else {
+      autoFillFromName();
+    }
+  };
+  nomEl.addEventListener('blur', blurH);
+  nomEl._blurAutofillHandler = blurH;
+
+  const changeH = debounce(autoFillFromName, 10);
+  nomEl.addEventListener('change', changeH);
+  nomEl._changeAutofillHandler = changeH;
+}
+
+document.addEventListener('DOMContentLoaded', bindNameAutocomplete);
+
+// après HTMX swap
+document.body.addEventListener('htmx:afterSwap', (e)=>{
+  if (e.target?.id === 'commandes-table-wrapper'){
+    bindNameAutocomplete();
+  }
+});
+
+// à l’ouverture de la modale
+document.getElementById('commandeCreateModal')
+  ?.addEventListener('shown.bs.modal', bindNameAutocomplete);
+</script>
 
 {% include 'ventes/creer_commande.html' %}
 {% endblock %}

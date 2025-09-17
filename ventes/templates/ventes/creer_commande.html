@@ -21,10 +21,15 @@
                 <div class="col-md-6">
                   <label for="create_nom" class="form-label">Nom *</label>
                   <input type="text" class="form-control" name="nom" id="create_nom" required>
+                  <datalist id="clients_datalist"></datalist>
                 </div>
                 <div class="col-md-6">
                   <label for="create_contact" class="form-label">Contact *</label>
                   <input type="text" class="form-control" name="contact" id="create_contact" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="create_reference_client" class="form-label">Réf client</label>
+                  <input type="text" class="form-control" name="reference_client" id="create_reference_client" placeholder="Ex : CLT-2025-001">
                 </div>
                 <div class="col-md-6">
                   <label for="create_lieu" class="form-label">Lieu *</label>
@@ -37,7 +42,7 @@
                     {% endfor %}
                   </select>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-12">
                   <label for="create_precision_lieu" class="form-label">Précision lieu</label>
                   <input type="text" class="form-control" name="precision_lieu" id="create_precision_lieu">
                 </div>
@@ -142,8 +147,3 @@
     </div>
   </div>
 </div>
-
-
-
-
-

@@ -8,7 +8,7 @@
       <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
         <div class="card h-100 shadow-sm {% if article.statut_publication == 'supprimé' %}opacity-50{% endif %}">
           <div class="card-body">
-            <h5 class="card-title text-primary text-center mb-3">{{ article.nom }}</h5>
+            <h5 class="card-title text-primary text-center mb-3">{{ article.nom }} - {{ article.taille }} - {{ article.couleur }}</h5>
             <div class="row g-2 align-items-start">
               <div class="col-4">
                 <div class="thumb-120">
