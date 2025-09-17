@@ -136,10 +136,12 @@
                       {% for article in articles %}
                         <option value="{{ article.id }}"
                                 data-prix="{{ article.prix_vente }}"
-                                data-stock="{{ article.stock }}"
+                                data-stock="{{ article.stock|default:0 }}"
                                 data-livraison="{{ article.livraison }}"
                                 {% if article.id == ligne.article.id %}selected{% endif %}>
                           {{ article.nom }}
+                          {% if article.taille %} - {{ article.taille.taille }}{% endif %}
+                          {% if article.couleur %} - {{ article.couleur.couleur }}{% endif %}
                         </option>
                       {% endfor %}
                     </select>

@@ -411,7 +411,13 @@ def commande_edit(request, commande_id):
 
     pages = Pages.actifs.filter(type="VENTE")
     lieux = Livraison.actifs.all().order_by('lieu')
-    articles = Article.actifs.all().order_by('nom')
+    articles = (
+        Article.actifs
+        .select_related('categorie', 'taille', 'couleur')
+        .order_by('nom')
+    )
+    for a in articles:
+        a.stock = calculer_stock_article(a)
 
     if request.method == 'POST':
         # --- Récupération champs ---
@@ -515,11 +521,14 @@ def commande_edit(request, commande_id):
     # Données articles pour JS (même format que créer commande)
     articles_data = [{
         "id": a.id,
-        "nom": a.nom,
-        "prix_vente": int(a.prix_vente),
-        "prix_achat": int(a.prix_achat),
-        "livraison": a.livraison,
-        "stock": calculer_stock_article(a),
+        "nom": a.nom or "",
+        "prix_vente": int(getattr(a, "prix_vente", 0) or 0),
+        "prix_achat": int(getattr(a, "prix_achat", 0) or 0),
+        "livraison": a.livraison or "",
+        "stock": int(a.stock or 0),
+        "taille": (a.taille.taille if a.taille else ""),
+        "couleur": (a.couleur.couleur if a.couleur else ""),
+        "categorie": (a.categorie.categorie if a.categorie else ""),
     } for a in articles]
     articles_json = json.dumps(articles_data, cls=DjangoJSONEncoder)
 
