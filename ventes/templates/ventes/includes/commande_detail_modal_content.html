@@ -62,7 +62,7 @@
               <tbody>
                 {% for ligne in commande.lignes_commandes.all %}
                 <tr>
-                  <td>{{ ligne.article.nom }}</td>
+                  <td>{{ ligne.article.nom }} - {{ ligne.article.taille }} - {{ ligne.article.couleur }}</td>
                   <td class="text-end">{{ ligne.prix_unitaire|intpoint }}</td>
                   <td class="text-center">{{ ligne.quantite }}</td>
                   <td class="text-end">
