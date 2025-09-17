@@ -45,4 +45,8 @@ urlpatterns = [
     path('articles/ajouter-couleur/', views.ajouter_couleur, name="ajouter_couleur"),
     path('articles/<int:pk>/modifier-couleur/', views.modifier_couleur, name="modifier_couleur"),
     path('articles/<int:pk>/supprimer-couleur/', views.supprimer_couleur, name="supprimer_couleur"),
+
+    path("roles/ajouter/", views.ajouter_role, name="ajouter_role"),
+    path("roles/<int:pk>/modifier/", views.modifier_role, name="modifier_role"),
+    path("roles/<int:pk>/supprimer/", views.supprimer_role, name="supprimer_role"),
 ]

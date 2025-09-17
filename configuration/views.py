@@ -24,58 +24,79 @@ from livraison.models import (
 )
 from livraison.forms import LivreurForm
 
+# ✅ Rôles (depuis users)
+from users.models import Role
+
+
+# -------------------------------
+# Utils
+# -------------------------------
+def _has_admin_role(user) -> bool:
+    """
+    Un utilisateur est considéré 'admin' s'il remplit AU MOINS une des conditions :
+    - rôle.label ∈ {admin, administrateur, superadmin} (insensible à la casse)
+    - is_superuser ou is_staff
+    """
+    if getattr(user, "is_superuser", False) or getattr(user, "is_staff", False):
+        return True
+    r = getattr(user, "role", None)
+    if not r or not getattr(r, "role", None):
+        return False
+    return r.role.strip().lower() in {"admin", "administrateur", "superadmin"}
+
 
 # -------------------------------
 # Sections disponibles
 # -------------------------------
 SECTIONS = ("pages", "caisses", "plans", "profil", "livreurs", "frais",
-            "articles")
+            "articles", "roles")  # ✅ ajout "roles"
 
 
 # -------------------------------
 # Helper : construire le contexte d’une section
 # -------------------------------
 def _get_section_context(request, section):
-    is_admin_flag = request.user.is_superuser or request.user.is_staff
+    is_admin_flag = _has_admin_role(request.user)
+    is_super_flag = request.user.is_superuser or request.user.is_staff
 
     if section == "pages":
         return ("configuration/includes/configuration_pages.html", {
             "pages": Pages.objects.all().order_by("nom"),
             "type_choices": Pages.TYPE_CHOICES,
-            "is_admin": is_admin_flag,
+            "is_admin": is_admin_flag or is_super_flag,
         })
 
     if section == "caisses":
         return ("configuration/includes/configuration_caisses.html", {
             "caisses": Caisse.objects.all().order_by("nom"),
-            "is_admin": is_admin_flag,
+            "is_admin": is_admin_flag or is_super_flag,
         })
 
     if section == "plans":
         return ("configuration/includes/configuration_plans.html", {
             "plans": PlanDesComptes.objects.all().order_by("compte_numero"),
-            "is_admin": is_admin_flag,
+            "is_admin": is_admin_flag or is_super_flag,
         })
 
     if section == "profil":
         return ("configuration/includes/configuration_profil.html", {
             "form": ProfilForm(instance=request.user),
             "u": request.user,
-            "is_admin": is_admin_flag,
+            "is_admin": is_admin_flag or is_super_flag,
         })
 
     if section == "livreurs":
         return ("configuration/includes/configuration_livreurs.html", {
             "livreurs": Livreur.objects.all().order_by("nom"),
-            "is_admin": is_admin_flag,
+            "is_admin": is_admin_flag or is_super_flag,
         })
 
-    if section == "articles":  # ✅ nouveau hub
+    if section == "articles":
         return ("configuration/includes/configuration_articles.html", {
             "categories": Categorie.objects.all().order_by("categorie"),
             "tailles": Taille.objects.all().order_by("taille"),
             "couleurs": Couleur.objects.all().order_by("couleur"),
-            "is_admin": is_admin_flag,
+            "is_admin": is_admin_flag or is_super_flag,
         })
 
     if section == "frais":
@@ -111,9 +132,15 @@ def _get_section_context(request, section):
             "lieu_recherche": lieu_recherche,
             "categorie_filtre": categorie_filtre,
             "extra_querystring": extra_querystring,
-            "is_admin": is_admin_flag,
+            "is_admin": is_admin_flag or is_super_flag,
             "FRAIS_LIVRAISON_PAR_DEFAUT": FRAIS_LIVRAISON_PAR_DEFAUT,
             "FRAIS_LIVREUR_PAR_DEFAUT": FRAIS_LIVREUR_PAR_DEFAUT,
+        })
+
+    if section == "roles":  # ✅ nouvelle section
+        return ("configuration/includes/configuration_roles.html", {
+            "roles": Role.objects.all().order_by("role"),
+            "is_admin": is_admin_flag or is_super_flag,
         })
 
     raise Http404("Section inconnue")
@@ -129,8 +156,20 @@ def configuration_view(request):
     if section not in SECTIONS:
         section = "pages"
 
+    # Sécurité : empêcher l’accès direct à /configuration?tab=roles si non-admin
+    can_manage_roles = _has_admin_role(request.user)
+    if section == "roles" and not can_manage_roles:
+        messages.warning(request, "Accès refusé : vous n’avez pas les droits pour gérer les rôles.")
+        section = "pages"
+
     partial_tpl, partial_ctx = _get_section_context(request, section)
-    ctx = {"selected_section": section, "partial_template": partial_tpl, **partial_ctx}
+
+    ctx = {
+        "selected_section": section,
+        "partial_template": partial_tpl,
+        "can_manage_roles": can_manage_roles,   # ✅ pour désactiver l’onglet côté UI
+        **partial_ctx
+    }
     return render(request, "configuration/configuration.html", ctx)
 
 
@@ -139,11 +178,26 @@ def configuration_section(request, section: str):
     if section not in SECTIONS:
         raise Http404("Section inconnue")
 
+    # Sécurité : empêcher l’accès via HTMX si non-admin
+    if section == "roles" and not _has_admin_role(request.user):
+        if not request.headers.get("HX-Request"):
+            messages.warning(request, "Accès refusé : vous n’avez pas les droits pour gérer les rôles.")
+            return redirect(f"{reverse('configuration')}?tab=pages")
+        # Rejeter en HTMX
+        response = JsonResponse({"error": "forbidden", "message": "Permissions insuffisantes."})
+        response.status_code = 403
+        return response
+
     partial_tpl, partial_ctx = _get_section_context(request, section)
 
     # Accès direct (non-HTMX) → renvoyer la page complète stylée
     if not request.headers.get("HX-Request"):
-        ctx = {"selected_section": section, "partial_template": partial_tpl, **partial_ctx}
+        ctx = {
+            "selected_section": section,
+            "partial_template": partial_tpl,
+            "can_manage_roles": _has_admin_role(request.user),
+            **partial_ctx
+        }
         return render(request, "configuration/configuration.html", ctx)
 
     # HTMX → renvoyer juste le fragment
@@ -316,7 +370,7 @@ def configuration_profil_update(request):
 
 
 # -------------------------------
-# Actions LIVREURS (déplacées ici depuis app livraison)
+# Actions LIVREURS
 # -------------------------------
 @login_required
 @admin_required
@@ -366,7 +420,7 @@ def supprimer_livreur(request, id):
 
 
 # -------------------------------
-# Actions FRAIS DE LIVRAISON (déplacées ici)
+# Actions FRAIS DE LIVRAISON
 # -------------------------------
 @login_required
 @require_POST
@@ -454,6 +508,9 @@ def frais_livraison_supprimer(request, id):
     return redirect(f"{reverse('configuration')}?tab=frais")
 
 
+# -------------------------------
+# Actions ARTICLES (catégories / tailles / couleurs)
+# -------------------------------
 @login_required
 @admin_required
 @require_POST
@@ -464,6 +521,7 @@ def ajouter_categorie(request):
     except Exception as e:
         messages.warning(request, f"Erreur lors de l’ajout de la catégorie : {e}")
     return redirect(f"{reverse('configuration')}?tab=articles")
+
 
 @login_required
 @admin_required
@@ -504,6 +562,7 @@ def ajouter_taille(request):
         messages.warning(request, f"Erreur lors de l’ajout de la taille : {e}")
     return redirect(f"{reverse('configuration')}?tab=articles")
 
+
 @login_required
 @admin_required
 @require_POST
@@ -516,6 +575,7 @@ def modifier_taille(request, pk):
     except Exception as e:
         messages.warning(request, f"Erreur lors de la modification : {e}")
     return redirect(f"{reverse('configuration')}?tab=articles")
+
 
 @login_required
 @admin_required
@@ -542,6 +602,7 @@ def ajouter_couleur(request):
         messages.warning(request, f"Erreur lors de l’ajout de la couleur : {e}")
     return redirect(f"{reverse('configuration')}?tab=articles")
 
+
 @login_required
 @admin_required
 @require_POST
@@ -555,6 +616,7 @@ def modifier_couleur(request, pk):
         messages.warning(request, f"Erreur lors de la modification : {e}")
     return redirect(f"{reverse('configuration')}?tab=articles")
 
+
 @login_required
 @admin_required
 @require_POST
@@ -567,3 +629,55 @@ def supprimer_couleur(request, pk):
     except Exception as e:
         messages.warning(request, f"Erreur lors de la suppression : {e}")
     return redirect(f"{reverse('configuration')}?tab=articles")
+
+
+# -------------------------------
+# ✅ Actions ROLES
+# -------------------------------
+@login_required
+@admin_required
+@require_POST
+def ajouter_role(request):
+    lib = (request.POST.get("role") or "").strip()
+    if not lib:
+        messages.warning(request, "Le nom du rôle est requis.")
+        return redirect(f"{reverse('configuration')}?tab=roles")
+    try:
+        lib_norm = lib.title()
+        Role.objects.get_or_create(role=lib_norm)
+        messages.success(request, f"Rôle « {lib_norm} » ajouté ✅")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de l’ajout du rôle : {e}")
+    return redirect(f"{reverse('configuration')}?tab=roles")
+
+
+@login_required
+@admin_required
+@require_POST
+def modifier_role(request, pk):
+    lib = (request.POST.get("role") or "").strip()
+    if not lib:
+        messages.warning(request, "Le nom du rôle est requis.")
+        return redirect(f"{reverse('configuration')}?tab=roles")
+    try:
+        r = get_object_or_404(Role, pk=pk)
+        r.role = lib.title()
+        r.save()
+        messages.success(request, f"Rôle « {r.role} » modifié ✅")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de la modification du rôle : {e}")
+    return redirect(f"{reverse('configuration')}?tab=roles")
+
+
+@login_required
+@admin_required
+@require_POST
+def supprimer_role(request, pk):
+    try:
+        r = get_object_or_404(Role, pk=pk)
+        nom = r.role
+        r.delete()
+        messages.success(request, f"Rôle « {nom} » supprimé 🗑️")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de la suppression du rôle : {e}")
+    return redirect(f"{reverse('configuration')}?tab=roles")

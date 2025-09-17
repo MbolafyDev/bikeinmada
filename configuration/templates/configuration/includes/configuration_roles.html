@@ -1,0 +1,156 @@
+{# configuration/includes/configuration_roles.html #}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0"><i class="fa fa-user-shield me-2"></i>Rôles</h3>
+
+  {% if is_admin %}
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#roleCreateModal">
+      <i class="fa fa-plus"></i> Nouveau rôle
+    </button>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width:80px;">#</th>
+            <th>Nom du rôle</th>
+            <th class="text-center" style="width:160px;">Utilisateurs</th>
+            {% if is_admin %}<th class="text-end" style="width:180px;">Actions</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in roles %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td class="fw-semibold">{{ r.role }}</td>
+              <td class="text-center">
+                {{ r.utilisateurs.count }}
+              </td>
+              {% if is_admin %}
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-secondary me-1"
+                        data-bs-toggle="modal"
+                        data-bs-target="#roleEditModal{{ r.id }}">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#roleDeleteModal{{ r.id }}">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </td>
+              {% endif %}
+            </tr>
+
+            {% if is_admin %}
+            {# --- Modal Edition --- #}
+            <div class="modal fade" id="roleEditModal{{ r.id }}" tabindex="-1" aria-labelledby="roleEditModalLabel{{ r.id }}" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <form method="post" action="{% url 'modifier_role' r.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="roleEditModalLabel{{ r.id }}">
+                        <i class="fa fa-edit me-1"></i> Modifier le rôle
+                      </h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="mb-3">
+                        <label class="form-label">Nom du rôle</label>
+                        <input type="text" class="form-control" name="role" value="{{ r.role }}" required>
+                      </div>
+                      <div class="alert alert-info small mb-0">
+                        Attention : renommer un rôle impacte les utilisateurs associés (changement de label uniquement).
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                      <button type="submit" class="btn btn-success">
+                        <i class="fa fa-check"></i> Enregistrer
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            {# --- Modal Suppression --- #}
+            <div class="modal fade" id="roleDeleteModal{{ r.id }}" tabindex="-1" aria-labelledby="roleDeleteModalLabel{{ r.id }}" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <form method="post" action="{% url 'supprimer_role' r.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="roleDeleteModalLabel{{ r.id }}">
+                        <i class="fa fa-triangle-exclamation me-1 text-danger"></i> Supprimer le rôle
+                      </h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Confirmez-vous la suppression du rôle <strong>{{ r.role }}</strong> ?</p>
+                      <div class="alert alert-warning small mb-0">
+                        Les utilisateurs reliés à ce rôle auront leur champ <code>role</code> à <em>NULL</em>.
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                      <button type="submit" class="btn btn-danger">
+                        <i class="fa fa-trash"></i> Supprimer
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          {% empty %}
+            <tr>
+              <td colspan="{% if is_admin %}4{% else %}3{% endif %}" class="text-center py-4">
+                Aucun rôle pour le moment.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if is_admin %}
+{# --- Modal Création --- #}
+<div class="modal fade" id="roleCreateModal" tabindex="-1" aria-labelledby="roleCreateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'ajouter_role' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="roleCreateModalLabel">
+            <i class="fa fa-plus me-1"></i> Nouveau rôle
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nom du rôle</label>
+            <input type="text" class="form-control" name="role" placeholder="Ex. Admin, Vendeur, Comptable" required>
+          </div>
+          <div class="alert alert-secondary small mb-0">
+            Astuce : utilisez un nom clair et unique (la valeur est unique en base).
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fa fa-save"></i> Créer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
