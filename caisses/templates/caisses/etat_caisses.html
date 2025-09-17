@@ -4,7 +4,7 @@
 {% block title %}État des Caisses{% endblock %}
 
 {% block content %}
-<div class="container mb-2">
+<div class="container-fluid mb-2">
     <h2 class="text-center">État des caisses</h2>
 
     {% include "includes/messages_alert.html" %}
@@ -68,7 +68,37 @@
             </tfoot>
         </table>
 
-        <h2 class="mt-5 text-center">Récapitulatif par Page</h2>
+        <h2 class="mt-5 text-center">Récapitulatif par boutique | page</h2>
+
+        <!-- 🔎 Filtres Année / Mois (affectent récap & répartition des charges) -->
+        <form method="get" class="row g-2 align-items-end mb-3">
+            <div class="col-auto">
+                <label class="form-label mb-0">Année</label>
+                <select name="year" class="form-select">
+                    <option value="" {% if not selected_year %}selected{% endif %}>Tous</option>
+                    {% for y in years_choices %}
+                        <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-0">Mois</label>
+                <select name="month" class="form-select">
+                    <option value="" {% if not selected_month %}selected{% endif %}>Tous</option>
+                    {% for m, label in months_choices %}
+                        <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-success">
+                    <i class="fa fa-filter"></i> Filtrer
+                </button>
+                {% if selected_year or selected_month %}
+                    <a href="{% url 'etat_caisses' %}" class="btn btn-outline-secondary">Réinitialiser</a>
+                {% endif %}
+            </div>
+        </form>
 
         <div class="table-responsive mt-3">
             <table class="table table-bordered table-striped align-middle">
@@ -125,40 +155,12 @@
                     {% endif %}
                     {% endfor %}
                 </tfoot>
-
             </table>
         </div>    
         
-        {% comment %} <h2 class="mt-5 text-center">Caisse - solde par page</h2>
-
-        <div class="table-responsive mt-3">
-            <table class="table table-bordered table-striped align-middle">
-                <thead class="table-success">
-                    <tr>
-                        <th>Page</th>
-                        <th>Solde</th>
-                        <th>Écart</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for recap in recap_pages %}
-                        {% if recap.page != 'TOTAL' %}
-                        <tr>
-                            <td>{{ recap.page }}</td>
-                            <td class="text-end">{{ recap.reste|intpoint }}</td>
-                            <td class="text-end {% if recap.ecart < 0 %}text-danger{% endif %}">
-                                {{ recap.ecart|intpoint }}
-                            </td>
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div> {% endcomment %}
-
         {# --------------------------- RÉPARTITION CHARGES PAR MOIS --------------------------- #}
         {% if repartition_charges %}
-        <h2 class="mt-5 text-center">Répartition des charges non affectées</h2>
+        <h2 class="mt-5 text-center">Répartition des charges communes</h2>
 
         <div class="table-responsive mt-3">
         <table class="table table-bordered table-striped align-middle">
@@ -168,14 +170,14 @@
                 {% for p in pages %}
                 <td class="text-center">{{ p.nom }}</td>
                 {% endfor %}
-                <td class="align-middle text-center">Total mois</td>
+                <td class="align-middle text-center">Total</td>
                 </tr>
             </thead>
 
             <tbody>
             {% for row in repartition_charges %}
             <tr>
-                <td>{{ row.mois|date:"Y‑m" }}</td>
+                <td>{{ row.mois|date:"Y-m" }}</td>
 
                 {# montants par page #}
                 {% for p in pages %}
@@ -191,7 +193,7 @@
 
             <tfoot class="table-success">
             <tr class="fw-bold">
-                <td>Total cumulé</td>
+                <td>Total</td>
 
                 {% for p in pages %}
                 <td class="text-end">{{ repartition_totaux|get_item:p.id|default:0|intpoint }}</td>
@@ -236,7 +238,7 @@
                         <p class="card-text mb-1"><strong>Solde initial :</strong> {{ totaux.solde_initial|intpoint }}</p>
                         <p class="card-text mb-1"><strong>Ventes :</strong> {{ totaux.entrees|intpoint }}</p>
                         <p class="card-text mb-1"><strong>Achats :</strong> {{ totaux.achats|intpoint }}</p>
-                        <p class="card-text mb-1"><strong>Charges :</strong> {{ totaux.charges|intpoint }}</p>
+                        <p class="card-text mb-1"><strong>Charges :</strong> {{ totaux.charges_caisses|intpoint }}</p>
                         <p class="card-text mb-1"><strong>Versements :</strong> {{ totaux.versements|intpoint }}</p>
                     </div>
                     <div class="card-footer">
@@ -250,6 +252,37 @@
         {% if recap_pages %}
         <div class="row mt-4">
             <h4 class="text-center">Récapitulatif par Page</h4>
+
+            <!-- 🔎 Filtres (version compacte pour mobile) -->
+            <form method="get" class="row g-2 align-items-end mb-3">
+                <div class="col-6">
+                    <label class="form-label mb-0">Année</label>
+                    <select name="year" class="form-select form-select-sm">
+                        <option value="" {% if not selected_year %}selected{% endif %}>Tous</option>
+                        {% for y in years_choices %}
+                            <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label class="form-label mb-0">Mois</label>
+                    <select name="month" class="form-select form-select-sm">
+                        <option value="" {% if not selected_month %}selected{% endif %}>Tous</option>
+                        {% for m, label in months_choices %}
+                            <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-outline-success btn-sm w-100 mt-2">
+                        <i class="fa fa-filter"></i> Filtrer
+                    </button>
+                    {% if selected_year or selected_month %}
+                        <a href="{% url 'etat_caisses' %}" class="btn btn-outline-secondary btn-sm w-100 mt-2">Réinitialiser</a>
+                    {% endif %}
+                </div>
+            </form>
+
             {% for recap in recap_pages %}
                 {% if recap.page != 'TOTAL' %}
                 <div class="col-md-6 mb-3">

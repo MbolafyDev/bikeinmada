@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils.timezone import now
 from django.db.models import Sum, Q, F, IntegerField, Value, Case, When
 from django.db.models.functions import TruncMonth
 from django.contrib.auth.decorators import login_required
 from django.utils.dateparse import parse_date
+from django.utils.timezone import now
+from datetime import date
+from calendar import monthrange
 from django.contrib import messages
 from collections import defaultdict
 from common.decorators import admin_required
@@ -16,11 +18,12 @@ from charges.models import Charge
 from common.models import Caisse, Pages
 from .models import MouvementCaisse
 
+
 @login_required
 @admin_required
 def etat_caisses(request):
     # ------------------------------------------------------------------ #
-    # 1)  ETAT INDIVIDUEL DES CAISSES
+    # 1)  ETAT INDIVIDUEL DES CAISSES  (GLOBAUX, NON FILTRÉS)
     # ------------------------------------------------------------------ #
     caisses = Caisse.objects.all()
     etats = []
@@ -96,13 +99,54 @@ def etat_caisses(request):
         total_solde_final += solde_final
 
     # ------------------------------------------------------------------ #
-    # 2)  RÉPARTITION DES CHARGES NON AFFECTÉES PAR MOIS & PAR PAGE
+    # ✅  FILTRES Année / Mois pour RÉCAP PAR PAGE + RÉPARTITION CHARGES
     # ------------------------------------------------------------------ #
+    year_param = (request.GET.get("year") or "").strip()
+    month_param = (request.GET.get("month") or "").strip()
+
+    selected_year = int(year_param) if year_param and year_param.lower() != "tous" else None
+    selected_month = int(month_param) if month_param and month_param.lower() != "tous" else None
+
+    # Fenêtre temporelle annuelle
+    start_year = end_year = None
+    if selected_year:
+        start_year = date(selected_year, 1, 1)
+        end_year = date(selected_year + 1, 1, 1)  # exclusif
+
+    # Q() par modèle/champ
+    # - Commande: date_commande (sur Commande)
+    # - LigneCommande: commande__date_commande (sur LC)
+    # - Charge: date
+    # - Versement: date  (⚠️ adaptez si votre champ diffère)
+    commande_date_q = Q()
+    commande_date_q_lc = Q()
+    chg_date_q = Q()
+    vers_date_q = Q()
+
+    if start_year and end_year:
+        commande_date_q &= Q(date_commande__gte=start_year, date_commande__lt=end_year)
+        commande_date_q_lc &= Q(commande__date_commande__gte=start_year, commande__date_commande__lt=end_year)
+        chg_date_q &= Q(date__gte=start_year, date__lt=end_year)
+        vers_date_q &= Q(date__gte=start_year, date__lt=end_year)
+
+    if selected_month:
+        commande_date_q &= Q(date_commande__month=selected_month)
+        commande_date_q_lc &= Q(commande__date_commande__month=selected_month)
+        chg_date_q &= Q(date__month=selected_month)
+        vers_date_q &= Q(date__month=selected_month)
+
+    # ------------------------------------------------------------------ #
+    # 2)  RÉPARTITION DES CHARGES NON AFFECTÉES PAR MOIS & PAR PAGE (FILTRABLE)
+    # ------------------------------------------------------------------ #
+    charges_qs = Charge.actifs.filter(
+        page__isnull=True, libelle__compte_numero__startswith="6"
+    )
+    if chg_date_q:
+        charges_qs = charges_qs.filter(chg_date_q)
+
     charges_par_mois = dict(
-        Charge.actifs.filter(
-            page__isnull=True, libelle__compte_numero__startswith="6"
-        )
-        .annotate(mois=TruncMonth("date"))       
+        charges_qs
+        .annotate(mois=TruncMonth("date"))
         .values("mois")
         .annotate(total=Sum("montant"))
         .values_list("mois", "total")
@@ -113,6 +157,7 @@ def etat_caisses(request):
         LigneCommande.actifs.filter(
             commande__statut_vente="Payée", commande__vente__isnull=False
         )
+        .filter(commande_date_q_lc)  # ✅ applique la période sur commande__date_commande
         .annotate(
             mois=TruncMonth("commande__date_commande"),
             page_id=F("commande__page_id"),
@@ -134,7 +179,7 @@ def etat_caisses(request):
 
         for page_id, qte in quantites_page.items():
             part = (qte / total_qte_mois) * montant_charge_mois
-            part_arrondi = int(round(part, -2))
+            part_arrondi = int(round(part, -2))  # arrondi à la centaine
             parts[page_id] = part_arrondi
             part_charges_pages[page_id] += part_arrondi
             repartition_totaux[page_id] += part_arrondi
@@ -146,7 +191,7 @@ def etat_caisses(request):
     repartition_total = sum(charges_par_mois.values())
 
     # ------------------------------------------------------------------ #
-    # 3)  RÉCAPITULATIF PAR PAGE
+    # 3)  RÉCAPITULATIF PAR PAGE (FILTRABLE)
     # ------------------------------------------------------------------ #
     recap_pages = []
     pages = Pages.objects.filter(type="VENTE")
@@ -155,34 +200,39 @@ def etat_caisses(request):
     total_charges_pages = total_versements_pages = 0
 
     for page in pages:
+        # Commandes vendues filtrées par date
         commandes_vendues = Commande.actifs.filter(
             page=page, vente__isnull=False, statut_vente="Payée"
-        )
+        ).filter(commande_date_q)
 
+        # Ventes (CA) depuis les ventes rattachées à ces commandes
         chiffre_affaire = (
             Vente.actifs.filter(commande__in=commandes_vendues)
             .aggregate(total=Sum("montant"))["total"]
             or 0
         )
 
+        # Achats (coût d’achat) via lignes des commandes filtrées
         lignes_vendues = LigneCommande.actifs.filter(commande__in=commandes_vendues)
         cout_achats = sum(l.quantite * l.prix_achat for l in lignes_vendues)
 
-        charges_affectees = (
-            Charge.actifs.filter(
-                page=page, libelle__compte_numero__startswith="6"
-            ).aggregate(total=Sum("montant"))["total"]
-            or 0
+        # Charges affectées à la page sur la période
+        charges_affectees_qs = Charge.actifs.filter(
+            page=page, libelle__compte_numero__startswith="6"
         )
+        if chg_date_q:
+            charges_affectees_qs = charges_affectees_qs.filter(chg_date_q)
+        charges_affectees = charges_affectees_qs.aggregate(total=Sum("montant"))["total"] or 0
 
+        # Part des charges communes calculées ci-dessus
         part_charge_non_affectee = part_charges_pages.get(page.id, 0)
         charges_total = charges_affectees + part_charge_non_affectee
 
-        versements = (
-            Versement.actifs.filter(page=page)
-            .aggregate(total=Sum("montant"))["total"]
-            or 0
-        )
+        # Versements de la page sur la période
+        versements_qs = Versement.actifs.filter(page=page)
+        if vers_date_q:
+            versements_qs = versements_qs.filter(vers_date_q)
+        versements = versements_qs.aggregate(total=Sum("montant"))["total"] or 0
 
         marge = chiffre_affaire - cout_achats - charges_total
         reste = marge - versements
@@ -222,6 +272,14 @@ def etat_caisses(request):
     # ------------------------------------------------------------------ #
     # 4)  CONTEXTE & RENDER
     # ------------------------------------------------------------------ #
+    current_year = now().year
+    years_choices = list(range(current_year, current_year - 6, -1))  # 5 dernières années + en cours
+    months_choices = [
+        (1, "Janvier"), (2, "Février"), (3, "Mars"), (4, "Avril"),
+        (5, "Mai"), (6, "Juin"), (7, "Juillet"), (8, "Août"),
+        (9, "Septembre"), (10, "Octobre"), (11, "Novembre"), (12, "Décembre"),
+    ]
+
     context = {
         "etats": etats,
         "caisses": caisses,
@@ -242,9 +300,14 @@ def etat_caisses(request):
             "solde_final": total_solde_final,
             "is_admin": is_admin(request.user),
         },
+        # ✅ Filtres (pour le template)
+        "selected_year": selected_year,
+        "selected_month": selected_month,
+        "years_choices": years_choices,
+        "months_choices": months_choices,
+        "is_admin": is_admin(request.user),
     }
     return render(request, "caisses/etat_caisses.html", context)
-
 
 @login_required
 @admin_required
