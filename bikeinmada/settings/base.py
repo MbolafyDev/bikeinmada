@@ -96,3 +96,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 APPEND_SLASH = True
 
 APP_VERSION = "2025-09-17.1"
+
+
+# --- Sécurité / CSRF ---
+CSRF_TRUSTED_ORIGINS = [
+    "https://bikeinmada1.pythonanywhere.com",
+]
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
