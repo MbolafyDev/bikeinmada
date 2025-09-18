@@ -28,23 +28,23 @@
 
   <!-- Barre d’actions -->
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAchatModal" {% if not is_admin %}disabled{% endif %}>
+    <button class="btn btn-" data-bs-toggle="modal" data-bs-target="#createAchatModal" {% if not is_admin %}disabled{% endif %}>
       <i class="fa fa-plus"></i> Ajouter un achat
     </button>
 
     <div class="d-flex align-items-center gap-2">
       <!-- Toggle d’affichage (>= lg) -->
       <div class="view-toggle d-none d-lg-flex gap-1" data-storage-key="zr_display_achats">
-        <button type="button" class="btn btn-outline-primary {% if display_mode == 'table' %}active{% endif %}" data-mode="table" title="Mode Tableau">
+        <button type="button" class="btn btn-outline- {% if display_mode == 'table' %}active{% endif %}" data-mode="table" title="Mode Tableau">
           <i class="fa fa-table"></i>
         </button>
-        <button type="button" class="btn btn-outline-primary {% if display_mode == 'cards' %}active{% endif %}" data-mode="cards" title="Mode Cartes">
+        <button type="button" class="btn btn-outline- {% if display_mode == 'cards' %}active{% endif %}" data-mode="cards" title="Mode Cartes">
           <i class="fa fa-credit-card"></i>
         </button>
       </div>
 
       <!-- Bouton filtre (mobile/tablette) -->
-      <button class="btn btn-outline-primary d-lg-none" type="button"
+      <button class="btn btn-outline- d-lg-none" type="button"
               data-bs-toggle="collapse" data-bs-target="#filtersCollapse"
               aria-expanded="false" aria-controls="filtersCollapse">
         <i class="fa fa-filter"></i>
@@ -100,7 +100,7 @@
 
       <!-- Bouton -->
       <div class="col-md-6 col-lg-3">
-        <button type="submit" class="btn btn-outline-primary w-100">
+        <button type="submit" class="btn btn-outline- w-100">
           <i class="fa fa-filter"></i> Filtrer
         </button>
       </div>
@@ -259,12 +259,12 @@
     var idx = activeItem.getAttribute('data-index');
 
     listEl.querySelectorAll('.item-text').forEach(function (el) {
-      el.classList.remove('text-primary','fw-semibold');
+      el.classList.remove('text-','fw-semibold');
     });
 
     var target = listEl.querySelector('li[data-index="'+ idx +'"] .item-text');
     if (target) {
-      target.classList.add('text-primary','fw-semibold');
+      target.classList.add('text-','fw-semibold');
       var li = target.closest('li');
       if (li && li.scrollIntoView) li.scrollIntoView({behavior:'smooth', block:'nearest'});
     }
