@@ -10,9 +10,10 @@
 
   {% include "includes/messages_alert.html" %}
 
-  <!-- Barre d’actions + toggle vue + toggle filtres mobile -->
-  <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap">
-    <!-- Boutons à gauche -->
+  {# ====== TOOLBARS ====== #}
+
+  {# --- Toolbar Desktop (≥ lg) : boutons à gauche + toggle vue à droite --- #}
+  <div class="d-none d-lg-flex align-items-center justify-content-between mb-2 flex-wrap">
     <div class="d-flex align-items-center gap-2 flex-wrap">
       <a class="btn btn-success"
          href="{% url 'planification_livraison' %}" {% if not is_admin %}disabled{% endif %}>
@@ -25,18 +26,7 @@
       </a>
     </div>
 
-    <!-- Bouton FILTRER (mobile & tablettes) -->
-    <button class="btn btn-outline-success ms-auto d-lg-none"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#filtersCollapse"
-            aria-expanded="false"
-            aria-controls="filtersCollapse">
-      <i class="fa fa-filter me-1"></i> Filtres
-    </button>
-
-    <!-- Toggle affichage (≥ lg) -->
-    <div class="ms-auto d-none d-lg-flex align-items-center view-toggle gap-1"
+    <div class="ms-auto d-flex align-items-center view-toggle gap-1"
          data-storage-key="zr_display_livraisons"
          data-target-url="{% url 'liste_livraisons_partial' %}"
          data-target="#livraisonsTableContainer">
@@ -53,7 +43,31 @@
     </div>
   </div>
 
-  <!-- Formulaire de filtre (collapse en < lg, visible en ≥ lg) -->
+  {# --- Toolbar Mobile/Tablet (< lg) : 3 boutons empilés w-100 --- #}
+  <div class="d-lg-none mb-2">
+    <div class="d-grid gap-2">
+      <a class="btn btn-success w-100"
+         href="{% url 'planification_livraison' %}" {% if not is_admin %}disabled{% endif %}>
+         <i class="fa fa-bicycle me-1"></i> Planification
+      </a>
+
+      <a class="btn btn-outline-success w-100"
+         href="{% url 'mise_a_jour_statuts_livraisons' %}" {% if not is_admin %}disabled{% endif %}>
+         <i class="fa fa-upload me-1"></i> Màj statuts
+      </a>
+
+      <button class="btn btn-outline-success w-100"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#filtersCollapse"
+              aria-expanded="false"
+              aria-controls="filtersCollapse">
+        <i class="fa fa-filter me-1"></i> Filtres
+      </button>
+    </div>
+  </div>
+
+  {# ====== FORMULAIRE DE FILTRE ====== #}
   <div class="row m-1">
     <div id="filtersCollapse" class="collapse d-lg-block">
       <form id="livraisonsFiltersForm" method="get" class="row g-2 mb-2"
@@ -118,7 +132,7 @@
     </div>
   </div>
 
-  <!-- Wrapper HTMX (bascule table/cartes) -->
+  {# ====== WRAPPER HTMX ====== #}
   <div id="livraisons-wrapper"
        hx-get="{% url 'liste_livraisons_partial' %}?{{ request.GET.urlencode }}"
        hx-target="#livraisons-wrapper"
@@ -142,6 +156,7 @@
 
 </div>
 
+{# ====== MODALS EDIT ====== #}
 {% for commande in commandes %}
   <div class="modal fade" id="editModal{{ commande.id }}" tabindex="-1">
     <div class="modal-dialog">
