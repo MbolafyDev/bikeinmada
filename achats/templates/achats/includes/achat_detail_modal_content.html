@@ -9,7 +9,7 @@
       <div class="modal-body">
         <!-- Informations générales -->
         <div class="card mb-4">
-          <div class="card-header bg- text-white">Informations sur l'achat</div>
+          <div class="card-header bg-success text-white">Informations sur l'achat</div>
           <div class="card-body">
             <p><strong>Numéro de facture :</strong> {{ achat.num_facture|default:"-" }}</p>
             <p><strong>Date :</strong> {{ achat.date|date:"d/m/Y" }}</p>
@@ -73,7 +73,7 @@
 
       <!-- Footer avec boutons -->
       <div class="modal-footer">
-        <a href="{% url 'achat_edit' achat.id %}" class="btn btn-">Modifier</a>
+        <a href="{% url 'achat_edit' achat.id %}" class="btn btn-success">Modifier</a>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
       </div>
     </div>

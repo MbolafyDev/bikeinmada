@@ -11,7 +11,7 @@
 
     <!-- Informations générales sur l'achat -->
     <div class="card mb-4">
-        <div class="card-header bg- text-white">Informations de l'achat</div>
+        <div class="card-header bg-success text-white">Informations de l'achat</div>
         <div class="card-body">
             <p><strong>Numéro de facture :</strong> {{ achat.num_facture|default:"-" }}</p>
             <p><strong>Date :</strong> {{ achat.date|date:"d/m/Y" }}</p>
@@ -74,7 +74,7 @@
 
     <!-- Boutons d'action -->
     <div class="text-center mt-4">
-        <a href="{% url 'achat_edit' achat.id %}" class="btn btn- me-2">Modifier</a>
+        <a href="{% url 'achat_edit' achat.id %}" class="btn btn-success me-2">Modifier</a>
         <a href="{% url 'achats_list' %}" class="btn btn-outline-secondary">← Retour à la liste</a>
     </div>
 </div>

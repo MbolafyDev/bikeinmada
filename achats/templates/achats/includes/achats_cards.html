@@ -10,7 +10,7 @@
       <div class="col-md-6 col-xl-4 mb-4">
         <div class="card h-100 shadow-sm {% if achat.statut_publication == 'supprimé' %}opacity-50{% endif %}">
           <div class="card-body">
-            <h5 class="card-title text- mb-2">
+            <h5 class="card-title text-success mb-2">
               Achat du {{ achat.date|date:"d/m/Y" }} 
             </h5>
 
@@ -69,7 +69,7 @@
                   {% for ligne in lignes %}
                     <li class="py-1" data-index="{{ forloop.counter0 }}">
                       <div class="article-line-inner">
-                        <span class="article-name item-text {% if lignes|length > 1 and forloop.first %}text- fw-semibold{% endif %}">
+                        <span class="article-name item-text {% if lignes|length > 1 and forloop.first %}text-success fw-semibold{% endif %}">
                           {% if ligne.article.reference %}
                             {{ ligne.article.reference|slice:":10" }}
                           {% else %}
@@ -96,7 +96,7 @@
           </div>
 
           <div class="card-footer text-end">
-            <button type="button" class="btn btn-sm btn-outline- me-1"
+            <button type="button" class="btn btn-sm btn-outline-success me-1"
                     data-bs-toggle="modal" data-bs-target="#ouvrirDetailAchat_{{ achat.id }}">
               <i class="fa fa-eye"></i>
             </button>
@@ -124,7 +124,7 @@
                     </a>
                   </li>
                   <li>
-                    <a class="dropdown-item text-"
+                    <a class="dropdown-item text-success"
                        data-bs-toggle="modal"
                        data-bs-target="#restoreAchatModal{{ achat.id }}">
                       Restaurer
