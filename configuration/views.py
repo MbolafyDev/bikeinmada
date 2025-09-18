@@ -802,3 +802,57 @@ def config_user_update(request, user_id: int):
     else:
         messages.success(request, "Utilisateur mis à jour ✅")
         return redirect(f"{reverse('configuration')}?tab=utilisateurs")
+    
+
+@login_required
+@user_passes_test(is_admin_user)  # superuser ou rôle admin/administrateur/superadmin
+@require_POST
+def config_user_delete(request, user_id: int):
+    target = get_object_or_404(CustomUser, pk=user_id)
+
+    # Interdictions & garde-fous
+    if target.id == request.user.id:
+        # On évite de se supprimer soi-même
+        if request.headers.get("HX-Request"):
+            resp = HttpResponse(status=204)
+            resp["HX-Trigger"] = '{"flash":{"type":"warning","message":"Vous ne pouvez pas vous supprimer."}}'
+            return resp
+        messages.warning(request, "Vous ne pouvez pas vous supprimer.")
+        return redirect(f"{reverse('configuration')}?tab=utilisateurs")
+
+    if target.is_superuser and not request.user.is_superuser:
+        # Seul un superuser peut supprimer un superuser
+        if request.headers.get("HX-Request"):
+            resp = HttpResponse(status=204)
+            resp["HX-Trigger"] = '{"flash":{"type":"danger","message":"Action refusée : superutilisateur."}}'
+            return resp
+        messages.warning(request, "Action refusée : superutilisateur.")
+        return redirect(f"{reverse('configuration')}?tab=utilisateurs")
+
+    # (Optionnel) Empêcher qu’un admin supprime un autre admin sans être superuser
+    target_role = getattr(getattr(target, "role", None), "role", "") or ""
+    if target_role.strip().lower() in {"admin", "administrateur", "superadmin"} and not request.user.is_superuser:
+        if request.headers.get("HX-Request"):
+            resp = HttpResponse(status=204)
+            resp["HX-Trigger"] = '{"flash":{"type":"danger","message":"Seul un superuser peut supprimer un compte admin."}}'
+            return resp
+        messages.warning(request, "Seul un superuser peut supprimer un compte admin.")
+        return redirect(f"{reverse('configuration')}?tab=utilisateurs")
+
+    username = target.username
+    try:
+        target.delete()  # si vous avez un soft delete, remplacez par target.soft_delete(user=request.user)
+        if request.headers.get("HX-Request"):
+            # 204 + HX-Trigger => toast + la ligne est supprimée côté client via hx-swap="delete"
+            resp = HttpResponse(status=204)
+            resp["HX-Trigger"] = f'{{"flash":{{"type":"success","message":"Utilisateur « {username} » supprimé"}}}}'
+            return resp
+        messages.success(request, f"Utilisateur « {username} » supprimé 🗑️")
+    except Exception as e:
+        if request.headers.get("HX-Request"):
+            resp = HttpResponse(status=204)
+            resp["HX-Trigger"] = f'{{"flash":{{"type":"danger","message":"Erreur suppression : {str(e)}"}}}}'
+            return resp
+        messages.warning(request, f"Erreur suppression : {e}")
+
+    return redirect(f"{reverse('configuration')}?tab=utilisateurs")

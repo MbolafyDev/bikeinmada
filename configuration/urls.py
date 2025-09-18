@@ -12,6 +12,7 @@ urlpatterns = [
     path('', views.configuration_view, name='configuration'),
     path("section/<str:section>/", configuration_section, name="configuration_section"),
     path("config/utilisateur/<int:user_id>/update/", views.config_user_update, name="config_user_update"),
+    path("config/utilisateur/<int:user_id>/delete/", views.config_user_delete, name="config_user_delete"),
 
     # Profil (dans Configuration)
     path("profil/update/", views.configuration_profil_update, name="configuration_profil_update"),

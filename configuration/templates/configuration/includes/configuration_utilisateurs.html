@@ -93,12 +93,12 @@
             <th style="width:220px">Rôle</th>
             <th style="width:110px">Actif</th>
             <th style="width:160px">Validé par admin</th>
-            <th style="width:90px">Actions</th>
+            <th style="width:140px">Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for u in page_obj.object_list %}
-            <tr>
+            <tr id="user-row-{{ u.id }}">
               <td class="text-muted">{{ u.id }}</td>
 
               <td>
@@ -156,10 +156,22 @@
                        {% if u.is_validated_by_admin %}checked{% endif %}>
               </td>
 
-              {# Actions #}
+              {# Actions : Mise à jour + Ouvrir modal suppression #}
               <td class="text-end">
                 <button type="submit" form="f{{ u.id }}" class="btn btn-success btn-sm" title="Mettre à jour">
                   <i class="fa fa-save"></i>
+                </button>
+
+                <button class="btn btn-outline-danger btn-sm ms-1"
+                        title="Supprimer"
+                        data-bs-toggle="modal"
+                        data-bs-target="#confirmDeleteUserModal"
+                        data-user-id="{{ u.id }}"
+                        data-username="{{ u.username }}"
+                        data-delete-url="{% url 'config_user_delete' u.id %}"
+                        data-row-selector="#user-row-{{ u.id }}"
+                        {% if u.id == request.user.id or u.is_superuser %}disabled{% endif %}>
+                  <i class="fa fa-trash"></i>
                 </button>
               </td>
             </tr>
@@ -204,6 +216,42 @@
   </div>
 </div>
 
+{# ===================== MODAL DE CONFIRMATION SUPPRESSION ===================== #}
+<div class="modal fade" id="confirmDeleteUserModal" tabindex="-1" aria-labelledby="confirmDeleteUserLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="confirmDeleteUserLabel"><i class="fa fa-triangle-exclamation me-1"></i> Confirmer la suppression</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0">
+          Voulez-vous vraiment supprimer l’utilisateur
+          <span class="fw-bold" id="confirmDeleteUserName">—</span> ?
+          <br><small class="text-muted">Cette action est irréversible.</small>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+
+        {# Formulaire HTMX déclenché depuis le modal #}
+        <form id="confirmDeleteUserForm"
+              method="post"
+              action="#"
+              hx-post="#"
+              hx-target=""
+              hx-swap="delete"
+              hx-indicator="#hxIndicator">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">
+            <i class="fa fa-trash"></i> Supprimer
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 {# Indicateur (utilisé par hx-indicator) #}
 <div id="hxIndicator" class="position-fixed bottom-0 end-0 m-3 d-none">
   <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
@@ -219,6 +267,7 @@
 </div>
 
 <script>
+  // Spinner HTMX
   document.body.addEventListener('htmx:configRequest', function () {
     document.getElementById('hxIndicator')?.classList.remove('d-none');
   });
@@ -226,6 +275,7 @@
     document.getElementById('hxIndicator')?.classList.add('d-none');
   });
 
+  // Toast via HX-Trigger
   document.body.addEventListener('htmx:afterOnLoad', function(e){
     const trig = e.detail.xhr?.getResponseHeader?.('HX-Trigger');
     if (!trig) return;
@@ -244,5 +294,40 @@
         }
       }
     } catch {}
+  });
+
+  // Bootstrap modal: injecter dynamiquement l'URL et la cible HTMX
+  const deleteModal = document.getElementById('confirmDeleteUserModal');
+  deleteModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    if (!button) return;
+
+    const username   = button.getAttribute('data-username') || '—';
+    const deleteUrl  = button.getAttribute('data-delete-url') || '#';
+    const rowSelector= button.getAttribute('data-row-selector') || '';
+
+    // Texte du modal
+    const nameSpan = deleteModal.querySelector('#confirmDeleteUserName');
+    if (nameSpan) nameSpan.textContent = `« ${username} »`;
+
+    // Câbler le formulaire HTMX
+    const form = deleteModal.querySelector('#confirmDeleteUserForm');
+    if (form) {
+      form.setAttribute('action', deleteUrl);
+      form.setAttribute('hx-post', deleteUrl);
+      if (rowSelector) {
+        form.setAttribute('hx-target', rowSelector);
+      } else {
+        form.removeAttribute('hx-target');
+      }
+    }
+  });
+
+  // Après suppression, fermer le modal si toujours ouvert
+  document.body.addEventListener('htmx:afterOnLoad', function(){
+    const modalEl = document.getElementById('confirmDeleteUserModal');
+    if (!modalEl) return;
+    const instance = bootstrap.Modal.getInstance(modalEl);
+    if (instance) { instance.hide(); }
   });
 </script>
