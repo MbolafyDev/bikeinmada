@@ -71,7 +71,7 @@
               <i class="fa fa-user-cog"></i> Profil
             </a>
 
-            {# 👇 N'afficher ces entrées que pour les admins #}
+            {# 👇 N'afficher ces entrées que pour les admins (superuser ou rôle = admin/administrateur/superadmin) #}
             {% if can_manage_admin_things %}
               <a href="{% url 'configuration' %}?tab=utilisateurs"
                  class="list-group-item list-group-item-action d-flex align-items-center gap-2 {% if selected_section == 'utilisateurs' %}active{% endif %}"

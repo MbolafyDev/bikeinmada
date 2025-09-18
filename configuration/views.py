@@ -30,31 +30,31 @@ from users.models import Role, CustomUser
 
 
 # -------------------------------
-# Utils
+# Normalisation & prédicats d'accès (UN SEUL point de vérité)
 # -------------------------------
-def is_admin_user(user):
+ADMIN_ROLE_ALIASES = {"admin", "administrateur", "superadmin"}
+
+def _normalize_role_label(label: str) -> str:
+    return (label or "").strip().lower()
+
+def is_admin_user(user) -> bool:
     """
-    ➜ N'ACCEPTE PAS is_staff.
-    Seuls: superuser OU rôle dans {admin, administrateur, superadmin}
+    ➜ Seuls: superuser OU rôle texte dans ADMIN_ROLE_ALIASES.
+      - is_staff est ignoré volontairement
+      - 'Community Manager', 'Commercial', etc. NE sont PAS admin
     """
     if not getattr(user, "is_authenticated", False):
         return False
     if getattr(user, "is_superuser", False):
         return True
     r = getattr(user, "role", None)
-    return bool(r and getattr(r, "role", "").strip().lower() in {"admin", "administrateur", "superadmin"})
+    role_label = _normalize_role_label(getattr(r, "role", None))
+    return role_label in ADMIN_ROLE_ALIASES
 
 
+# Alias interne pour compatibilité (évitons les divergences)
 def _has_admin_role(user) -> bool:
-    """
-    ➜ Même logique stricte que ci-dessus (sans is_staff).
-    """
-    if getattr(user, "is_superuser", False):
-        return True
-    r = getattr(user, "role", None)
-    if not r or not getattr(r, "role", None):
-        return False
-    return r.role.strip().lower() in {"admin", "administrateur", "superadmin"}
+    return is_admin_user(user)
 
 
 # -------------------------------
@@ -68,8 +68,8 @@ SECTIONS = (
     "livreurs",
     "frais",
     "articles",
-    "roles",
-    "utilisateurs",
+    "roles",         # 🔒 admin-only (protégé ci-dessous)
+    "utilisateurs",  # 🔒 admin-only (protégé ci-dessous)
 )
 
 
@@ -77,9 +77,8 @@ SECTIONS = (
 # Helper : construire le contexte d’une section
 # -------------------------------
 def _get_section_context(request, section):
-    is_admin_flag = _has_admin_role(request.user)
-    is_super_flag = getattr(request.user, "is_superuser", False)  # (on ne considère plus is_staff)
-    is_admin_like = is_admin_flag or is_super_flag
+    # ⚠️ Une seule variable d’accès, pilotée par is_admin_user()
+    is_admin_like = is_admin_user(request.user)
 
     if section == "pages":
         return ("configuration/includes/configuration_pages.html", {
@@ -220,7 +219,7 @@ def configuration_view(request):
         section = "pages"
 
     # 🔒 Interdire 'roles' et 'utilisateurs' aux non-admin (strict)
-    can_manage_admin_things = _has_admin_role(request.user)
+    can_manage_admin_things = is_admin_user(request.user)
     if section in {"roles", "utilisateurs"} and not can_manage_admin_things:
         messages.warning(request, "Accès refusé : vous n’avez pas les droits pour cette section.")
         section = "pages"
@@ -241,7 +240,7 @@ def configuration_section(request, section: str):
     if section not in SECTIONS:
         raise Http404("Section inconnue")
 
-    if section in {"roles", "utilisateurs"} and not _has_admin_role(request.user):
+    if section in {"roles", "utilisateurs"} and not is_admin_user(request.user):
         if not request.headers.get("HX-Request"):
             messages.warning(request, "Accès refusé : vous n’avez pas les droits pour cette section.")
             return redirect(f"{reverse('configuration')}?tab=pages")
@@ -255,7 +254,7 @@ def configuration_section(request, section: str):
         ctx = {
             "selected_section": section,
             "partial_template": partial_tpl,
-            "can_manage_admin_things": _has_admin_role(request.user),
+            "can_manage_admin_things": is_admin_user(request.user),
             **partial_ctx
         }
         return render(request, "configuration/configuration.html", ctx)
@@ -749,11 +748,6 @@ def supprimer_role(request, pk):
 @user_passes_test(is_admin_user)  # strict: superuser ou rôle admin/administrateur/superadmin
 @require_POST
 def config_user_update(request, user_id: int):
-    """
-    Met à jour le rôle, l'activation et la validation admin d'un utilisateur.
-    - Supporte HTMX et fallback non-HTMX
-    - Gère correctement hidden + checkbox via getlist() (on prend la DERNIÈRE valeur)
-    """
     u: CustomUser = get_object_or_404(CustomUser, pk=user_id)
     changed_fields = []
 
@@ -794,7 +788,6 @@ def config_user_update(request, user_id: int):
     if changed_fields:
         u.save(update_fields=list(set(changed_fields)))
 
-    # Réponse adaptée : HTMX vs non-HTMX
     if request.headers.get("HX-Request"):
         resp = HttpResponse(status=204)
         resp["HX-Trigger"] = '{"flash":{"type":"success","message":"Utilisateur mis à jour"}}'
@@ -802,17 +795,16 @@ def config_user_update(request, user_id: int):
     else:
         messages.success(request, "Utilisateur mis à jour ✅")
         return redirect(f"{reverse('configuration')}?tab=utilisateurs")
-    
+
 
 @login_required
-@user_passes_test(is_admin_user)  # superuser ou rôle admin/administrateur/superadmin
+@user_passes_test(is_admin_user)
 @require_POST
 def config_user_delete(request, user_id: int):
     target = get_object_or_404(CustomUser, pk=user_id)
 
     # Interdictions & garde-fous
     if target.id == request.user.id:
-        # On évite de se supprimer soi-même
         if request.headers.get("HX-Request"):
             resp = HttpResponse(status=204)
             resp["HX-Trigger"] = '{"flash":{"type":"warning","message":"Vous ne pouvez pas vous supprimer."}}'
@@ -821,7 +813,6 @@ def config_user_delete(request, user_id: int):
         return redirect(f"{reverse('configuration')}?tab=utilisateurs")
 
     if target.is_superuser and not request.user.is_superuser:
-        # Seul un superuser peut supprimer un superuser
         if request.headers.get("HX-Request"):
             resp = HttpResponse(status=204)
             resp["HX-Trigger"] = '{"flash":{"type":"danger","message":"Action refusée : superutilisateur."}}'
@@ -829,9 +820,8 @@ def config_user_delete(request, user_id: int):
         messages.warning(request, "Action refusée : superutilisateur.")
         return redirect(f"{reverse('configuration')}?tab=utilisateurs")
 
-    # (Optionnel) Empêcher qu’un admin supprime un autre admin sans être superuser
-    target_role = getattr(getattr(target, "role", None), "role", "") or ""
-    if target_role.strip().lower() in {"admin", "administrateur", "superadmin"} and not request.user.is_superuser:
+    target_role = _normalize_role_label(getattr(getattr(target, "role", None), "role", ""))
+    if target_role in ADMIN_ROLE_ALIASES and not request.user.is_superuser:
         if request.headers.get("HX-Request"):
             resp = HttpResponse(status=204)
             resp["HX-Trigger"] = '{"flash":{"type":"danger","message":"Seul un superuser peut supprimer un compte admin."}}'
@@ -841,9 +831,8 @@ def config_user_delete(request, user_id: int):
 
     username = target.username
     try:
-        target.delete()  # si vous avez un soft delete, remplacez par target.soft_delete(user=request.user)
+        target.delete()
         if request.headers.get("HX-Request"):
-            # 204 + HX-Trigger => toast + la ligne est supprimée côté client via hx-swap="delete"
             resp = HttpResponse(status=204)
             resp["HX-Trigger"] = f'{{"flash":{{"type":"success","message":"Utilisateur « {username} » supprimé"}}}}'
             return resp
