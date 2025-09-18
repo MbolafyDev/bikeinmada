@@ -7,4 +7,4 @@ ENV = os.getenv("ENV", "local")
 if ENV == "production":
     BASE_DIR = Path(__file__).resolve().parent.parent.parent
 else:
-    BASE_DIR = Path(__file__).resolve().parent.parent.parent
+    BASE_DIR = Path(__file__).resolve().parent.parent
