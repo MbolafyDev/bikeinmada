@@ -3,12 +3,56 @@
   <div class="card-body">
     <h4 class="mb-3"><i class="fa fa-users-gear me-1"></i> Gestion des utilisateurs</h4>
 
-    <form class="row g-2 mb-3" method="get">
+    {# ======= MOBILE: bouton "Filtres" + panneau repliable ======= #}
+    <div class="d-md-none mb-3">
+      <button class="btn btn-outline-success w-100" type="button"
+              data-bs-toggle="collapse" data-bs-target="#usersFiltersCollapse"
+              aria-expanded="false" aria-controls="usersFiltersCollapse">
+        <i class="fa fa-sliders-h me-1"></i> Filtres
+      </button>
+
+      <div id="usersFiltersCollapse" class="collapse mt-2">
+        <form method="get" class="vstack gap-2">
+          <input type="hidden" name="tab" value="utilisateurs">
+
+          <input type="text" name="q" value="{{ q }}" class="form-control"
+                 placeholder="Rechercher (nom, email, téléphone, adresse)">
+
+          <select name="role" class="form-select">
+            <option value="">— Tous rôles —</option>
+            {% for r in roles %}
+              <option value="{{ r.id }}" {% if role_id|default:''|stringformat:"s" == r.id|stringformat:"s" %}selected{% endif %}>
+                {{ r.role }}
+              </option>
+            {% endfor %}
+          </select>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="m_only_active" name="only_active" {% if only_active %}checked{% endif %}>
+            <label for="m_only_active" class="form-check-label">Actifs</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="m_only_waiting_validation" name="only_waiting_validation" {% if only_waiting_validation %}checked{% endif %}>
+            <label for="m_only_waiting_validation" class="form-check-label">En attente validation</label>
+          </div>
+
+          <button class="btn btn-success w-100">
+            <i class="fa fa-search"></i> Filtrer
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {# ======= DESKTOP: barre horizontale ======= #}
+    <form class="row g-2 align-items-center mb-3 d-none d-md-flex" method="get">
       <input type="hidden" name="tab" value="utilisateurs">
+
       <div class="col-md-4">
         <input type="text" name="q" value="{{ q }}" class="form-control"
                placeholder="Rechercher (nom, email, téléphone, adresse)">
       </div>
+
       <div class="col-md-3">
         <select name="role" class="form-select">
           <option value="">— Tous rôles —</option>
@@ -19,15 +63,22 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-md-2 form-check d-flex align-items-center">
-        <input class="form-check-input me-2" type="checkbox" id="only_active" name="only_active" {% if only_active %}checked{% endif %}>
-        <label for="only_active" class="form-check-label">Actifs uniquement</label>
+
+      <div class="col-md-2">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="only_active" name="only_active" {% if only_active %}checked{% endif %}>
+          <label for="only_active" class="form-check-label">Actifs uniquement</label>
+        </div>
       </div>
-      <div class="col-md-3 form-check d-flex align-items-center">
-        <input class="form-check-input me-2" type="checkbox" id="only_waiting_validation" name="only_waiting_validation" {% if only_waiting_validation %}checked{% endif %}>
-        <label for="only_waiting_validation" class="form-check-label">En attente validation</label>
+
+      <div class="col-md-2">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="only_waiting_validation" name="only_waiting_validation" {% if only_waiting_validation %}checked{% endif %}>
+          <label for="only_waiting_validation" class="form-check-label">En attente validation</label>
+        </div>
       </div>
-      <div class="col-12 col-md-auto">
+
+      <div class="col-md-auto">
         <button class="btn btn-success"><i class="fa fa-search"></i> Filtrer</button>
       </div>
     </form>
@@ -36,18 +87,20 @@
       <table class="table table-sm align-middle">
         <thead class="table-light">
           <tr>
-            <th>#</th>
+            <th style="width:72px">#</th>
             <th>Identité</th>
             <th>Email</th>
-            <th>Rôle</th>
-            <th class="text-center">Actif</th>
-            <th class="text-center">Validé admin</th>
+            <th style="width:220px">Rôle</th>
+            <th style="width:110px">Actif</th>
+            <th style="width:160px">Validé par admin</th>
+            <th style="width:90px">Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for u in page_obj.object_list %}
             <tr>
               <td class="text-muted">{{ u.id }}</td>
+
               <td>
                 <div class="fw-semibold">{{ u.username }}</div>
                 <div class="small text-muted">
@@ -55,6 +108,7 @@
                   {% if u.telephone %} • {{ u.telephone }}{% endif %}
                 </div>
               </td>
+
               <td>
                 {% if u.email %}
                   <a href="mailto:{{ u.email }}">{{ u.email }}</a>
@@ -62,54 +116,55 @@
                   <span class="text-muted">—</span>
                 {% endif %}
               </td>
-              <td style="min-width: 220px;">
-                <form method="post"
-                      hx-post="{% url 'config_user_update' u.id %}"
-                      hx-trigger="change"
-                      hx-swap="none"
-                      class="d-inline">
-                  {% csrf_token %}
-                  <input type="hidden" name="field" value="role_id">
-                  <select name="role_id" class="form-select form-select-sm">
-                    <option value="">— Aucun —</option>
-                    {% for r in roles %}
-                      <option value="{{ r.id }}" {% if u.role_id == r.id %}selected{% endif %}>{{ r.role }}</option>
-                    {% endfor %}
-                  </select>
-                </form>
+
+              {# --- mini form par ligne, référencé par form="" --- #}
+              <form id="f{{ u.id }}"
+                    method="post"
+                    action="{% url 'config_user_update' u.id %}"
+                    hx-post="{% url 'config_user_update' u.id %}"
+                    hx-swap="none"
+                    hx-indicator="#hxIndicator"
+                    class="d-none">
+                {% csrf_token %}
+              </form>
+
+              {# Rôle #}
+              <td>
+                <select name="role_id" form="f{{ u.id }}" class="form-select form-select-sm">
+                  <option value="">— Aucun —</option>
+                  {% for r in roles %}
+                    <option value="{{ r.id }}" {% if u.role_id == r.id %}selected{% endif %}>{{ r.role }}</option>
+                  {% endfor %}
+                </select>
               </td>
+
+              {# Actif #}
               <td class="text-center">
-                <form method="post"
-                      hx-post="{% url 'config_user_update' u.id %}"
-                      hx-trigger="change"
-                      hx-swap="none"
-                      class="d-inline">
-                  {% csrf_token %}
-                  <input type="hidden" name="field" value="is_active">
-                  <div class="form-check d-inline-flex">
-                    <input class="form-check-input" type="checkbox" name="is_active" {% if u.is_active %}checked{% endif %}>
-                  </div>
-                </form>
+                <input type="hidden" name="is_active" value="0" form="f{{ u.id }}">
+                <input class="form-check-input" type="checkbox"
+                       aria-label="Actif"
+                       name="is_active" value="1" form="f{{ u.id }}"
+                       {% if u.is_active %}checked{% endif %}>
               </td>
+
+              {# Validé par admin #}
               <td class="text-center">
-                <form method="post"
-                      hx-post="{% url 'config_user_update' u.id %}"
-                      hx-trigger="change"
-                      hx-swap="none"
-                      class="d-inline">
-                  {% csrf_token %}
-                  <input type="hidden" name="field" value="is_validated_by_admin">
-                  <div class="form-check d-inline-flex">
-                    <input class="form-check-input" type="checkbox" name="is_validated_by_admin" {% if u.is_validated_by_admin %}checked{% endif %}>
-                  </div>
-                  {% if not u.is_validated_by_admin %}
-                    <div class="small text-muted">Valider active aussi le compte</div>
-                  {% endif %}
-                </form>
+                <input type="hidden" name="is_validated_by_admin" value="0" form="f{{ u.id }}">
+                <input class="form-check-input" type="checkbox"
+                       aria-label="Validé par admin"
+                       name="is_validated_by_admin" value="1" form="f{{ u.id }}"
+                       {% if u.is_validated_by_admin %}checked{% endif %}>
+              </td>
+
+              {# Actions #}
+              <td class="text-end">
+                <button type="submit" form="f{{ u.id }}" class="btn btn-success btn-sm" title="Mettre à jour">
+                  <i class="fa fa-save"></i>
+                </button>
               </td>
             </tr>
           {% empty %}
-            <tr><td colspan="6" class="text-center text-muted py-4">Aucun utilisateur trouvé.</td></tr>
+            <tr><td colspan="7" class="text-center text-muted py-4">Aucun utilisateur trouvé.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -148,3 +203,46 @@
     {% endif %}
   </div>
 </div>
+
+{# Indicateur (utilisé par hx-indicator) #}
+<div id="hxIndicator" class="position-fixed bottom-0 end-0 m-3 d-none">
+  <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+</div>
+
+{# Toast feedback #}
+<div id="hxToast" class="toast align-items-center text-bg-success border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" style="z-index:1080; display:none;">
+  <div class="d-flex">
+    <div class="toast-body" id="hxToastBody">Utilisateur mis à jour</div>
+    <button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Close"
+            onclick="document.getElementById('hxToast').style.display='none'"></button>
+  </div>
+</div>
+
+<script>
+  document.body.addEventListener('htmx:configRequest', function () {
+    document.getElementById('hxIndicator')?.classList.remove('d-none');
+  });
+  document.body.addEventListener('htmx:afterRequest', function () {
+    document.getElementById('hxIndicator')?.classList.add('d-none');
+  });
+
+  document.body.addEventListener('htmx:afterOnLoad', function(e){
+    const trig = e.detail.xhr?.getResponseHeader?.('HX-Trigger');
+    if (!trig) return;
+    try {
+      const data = JSON.parse(trig);
+      if (data.flash?.message) {
+        const toast = document.getElementById('hxToast');
+        const body  = document.getElementById('hxToastBody');
+        if (body) body.textContent = data.flash.message;
+        if (toast) {
+          toast.classList.remove('text-bg-success','text-bg-danger','text-bg-warning');
+          const t = (data.flash.type || 'success').toLowerCase();
+          toast.classList.add(t === 'danger' ? 'text-bg-danger' : t === 'warning' ? 'text-bg-warning' : 'text-bg-success');
+          toast.style.display = 'block';
+          setTimeout(()=>{ toast.style.display='none'; }, 1800);
+        }
+      }
+    } catch {}
+  });
+</script>

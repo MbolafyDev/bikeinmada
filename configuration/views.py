@@ -1,12 +1,13 @@
 # configuration/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST, require_http_methods
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.urls import reverse
 from django.http import Http404, JsonResponse, QueryDict, HttpResponse
 from django.core.paginator import Paginator
 from django.contrib import messages
+from django.db.models import Q
 
 from common.decorators import admin_required
 from common.models import Pages, Caisse, PlanDesComptes
@@ -14,8 +15,6 @@ from articles.models import Categorie, Taille, Couleur
 
 # Profil (depuis l’app users)
 from users.forms import ProfilForm
-from django.db.models import Q
-
 
 # Livraison (modèles + constantes + formulaire)
 from livraison.models import (
@@ -33,13 +32,24 @@ from users.models import Role, CustomUser
 # -------------------------------
 # Utils
 # -------------------------------
+def is_admin_user(user):
+    """
+    ➜ N'ACCEPTE PAS is_staff.
+    Seuls: superuser OU rôle dans {admin, administrateur, superadmin}
+    """
+    if not getattr(user, "is_authenticated", False):
+        return False
+    if getattr(user, "is_superuser", False):
+        return True
+    r = getattr(user, "role", None)
+    return bool(r and getattr(r, "role", "").strip().lower() in {"admin", "administrateur", "superadmin"})
+
+
 def _has_admin_role(user) -> bool:
     """
-    Un utilisateur est considéré 'admin' s'il remplit AU MOINS une des conditions :
-    - rôle.label ∈ {admin, administrateur, superadmin} (insensible à la casse)
-    - is_superuser ou is_staff
+    ➜ Même logique stricte que ci-dessus (sans is_staff).
     """
-    if getattr(user, "is_superuser", False) or getattr(user, "is_staff", False):
+    if getattr(user, "is_superuser", False):
         return True
     r = getattr(user, "role", None)
     if not r or not getattr(r, "role", None):
@@ -59,7 +69,7 @@ SECTIONS = (
     "frais",
     "articles",
     "roles",
-    "utilisateurs",  # ✅ nouvelle section
+    "utilisateurs",
 )
 
 
@@ -68,38 +78,39 @@ SECTIONS = (
 # -------------------------------
 def _get_section_context(request, section):
     is_admin_flag = _has_admin_role(request.user)
-    is_super_flag = request.user.is_superuser or request.user.is_staff
+    is_super_flag = getattr(request.user, "is_superuser", False)  # (on ne considère plus is_staff)
+    is_admin_like = is_admin_flag or is_super_flag
 
     if section == "pages":
         return ("configuration/includes/configuration_pages.html", {
             "pages": Pages.objects.all().order_by("nom"),
             "type_choices": Pages.TYPE_CHOICES,
-            "is_admin": is_admin_flag or is_super_flag,
+            "is_admin": is_admin_like,
         })
 
     if section == "caisses":
         return ("configuration/includes/configuration_caisses.html", {
             "caisses": Caisse.objects.all().order_by("nom"),
-            "is_admin": is_admin_flag or is_super_flag,
+            "is_admin": is_admin_like,
         })
 
     if section == "plans":
         return ("configuration/includes/configuration_plans.html", {
             "plans": PlanDesComptes.objects.all().order_by("compte_numero"),
-            "is_admin": is_admin_flag or is_super_flag,
+            "is_admin": is_admin_like,
         })
 
     if section == "profil":
         return ("configuration/includes/configuration_profil.html", {
             "form": ProfilForm(instance=request.user),
             "u": request.user,
-            "is_admin": is_admin_flag or is_super_flag,
+            "is_admin": is_admin_like,
         })
 
     if section == "livreurs":
         return ("configuration/includes/configuration_livreurs.html", {
             "livreurs": Livreur.objects.all().order_by("nom"),
-            "is_admin": is_admin_flag or is_super_flag,
+            "is_admin": is_admin_like,
         })
 
     if section == "articles":
@@ -107,13 +118,12 @@ def _get_section_context(request, section):
             "categories": Categorie.objects.all().order_by("categorie"),
             "tailles": Taille.objects.all().order_by("taille"),
             "couleurs": Couleur.objects.all().order_by("couleur"),
-            "is_admin": is_admin_flag or is_super_flag,
+            "is_admin": is_admin_like,
         })
 
     if section == "frais":
-        # (inchangé)
-        lieu_recherche = request.GET.get('lieu', '').strip()
-        categorie_filtre = request.GET.get('categorie', '')
+        lieu_recherche = (request.GET.get('lieu') or '').strip()
+        categorie_filtre = request.GET.get('categorie') or ''
 
         qs = Livraison.objects.all()
         if lieu_recherche:
@@ -143,18 +153,18 @@ def _get_section_context(request, section):
             "lieu_recherche": lieu_recherche,
             "categorie_filtre": categorie_filtre,
             "extra_querystring": extra_querystring,
-            "is_admin": is_admin_flag or is_super_flag,
+            "is_admin": is_admin_like,
             "FRAIS_LIVRAISON_PAR_DEFAUT": FRAIS_LIVRAISON_PAR_DEFAUT,
             "FRAIS_LIVREUR_PAR_DEFAUT": FRAIS_LIVREUR_PAR_DEFAUT,
         })
 
-    if section == "roles":  # ✅ existant
+    if section == "roles":
         return ("configuration/includes/configuration_roles.html", {
             "roles": Role.objects.all().order_by("role"),
-            "is_admin": is_admin_flag or is_super_flag,
+            "is_admin": is_admin_like,
         })
 
-    if section == "utilisateurs":  # ✅ NOUVELLE SECTION
+    if section == "utilisateurs":
         q = (request.GET.get("q") or "").strip()
         role_id = request.GET.get("role") or ""
         only_active = request.GET.get("only_active") == "on"
@@ -164,15 +174,12 @@ def _get_section_context(request, section):
 
         if q:
             users_qs = users_qs.filter(
-                # username, email, first_name, last_name, telephone, adresse
-                (
-                    (Q(username__icontains=q)) |
-                    (Q(email__icontains=q)) |
-                    (Q(first_name__icontains=q)) |
-                    (Q(last_name__icontains=q)) |
-                    (Q(telephone__icontains=q)) |
-                    (Q(adresse__icontains=q))
-                )
+                Q(username__icontains=q) |
+                Q(email__icontains=q) |
+                Q(first_name__icontains=q) |
+                Q(last_name__icontains=q) |
+                Q(telephone__icontains=q) |
+                Q(adresse__icontains=q)
             )
 
         if role_id:
@@ -197,7 +204,7 @@ def _get_section_context(request, section):
             "role_id": role_id,
             "only_active": only_active,
             "only_waiting_validation": only_waiting_validation,
-            "is_admin": is_admin_flag or is_super_flag,
+            "is_admin": is_admin_like,
         })
 
     raise Http404("Section inconnue")
@@ -206,16 +213,13 @@ def _get_section_context(request, section):
 # -------------------------------
 # Page Configuration (shell) + endpoint HTMX pour sections
 # -------------------------------
-from django.db.models import Q  # (utilisé dans _get_section_context)
-
 @login_required
 def configuration_view(request):
-    # section initiale choisie via ?tab=
     section = request.GET.get("tab", "pages")
     if section not in SECTIONS:
         section = "pages"
 
-    # Autorisations (onglets restreints)
+    # 🔒 Interdire 'roles' et 'utilisateurs' aux non-admin (strict)
     can_manage_admin_things = _has_admin_role(request.user)
     if section in {"roles", "utilisateurs"} and not can_manage_admin_things:
         messages.warning(request, "Accès refusé : vous n’avez pas les droits pour cette section.")
@@ -226,7 +230,7 @@ def configuration_view(request):
     ctx = {
         "selected_section": section,
         "partial_template": partial_tpl,
-        "can_manage_admin_things": can_manage_admin_things,  # pour masquer/désactiver onglets
+        "can_manage_admin_things": can_manage_admin_things,
         **partial_ctx
     }
     return render(request, "configuration/configuration.html", ctx)
@@ -237,19 +241,16 @@ def configuration_section(request, section: str):
     if section not in SECTIONS:
         raise Http404("Section inconnue")
 
-    # Sécurité : empêcher l’accès via HTMX si non-admin (roles/utilisateurs)
     if section in {"roles", "utilisateurs"} and not _has_admin_role(request.user):
         if not request.headers.get("HX-Request"):
             messages.warning(request, "Accès refusé : vous n’avez pas les droits pour cette section.")
             return redirect(f"{reverse('configuration')}?tab=pages")
-        # Rejeter en HTMX
         response = JsonResponse({"error": "forbidden", "message": "Permissions insuffisantes."})
         response.status_code = 403
         return response
 
     partial_tpl, partial_ctx = _get_section_context(request, section)
 
-    # Accès direct (non-HTMX) → renvoyer la page complète stylée
     if not request.headers.get("HX-Request"):
         ctx = {
             "selected_section": section,
@@ -259,7 +260,6 @@ def configuration_section(request, section: str):
         }
         return render(request, "configuration/configuration.html", ctx)
 
-    # HTMX → renvoyer juste le fragment
     return render(request, partial_tpl, {**partial_ctx, "is_htmx": True})
 
 
@@ -409,12 +409,12 @@ def supprimer_plan(request, pk):
         plan.soft_delete(user=request.user)
         messages.success(request, f"Compte « {num} » supprimé 🗑️")
     except Exception as e:
-        messages.warning(request, f"Erreur lors de la suppression : {e}")
+        messages.warning(request, f"Erreur lors de la suppression du compte : {e}")
     return redirect(f"{reverse('configuration')}?tab=plans")
 
 
 # -------------------------------
-# Actions PROFIL (depuis Configuration)
+# Actions PROFIL
 # -------------------------------
 @login_required
 @require_POST
@@ -484,10 +484,10 @@ def supprimer_livreur(request, id):
 @login_required
 @require_POST
 def frais_livraison_ajouter(request):
-    lieu = request.POST.get('lieu', '').strip()
-    categorie = request.POST.get('categorie', '').strip()
-    frais_livraison = request.POST.get('frais_livraison', '').strip()
-    frais_livreur = request.POST.get('frais_livreur', '').strip()
+    lieu = (request.POST.get('lieu') or '').strip()
+    categorie = (request.POST.get('categorie') or '').strip()
+    frais_livraison = (request.POST.get('frais_livraison') or '').strip()
+    frais_livreur = (request.POST.get('frais_livreur') or '').strip()
 
     if not lieu or not categorie:
         messages.warning(request, "Champs obligatoires manquants.")
@@ -522,10 +522,10 @@ def frais_livraison_ajouter(request):
 def frais_livraison_modifier(request, id):
     frais = get_object_or_404(Livraison, id=id)
 
-    lieu = request.POST.get('lieu', '').strip()
-    categorie = request.POST.get('categorie', '').strip()
-    frais_livraison = request.POST.get('frais_livraison', '').strip()
-    frais_livreur = request.POST.get('frais_livreur', '').strip()
+    lieu = (request.POST.get('lieu') or '').strip()
+    categorie = (request.POST.get('categorie') or '').strip()
+    frais_livraison = (request.POST.get('frais_livraison') or '').strip()
+    frais_livreur = (request.POST.get('frais_livreur') or '').strip()
 
     if not lieu or not categorie:
         messages.warning(request, "Champs obligatoires manquants.")
@@ -691,10 +691,10 @@ def supprimer_couleur(request, pk):
 
 
 # -------------------------------
-# ✅ Actions ROLES
+# ✅ Actions ROLES (protégées strictement)
 # -------------------------------
 @login_required
-@admin_required
+@user_passes_test(is_admin_user)
 @require_POST
 def ajouter_role(request):
     lib = (request.POST.get("role") or "").strip()
@@ -711,7 +711,7 @@ def ajouter_role(request):
 
 
 @login_required
-@admin_required
+@user_passes_test(is_admin_user)
 @require_POST
 def modifier_role(request, pk):
     lib = (request.POST.get("role") or "").strip()
@@ -729,7 +729,7 @@ def modifier_role(request, pk):
 
 
 @login_required
-@admin_required
+@user_passes_test(is_admin_user)
 @require_POST
 def supprimer_role(request, pk):
     try:
@@ -746,48 +746,59 @@ def supprimer_role(request, pk):
 # ✅ Actions UTILISATEURS (inline via HTMX)
 # -------------------------------
 @login_required
-@admin_required
+@user_passes_test(is_admin_user)  # strict: superuser ou rôle admin/administrateur/superadmin
 @require_POST
 def config_user_update(request, user_id: int):
     """
-    Met à jour is_active, is_validated_by_admin, role (un par un ou plusieurs champs).
-    Utilisé par des <form hx-post=... hx-trigger="change" hx-swap="none">.
-    Retourne 204 (No Content) pour ne rien remplacer côté HTMX.
+    Met à jour le rôle, l'activation et la validation admin d'un utilisateur.
+    - Supporte HTMX et fallback non-HTMX
+    - Gère correctement hidden + checkbox via getlist() (on prend la DERNIÈRE valeur)
     """
     u: CustomUser = get_object_or_404(CustomUser, pk=user_id)
-    changed = False
+    changed_fields = []
 
-    # role
+    def last_value(name: str):
+        vals = request.POST.getlist(name)
+        return vals[-1] if vals else None
+
+    def as_bool(val) -> bool:
+        if val is None:
+            return False
+        return str(val).strip().lower() in {"1", "true", "on", "yes"}
+
+    # --- rôle
     if "role_id" in request.POST:
-        role_id = request.POST.get("role_id") or None
-        if role_id:
-            role = get_object_or_404(Role, pk=role_id)
-        else:
-            role = None
-        if u.role_id != (role.id if role else None):
-            u.role = role
-            changed = True
+        role_id = last_value("role_id") or None
+        new_role = get_object_or_404(Role, pk=role_id) if role_id else None
+        if u.role_id != (new_role.id if new_role else None):
+            u.role = new_role
+            changed_fields.append("role")
 
-    # is_active
+    # --- is_active
     if "is_active" in request.POST:
-        # checkbox renvoie "on" quand cochée, sinon champ absent → mais on envoie toujours via formulaire dédié
-        new_active = request.POST.get("is_active") == "on"
+        new_active = as_bool(last_value("is_active"))
         if bool(u.is_active) != new_active:
             u.is_active = new_active
-            changed = True
+            changed_fields.append("is_active")
 
-    # is_validated_by_admin
+    # --- is_validated_by_admin (valider active aussi le compte)
     if "is_validated_by_admin" in request.POST:
-        new_valid = request.POST.get("is_validated_by_admin") == "on"
+        new_valid = as_bool(last_value("is_validated_by_admin"))
         if bool(u.is_validated_by_admin) != new_valid:
             u.is_validated_by_admin = new_valid
-            # logique : si validé, activer automatiquement
-            if new_valid:
+            changed_fields.append("is_validated_by_admin")
+            if new_valid and not u.is_active:
                 u.is_active = True
-            changed = True
+                changed_fields.append("is_active")
 
-    if changed:
-        u.save()
+    if changed_fields:
+        u.save(update_fields=list(set(changed_fields)))
 
-    # 204: HTMX ne remplace rien (hx-swap="none")
-    return HttpResponse(status=204)
+    # Réponse adaptée : HTMX vs non-HTMX
+    if request.headers.get("HX-Request"):
+        resp = HttpResponse(status=204)
+        resp["HX-Trigger"] = '{"flash":{"type":"success","message":"Utilisateur mis à jour"}}'
+        return resp
+    else:
+        messages.success(request, "Utilisateur mis à jour ✅")
+        return redirect(f"{reverse('configuration')}?tab=utilisateurs")

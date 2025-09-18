@@ -1,11 +1,17 @@
 from django.urls import path
 from . import views
 
+from .views import (
+    configuration_view, configuration_section,
+    config_user_update,
+    # ... les autres actions
+)
+
 urlpatterns = [
     # Vue principale Configuration
     path('', views.configuration_view, name='configuration'),
-    path("section/<str:section>/", views.configuration_section, name="configuration_section"),
-    path("utilisateurs/<int:user_id>/update/", views.config_user_update, name="config_user_update"),
+    path("section/<str:section>/", configuration_section, name="configuration_section"),
+    path("config/utilisateur/<int:user_id>/update/", views.config_user_update, name="config_user_update"),
 
     # Profil (dans Configuration)
     path("profil/update/", views.configuration_profil_update, name="configuration_profil_update"),
