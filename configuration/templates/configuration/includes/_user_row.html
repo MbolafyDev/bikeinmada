@@ -1,0 +1,76 @@
+{# templates/configuration/includes/_user_row.html : rend UNE ligne <tr> complète #}
+<tr id="user-row-table-{{ u.id }}">
+  <td class="text-muted">{{ u.id }}</td>
+
+  <td>
+    <div class="fw-semibold">{{ u.username }}</div>
+    <div class="small text-muted">
+      {{ u.first_name }} {{ u.last_name }}{% if u.telephone %} • {{ u.telephone }}{% endif %}
+    </div>
+  </td>
+
+  <td>
+    {% if u.email %}
+      <a href="mailto:{{ u.email }}">{{ u.email }}</a>
+    {% else %}
+      <span class="text-muted">—</span>
+    {% endif %}
+  </td>
+
+  <td style="width:220px">
+    <select name="role_id" form="ft{{ u.id }}" class="form-select form-select-sm">
+      <option value="">— Aucun —</option>
+      {% for r in roles %}
+        <option value="{{ r.id }}" {% if u.role_id == r.id %}selected{% endif %}>{{ r.role }}</option>
+      {% endfor %}
+    </select>
+  </td>
+
+  <td class="text-center" style="width:110px">
+    <input type="hidden" name="is_active" value="0" form="ft{{ u.id }}">
+    <input class="form-check-input" type="checkbox"
+           name="is_active" value="1" form="ft{{ u.id }}"
+           {% if u.is_active %}checked{% endif %}>
+  </td>
+
+  <td class="text-center" style="width:160px">
+    <input type="hidden" name="is_validated_by_admin" value="0" form="ft{{ u.id }}">
+    <input class="form-check-input" type="checkbox"
+           name="is_validated_by_admin" value="1" form="ft{{ u.id }}"
+           {% if u.is_validated_by_admin %}checked{% endif %}>
+  </td>
+
+  <td class="text-end" style="width:140px">
+    {# Form HTMX : POST + swap de la ligne entière du tableau #}
+    <form id="ft{{ u.id }}"
+          method="post"
+          action="{% url 'config_user_update' u.id %}"
+          hx-post="{% url 'config_user_update' u.id %}"
+          hx-target="#user-row-table-{{ u.id }}"
+          hx-swap="outerHTML"
+          hx-indicator="#hxIndicator"
+          hx-include="#user-row-table-{{ u.id }} input, #user-row-table-{{ u.id }} select"
+          class="d-none">
+      {% csrf_token %}
+    </form>
+
+    <button type="submit"
+            form="ft{{ u.id }}"
+            class="btn btn-success btn-sm"
+            title="Mettre à jour">
+      <i class="fa fa-save"></i>
+    </button>
+
+    <button class="btn btn-outline-danger btn-sm ms-1"
+            title="Supprimer"
+            data-bs-toggle="modal"
+            data-bs-target="#confirmDeleteUserModal"
+            data-user-id="{{ u.id }}"
+            data-username="{{ u.username }}"
+            data-delete-url="{% url 'config_user_delete' u.id %}"
+            data-row-selector="#user-row-table-{{ u.id }}"
+            {% if u.id == request.user.id or u.is_superuser %}disabled{% endif %}>
+      <i class="fa fa-trash"></i>
+    </button>
+  </td>
+</tr>

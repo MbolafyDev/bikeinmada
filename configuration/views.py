@@ -3,6 +3,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST, require_http_methods
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.template.loader import render_to_string
+from django.db import transaction
+from django.http import HttpResponse
+import json
 from django.urls import reverse
 from django.http import Http404, JsonResponse, QueryDict, HttpResponse
 from django.core.paginator import Paginator
@@ -760,41 +764,61 @@ def config_user_update(request, user_id: int):
             return False
         return str(val).strip().lower() in {"1", "true", "on", "yes"}
 
-    # --- rôle
-    if "role_id" in request.POST:
-        role_id = last_value("role_id") or None
-        new_role = get_object_or_404(Role, pk=role_id) if role_id else None
-        if u.role_id != (new_role.id if new_role else None):
-            u.role = new_role
-            changed_fields.append("role")
+    with transaction.atomic():
+        # --- rôle
+        if "role_id" in request.POST:
+            role_id = (last_value("role_id") or "").strip()
+            new_role = Role.objects.filter(pk=role_id).first() if role_id else None
+            if (u.role_id or None) != (new_role.id if new_role else None):
+                u.role = new_role
+                changed_fields.append("role")
 
-    # --- is_active
-    if "is_active" in request.POST:
-        new_active = as_bool(last_value("is_active"))
-        if bool(u.is_active) != new_active:
-            u.is_active = new_active
-            changed_fields.append("is_active")
+        # --- is_staff (MANQUAIT)
+        if "is_staff" in request.POST:
+            new_is_staff = as_bool(last_value("is_staff"))
+            if bool(u.is_staff) != new_is_staff:
+                u.is_staff = new_is_staff
+                changed_fields.append("is_staff")
 
-    # --- is_validated_by_admin (valider active aussi le compte)
-    if "is_validated_by_admin" in request.POST:
-        new_valid = as_bool(last_value("is_validated_by_admin"))
-        if bool(u.is_validated_by_admin) != new_valid:
-            u.is_validated_by_admin = new_valid
-            changed_fields.append("is_validated_by_admin")
-            if new_valid and not u.is_active:
-                u.is_active = True
+        # --- is_active
+        if "is_active" in request.POST:
+            new_active = as_bool(last_value("is_active"))
+            if bool(u.is_active) != new_active:
+                u.is_active = new_active
                 changed_fields.append("is_active")
 
-    if changed_fields:
-        u.save(update_fields=list(set(changed_fields)))
+        # --- is_validated_by_admin (valider active aussi le compte)
+        if "is_validated_by_admin" in request.POST:
+            new_valid = as_bool(last_value("is_validated_by_admin"))
+            if bool(u.is_validated_by_admin) != new_valid:
+                u.is_validated_by_admin = new_valid
+                changed_fields.append("is_validated_by_admin")
+                if new_valid and not u.is_active:
+                    u.is_active = True
+                    changed_fields.append("is_active")
 
+        if changed_fields:
+            u.save(update_fields=sorted(set(changed_fields)))
+
+    # Requête HTMX : renvoyer le <tr> mis à jour pour swap dans le DOM
     if request.headers.get("HX-Request"):
-        resp = HttpResponse(status=204)
-        resp["HX-Trigger"] = '{"flash":{"type":"success","message":"Utilisateur mis à jour"}}'
+        html = render_to_string("configuration/includes/_user_row.html", {
+            "u": u,
+            "roles": Role.objects.all(),
+            "request": request,
+        })
+        resp = HttpResponse(html)
+        resp["HX-Trigger"] = json.dumps({
+            "flash": {
+                "type": "success" if changed_fields else "warning",
+                "message": "Utilisateur mis à jour" if changed_fields else "Aucune modification détectée"
+            }
+        })
         return resp
-    else:
-        messages.success(request, "Utilisateur mis à jour ✅")
-        return redirect(f"{reverse('configuration')}?tab=utilisateurs")
+
+    # Fallback non HTMX
+    messages.success(request, "Utilisateur mis à jour ✅" if changed_fields else "Aucune modification détectée")
+    return redirect(f"{reverse('configuration')}?tab=utilisateurs")
 
 
 @login_required

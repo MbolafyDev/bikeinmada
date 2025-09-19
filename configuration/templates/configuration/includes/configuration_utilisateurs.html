@@ -1,8 +1,8 @@
 {# templates/configuration/includes/configuration_utilisateurs.html #}
 <style>
   @media (max-width: 767.98px){
-  .card.shadow-sm{ box-shadow: 0 .25rem .5rem rgba(0,0,0,.075)!important; }
-}
+    .card.shadow-sm{ box-shadow: 0 .25rem .5rem rgba(0,0,0,.075)!important; }
+  }
 </style>
 
 <div class="card">
@@ -100,90 +100,14 @@
             <th>Identité</th>
             <th>Email</th>
             <th style="width:220px">Rôle</th>
-            <th style="width:110px">Actif</th>
-            <th style="width:160px">Validé par admin</th>
-            <th style="width:140px">Actions</th>
+            <th style="width:110px" class="text-center">Actif</th>
+            <th style="width:160px" class="text-center">Validé par admin</th>
+            <th style="width:140px" class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for u in page_obj.object_list %}
-            <tr id="user-row-{{ u.id }}">
-              <td class="text-muted">{{ u.id }}</td>
-
-              <td>
-                <div class="fw-semibold">{{ u.username }}</div>
-                <div class="small text-muted">
-                  {{ u.first_name }} {{ u.last_name }}
-                  {% if u.telephone %} • {{ u.telephone }}{% endif %}
-                </div>
-              </td>
-
-              <td>
-                {% if u.email %}
-                  <a href="mailto:{{ u.email }}">{{ u.email }}</a>
-                {% else %}
-                  <span class="text-muted">—</span>
-                {% endif %}
-              </td>
-
-              {# --- mini form par ligne, référencé par form="" --- #}
-              <form id="f{{ u.id }}"
-                    method="post"
-                    action="{% url 'config_user_update' u.id %}"
-                    hx-post="{% url 'config_user_update' u.id %}"
-                    hx-swap="none"
-                    hx-indicator="#hxIndicator"
-                    class="d-none">
-                {% csrf_token %}
-              </form>
-
-              {# Rôle #}
-              <td>
-                <select name="role_id" form="f{{ u.id }}" class="form-select form-select-sm">
-                  <option value="">— Aucun —</option>
-                  {% for r in roles %}
-                    <option value="{{ r.id }}" {% if u.role_id == r.id %}selected{% endif %}>{{ r.role }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-
-              {# Actif #}
-              <td class="text-center">
-                <input type="hidden" name="is_active" value="0" form="f{{ u.id }}">
-                <input class="form-check-input" type="checkbox"
-                       aria-label="Actif"
-                       name="is_active" value="1" form="f{{ u.id }}"
-                       {% if u.is_active %}checked{% endif %}>
-              </td>
-
-              {# Validé par admin #}
-              <td class="text-center">
-                <input type="hidden" name="is_validated_by_admin" value="0" form="f{{ u.id }}">
-                <input class="form-check-input" type="checkbox"
-                       aria-label="Validé par admin"
-                       name="is_validated_by_admin" value="1" form="f{{ u.id }}"
-                       {% if u.is_validated_by_admin %}checked{% endif %}>
-              </td>
-
-              {# Actions #}
-              <td class="text-end">
-                <button type="submit" form="f{{ u.id }}" class="btn btn-success btn-sm" title="Mettre à jour">
-                  <i class="fa fa-save"></i>
-                </button>
-
-                <button class="btn btn-outline-danger btn-sm ms-1"
-                        title="Supprimer"
-                        data-bs-toggle="modal"
-                        data-bs-target="#confirmDeleteUserModal"
-                        data-user-id="{{ u.id }}"
-                        data-username="{{ u.username }}"
-                        data-delete-url="{% url 'config_user_delete' u.id %}"
-                        data-row-selector="#user-row-{{ u.id }}"
-                        {% if u.id == request.user.id or u.is_superuser %}disabled{% endif %}>
-                  <i class="fa fa-trash"></i>
-                </button>
-              </td>
-            </tr>
+            {% include "configuration/includes/_user_row.html" with u=u roles=roles %}
           {% empty %}
             <tr><td colspan="7" class="text-center text-muted py-4">Aucun utilisateur trouvé.</td></tr>
           {% endfor %}
@@ -194,15 +118,14 @@
     {# --- Vue CARTES (< md) --- #}
     <div class="d-md-none">
       {% for u in page_obj.object_list %}
-        <div class="card shadow-sm mb-2" id="user-row-{{ u.id }}">
+        <div class="card shadow-sm mb-2" id="user-row-card-{{ u.id }}">
           <div class="card-body py-2">
             <div class="d-flex justify-content-between align-items-start">
               <div>
                 <div class="small text-muted">#{{ u.id }}</div>
                 <div class="fw-semibold">{{ u.username }}</div>
                 <div class="small text-muted">
-                  {{ u.first_name }} {{ u.last_name }}
-                  {% if u.telephone %} • {{ u.telephone }}{% endif %}
+                  {{ u.first_name }} {{ u.last_name }}{% if u.telephone %} • {{ u.telephone }}{% endif %}
                 </div>
                 <div class="small mt-1">
                   {% if u.email %}
@@ -214,8 +137,20 @@
               </div>
 
               <div class="text-end">
-                {# Actions #}
-                <button type="submit" form="f{{ u.id }}" class="btn btn-success btn-sm" title="Mettre à jour">
+                {# mini form pour POST + swap sur la carte #}
+                <form id="fc{{ u.id }}"
+                      method="post"
+                      action="{% url 'config_user_update' u.id %}"
+                      hx-post="{% url 'config_user_update' u.id %}"
+                      hx-target="#user-row-card-{{ u.id }}"
+                      hx-swap="outerHTML"
+                      hx-indicator="#hxIndicator"
+                      hx-include="#user-row-card-{{ u.id }} input, #user-row-card-{{ u.id }} select"
+                      class="d-none">
+                  {% csrf_token %}
+                </form>
+
+                <button type="submit" form="fc{{ u.id }}" class="btn btn-success btn-sm" title="Mettre à jour">
                   <i class="fa fa-save"></i>
                 </button>
                 <button class="btn btn-outline-danger btn-sm ms-1"
@@ -225,27 +160,16 @@
                         data-user-id="{{ u.id }}"
                         data-username="{{ u.username }}"
                         data-delete-url="{% url 'config_user_delete' u.id %}"
-                        data-row-selector="#user-row-{{ u.id }}"
+                        data-row-selector="#user-row-card-{{ u.id }}"
                         {% if u.id == request.user.id or u.is_superuser %}disabled{% endif %}>
                   <i class="fa fa-trash"></i>
                 </button>
               </div>
             </div>
 
-            {# --- mini form caché par ligne, réutilisé par les inputs --- #}
-            <form id="f{{ u.id }}"
-                  method="post"
-                  action="{% url 'config_user_update' u.id %}"
-                  hx-post="{% url 'config_user_update' u.id %}"
-                  hx-swap="none"
-                  hx-indicator="#hxIndicator"
-                  class="d-none">
-              {% csrf_token %}
-            </form>
-
             <div class="mt-2">
               <label class="form-label mb-1 small text-muted">Rôle</label>
-              <select name="role_id" form="f{{ u.id }}" class="form-select form-select-sm">
+              <select name="role_id" form="fc{{ u.id }}" class="form-select form-select-sm">
                 <option value="">— Aucun —</option>
                 {% for r in roles %}
                   <option value="{{ r.id }}" {% if u.role_id == r.id %}selected{% endif %}>{{ r.role }}</option>
@@ -255,19 +179,16 @@
 
             <div class="d-flex gap-3 mt-2">
               <div class="form-check">
-                <input type="hidden" name="is_active" value="0" form="f{{ u.id }}">
-                <input class="form-check-input" type="checkbox"
-                       id="m_is_active_{{ u.id }}"
-                       name="is_active" value="1" form="f{{ u.id }}"
-                       {% if u.is_active %}checked{% endif %}>
+                <input type="hidden" name="is_active" value="0" form="fc{{ u.id }}">
+                <input class="form-check-input" type="checkbox" id="m_is_active_{{ u.id }}"
+                       name="is_active" value="1" form="fc{{ u.id }}" {% if u.is_active %}checked{% endif %}>
                 <label class="form-check-label" for="m_is_active_{{ u.id }}">Actif</label>
               </div>
 
               <div class="form-check">
-                <input type="hidden" name="is_validated_by_admin" value="0" form="f{{ u.id }}">
-                <input class="form-check-input" type="checkbox"
-                       id="m_is_validated_{{ u.id }}"
-                       name="is_validated_by_admin" value="1" form="f{{ u.id }}"
+                <input type="hidden" name="is_validated_by_admin" value="0" form="fc{{ u.id }}">
+                <input class="form-check-input" type="checkbox" id="m_is_validated_{{ u.id }}"
+                       name="is_validated_by_admin" value="1" form="fc{{ u.id }}"
                        {% if u.is_validated_by_admin %}checked{% endif %}>
                 <label class="form-check-label" for="m_is_validated_{{ u.id }}">Validé par admin</label>
               </div>
@@ -403,11 +324,9 @@
     const deleteUrl  = button.getAttribute('data-delete-url') || '#';
     const rowSelector= button.getAttribute('data-row-selector') || '';
 
-    // Texte du modal
     const nameSpan = deleteModal.querySelector('#confirmDeleteUserName');
     if (nameSpan) nameSpan.textContent = `« ${username} »`;
 
-    // Câbler le formulaire HTMX
     const form = deleteModal.querySelector('#confirmDeleteUserForm');
     if (form) {
       form.setAttribute('action', deleteUrl);
