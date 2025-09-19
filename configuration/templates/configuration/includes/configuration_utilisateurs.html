@@ -1,4 +1,10 @@
 {# templates/configuration/includes/configuration_utilisateurs.html #}
+<style>
+  @media (max-width: 767.98px){
+  .card.shadow-sm{ box-shadow: 0 .25rem .5rem rgba(0,0,0,.075)!important; }
+}
+</style>
+
 <div class="card">
   <div class="card-body">
     <h4 class="mb-3"><i class="fa fa-users-gear me-1"></i> Gestion des utilisateurs</h4>
@@ -83,7 +89,10 @@
       </div>
     </form>
 
-    <div class="table-responsive">
+    {# ======= LISTE UTILISATEURS ======= #}
+
+    {# --- Vue TABLE (>= md) --- #}
+    <div class="table-responsive d-none d-md-block">
       <table class="table table-sm align-middle">
         <thead class="table-light">
           <tr>
@@ -156,7 +165,7 @@
                        {% if u.is_validated_by_admin %}checked{% endif %}>
               </td>
 
-              {# Actions : Mise à jour + Ouvrir modal suppression #}
+              {# Actions #}
               <td class="text-end">
                 <button type="submit" form="f{{ u.id }}" class="btn btn-success btn-sm" title="Mettre à jour">
                   <i class="fa fa-save"></i>
@@ -182,9 +191,97 @@
       </table>
     </div>
 
+    {# --- Vue CARTES (< md) --- #}
+    <div class="d-md-none">
+      {% for u in page_obj.object_list %}
+        <div class="card shadow-sm mb-2" id="user-row-{{ u.id }}">
+          <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="small text-muted">#{{ u.id }}</div>
+                <div class="fw-semibold">{{ u.username }}</div>
+                <div class="small text-muted">
+                  {{ u.first_name }} {{ u.last_name }}
+                  {% if u.telephone %} • {{ u.telephone }}{% endif %}
+                </div>
+                <div class="small mt-1">
+                  {% if u.email %}
+                    <a href="mailto:{{ u.email }}">{{ u.email }}</a>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="text-end">
+                {# Actions #}
+                <button type="submit" form="f{{ u.id }}" class="btn btn-success btn-sm" title="Mettre à jour">
+                  <i class="fa fa-save"></i>
+                </button>
+                <button class="btn btn-outline-danger btn-sm ms-1"
+                        title="Supprimer"
+                        data-bs-toggle="modal"
+                        data-bs-target="#confirmDeleteUserModal"
+                        data-user-id="{{ u.id }}"
+                        data-username="{{ u.username }}"
+                        data-delete-url="{% url 'config_user_delete' u.id %}"
+                        data-row-selector="#user-row-{{ u.id }}"
+                        {% if u.id == request.user.id or u.is_superuser %}disabled{% endif %}>
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            {# --- mini form caché par ligne, réutilisé par les inputs --- #}
+            <form id="f{{ u.id }}"
+                  method="post"
+                  action="{% url 'config_user_update' u.id %}"
+                  hx-post="{% url 'config_user_update' u.id %}"
+                  hx-swap="none"
+                  hx-indicator="#hxIndicator"
+                  class="d-none">
+              {% csrf_token %}
+            </form>
+
+            <div class="mt-2">
+              <label class="form-label mb-1 small text-muted">Rôle</label>
+              <select name="role_id" form="f{{ u.id }}" class="form-select form-select-sm">
+                <option value="">— Aucun —</option>
+                {% for r in roles %}
+                  <option value="{{ r.id }}" {% if u.role_id == r.id %}selected{% endif %}>{{ r.role }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="d-flex gap-3 mt-2">
+              <div class="form-check">
+                <input type="hidden" name="is_active" value="0" form="f{{ u.id }}">
+                <input class="form-check-input" type="checkbox"
+                       id="m_is_active_{{ u.id }}"
+                       name="is_active" value="1" form="f{{ u.id }}"
+                       {% if u.is_active %}checked{% endif %}>
+                <label class="form-check-label" for="m_is_active_{{ u.id }}">Actif</label>
+              </div>
+
+              <div class="form-check">
+                <input type="hidden" name="is_validated_by_admin" value="0" form="f{{ u.id }}">
+                <input class="form-check-input" type="checkbox"
+                       id="m_is_validated_{{ u.id }}"
+                       name="is_validated_by_admin" value="1" form="f{{ u.id }}"
+                       {% if u.is_validated_by_admin %}checked{% endif %}>
+                <label class="form-check-label" for="m_is_validated_{{ u.id }}">Validé par admin</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="text-center text-muted py-4">Aucun utilisateur trouvé.</div>
+      {% endfor %}
+    </div>
+
     {% if page_obj.paginator.num_pages > 1 %}
-      <nav>
-        <ul class="pagination pagination-sm">
+      <nav class="mt-2">
+        <ul class="pagination pagination-sm justify-content-center justify-content-md-start">
           {% if page_obj.has_previous %}
             <li class="page-item">
               <a class="page-link" href="?tab=utilisateurs&page=1{% if q %}&q={{ q }}{% endif %}{% if role_id %}&role={{ role_id }}{% endif %}{% if only_active %}&only_active=on{% endif %}{% if only_waiting_validation %}&only_waiting_validation=on{% endif %}">&laquo;</a>
