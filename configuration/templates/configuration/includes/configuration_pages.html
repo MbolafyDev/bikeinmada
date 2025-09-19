@@ -1,8 +1,14 @@
+{# templates/configuration/includes/configuration_pages.html #}
 {% load static %}
 
 <div class="d-flex align-items-center justify-content-between mb-2">
-  <h4 class="mb-0">Boutique | Page</h4>
-  <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalPage" {% if not is_admin %}disabled{% endif %}>
+  <h4 class="mb-0">Boutique | Pages</h4>
+
+  {# Bouton AJOUTER (désactivé si non-admin) #}
+  <button class="btn btn-success"
+          data-bs-toggle="modal"
+          data-bs-target="#modalPageCreate"
+          {% if not is_admin %}disabled title="Réservé aux administrateurs"{% endif %}>
     <i class="fa fa-plus"></i> Ajouter une boutique
   </button>
 </div>
@@ -14,203 +20,220 @@
       <table class="table table-bordered table-striped align-middle">
         <thead class="table-success">
           <tr>
-            <th>Logo</th>
+            <th style="width:90px;">Logo</th>
             <th>Nom</th>
-            <th>Type</th>
             <th>Contact</th>
             <th>Lien</th>
-            <th class="text-center">Actions</th>
+            <th>Type</th>
+            <th style="width:180px;">Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for p in pages %}
-          <tr {% if p.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
-            <td class="text-center" style="width:72px;">
-              {% if p.logo %}
-                <img src="{{ p.logo.url }}" alt="Logo de {{ p.nom }}" style="height: 40px;" class="rounded">
-              {% else %}
-                <span class="text-muted">Aucun</span>
-              {% endif %}
-            </td>
-            <td>{{ p.nom }}</td>
-            <td>{{ p.get_type_display }}</td>
-            <td>{{ p.contact }}</td>
-            <td>
-              {% if p.lien %}
-                <a href="{{ p.lien }}" target="_blank" rel="noopener">Lien</a>
-              {% else %}
-                <span class="text-muted">—</span>
-              {% endif %}
-            </td>
-            <td class="text-end" style="white-space: nowrap;">
-              <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editPageModal{{ p.id }}" {% if not is_admin %}disabled{% endif %}>
-                <i class="fa fa-edit"></i>
-              </button>
-              <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeletePageModal{{ p.id }}" {% if not is_admin %}disabled{% endif %}>
-                <i class="fa fa-trash"></i>
-              </button>
-            </td>
-          </tr>
+            <tr>
+              <td class="text-center">
+                {% if p.logo %}
+                  <img src="{{ p.logo.url }}" alt="{{ p.nom }}" class="img-fluid" style="max-height:56px;">
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td class="fw-semibold">{{ p.nom }}</td>
+              <td>{{ p.contact|default:"—" }}</td>
+              <td>
+                {% if p.lien %}
+                  <a href="{{ p.lien }}" target="_blank" rel="noopener">ouvrir</a>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td><span class="badge bg-light text-dark">{{ p.type }}</span></td>
+              <td class="text-nowrap">
+                {# MODIFIER (ouvre le modal) #}
+                <button class="btn btn-sm btn-outline-primary me-1"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalPageEdit{{ p.id }}"
+                        {% if not is_admin %}disabled title="Réservé aux administrateurs"{% endif %}>
+                  <i class="fa fa-edit"></i>
+                </button>
+
+                {# SUPPRIMER (ouvre le modal de confirmation) #}
+                <button class="btn btn-sm btn-outline-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalPageDelete{{ p.id }}"
+                        {% if not is_admin %}disabled title="Réservé aux administrateurs"{% endif %}>
+                  <i class="fa fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+
+            {# -------- Modal MODIFIER -------- #}
+            <div class="modal fade" id="modalPageEdit{{ p.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                  <form method="post" action="{% url 'modifier_page' p.id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="fa fa-edit me-1"></i> Modifier « {{ p.nom }} »</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="mb-2">
+                        <label class="form-label">Nom</label>
+                        <input type="text" name="nom" class="form-control" value="{{ p.nom }}" required {% if not is_admin %}disabled{% endif %}>
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label">Contact</label>
+                        <input type="text" name="contact" class="form-control" value="{{ p.contact }}" {% if not is_admin %}disabled{% endif %}>
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label">Lien</label>
+                        <input type="url" name="lien" class="form-control" value="{{ p.lien }}" {% if not is_admin %}disabled{% endif %}>
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label">Type</label>
+                        <select name="type" class="form-select" {% if not is_admin %}disabled{% endif %}>
+                          {% for val,label in type_choices %}
+                            <option value="{{ val }}" {% if p.type == val %}selected{% endif %}>{{ label }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="mb-2">
+                        <label class="form-label">Logo (optionnel)</label>
+                        <input type="file" name="logo" accept="image/*" class="form-control" {% if not is_admin %}disabled{% endif %}>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
+                      <button type="submit" class="btn btn-primary" {% if not is_admin %}disabled title="Réservé aux administrateurs"{% endif %}>
+                        Enregistrer
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            {# -------- Modal SUPPRIMER -------- #}
+            <div class="modal fade" id="modalPageDelete{{ p.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <form method="post" action="{% url 'supprimer_page' p.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                      <h5 class="modal-title text-danger"><i class="fa fa-triangle-exclamation me-1"></i> Supprimer</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      Voulez-vous vraiment supprimer la page <strong>{{ p.nom }}</strong> ?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                      <button type="submit" class="btn btn-danger" {% if not is_admin %}disabled title="Réservé aux administrateurs"{% endif %}>
+                        Supprimer
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 
-  {# ===== CARTES (md & petits écrans) ===== #}
+  {# ===== CARTES (mobile) ===== #}
   <div class="d-lg-none">
-    <div class="row">
+    <div class="row g-2">
       {% for p in pages %}
-      <div class="col-12 col-md-6 mb-3">
-        <div class="card shadow-sm h-100 {% if p.statut_publication == 'supprimé' %}opacity-75{% endif %}">
-          <div class="card-body">
-            <div class="d-flex align-items-start gap-3">
-              <div style="width:56px;">
+        <div class="col-12">
+          <div class="card h-100">
+            <div class="card-body d-flex gap-3">
+              <div style="width:76px;">
                 {% if p.logo %}
-                  <img src="{{ p.logo.url }}" alt="Logo de {{ p.nom }}" class="rounded" style="height:56px; width:56px; object-fit:cover;">
+                  <img src="{{ p.logo.url }}" alt="{{ p.nom }}" class="img-fluid rounded" style="max-height:64px;">
                 {% else %}
-                  <div class="bg-light border rounded d-flex align-items-center justify-content-center" style="height:56px; width:56px;">
-                    <i class="fa fa-store text-muted"></i>
-                  </div>
+                  <div class="border rounded d-flex align-items-center justify-content-center text-muted" style="height:64px;">—</div>
                 {% endif %}
               </div>
               <div class="flex-grow-1">
                 <div class="d-flex justify-content-between">
-                  <h5 class="card-title text-success mb-1" {% if p.statut_publication == 'supprimé' %}style="text-decoration: line-through;"{% endif %}>
-                    {{ p.nom }}
-                  </h5>
-                  <span class="badge bg-info-subtle text-dark border">{{ p.get_type_display }}</span>
+                  <h6 class="mb-1">{{ p.nom }}</h6>
+                  <span class="badge bg-light text-dark">{{ p.type }}</span>
                 </div>
-                <p class="mb-1"><strong>Contact :</strong> <span class="float-end">{{ p.contact|default:"—" }}</span></p>
-                <p class="mb-0">
-                  <strong>Lien :</strong>
-                  <span class="float-end">
-                    {% if p.lien %}
-                      <a href="{{ p.lien }}" target="_blank" rel="noopener">Ouvrir</a>
-                    {% else %}
-                      <span class="text-muted">—</span>
-                    {% endif %}
-                  </span>
-                </p>
+                <div class="small text-muted">{{ p.contact|default:"—" }}</div>
+                {% if p.lien %}
+                  <a class="small" href="{{ p.lien }}" target="_blank" rel="noopener">ouvrir</a>
+                {% endif %}
               </div>
             </div>
-          </div>
-          <div class="card-footer text-end">
-            <button type="button" class="btn btn-sm btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#editPageModal{{ p.id }}" {% if not is_admin %}disabled{% endif %}>
-              <i class="fa fa-edit"></i>
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeletePageModal{{ p.id }}" {% if not is_admin %}disabled{% endif %}>
-              <i class="fa fa-trash"></i>
-            </button>
+            <div class="card-footer d-flex justify-content-end gap-2">
+              <button class="btn btn-sm btn-outline-primary"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalPageEdit{{ p.id }}"
+                      {% if not is_admin %}disabled title="Réservé aux administrateurs"{% endif %}>
+                <i class="fa fa-edit"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalPageDelete{{ p.id }}"
+                      {% if not is_admin %}disabled title="Réservé aux administrateurs"{% endif %}>
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
       {% endfor %}
     </div>
   </div>
 
 {% else %}
-  <div class="alert alert-info">Aucune page enregistrée.</div>
+  <div class="alert alert-info">Aucune page pour le moment.</div>
 {% endif %}
 
-{# ===== Modals édition / suppression (boucle séparée) ===== #}
-{% for p in pages %}
-<div class="modal fade" id="editPageModal{{ p.id }}" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="{% url 'modifier_page' p.id %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title">Modifier Page</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <label class="form-label">Nom</label>
-          <input type="text" name="nom" class="form-control mb-2" value="{{ p.nom }}" required>
-
-          <label class="form-label">Type</label>
-          <select name="type" class="form-select mb-2" required>
-            {% for key, label in type_choices %}
-              <option value="{{ key }}" {% if p.type == key %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-
-          <label class="form-label">Contact</label>
-          <input type="text" name="contact" class="form-control mb-2" value="{{ p.contact }}" required>
-
-          <label class="form-label">Lien</label>
-          <input type="url" name="lien" class="form-control mb-2" value="{{ p.lien }}">
-
-          <label class="form-label">Logo</label>
-          {% if p.logo %}
-            <img src="{{ p.logo.url }}" alt="Logo actuel" style="height: 50px;" class="mb-2 d-block rounded">
-          {% endif %}
-          <input type="file" name="logo" class="form-control mb-2">
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-          <button type="submit" class="btn btn-success" {% if not is_admin %}disabled{% endif %}>Enregistrer</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="confirmDeletePageModal{{ p.id }}" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <form method="post" action="{% url 'supprimer_page' p.id %}">
-        {% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title text-danger">Confirmation de suppression</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <p>Supprimer la page <strong>{{ p.nom }}</strong> ?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-          <button type="submit" class="btn btn-danger" {% if not is_admin %}disabled{% endif %}>Supprimer</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-{% endfor %}
-
-{# ===== Modal ajout Page ===== #}
-<div class="modal fade" id="modalPage" tabindex="-1">
-  <div class="modal-dialog">
+{# -------- Modal AJOUTER -------- #}
+<div class="modal fade" id="modalPageCreate" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
       <form method="post" action="{% url 'ajouter_page' %}" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="modal-header">
-          <h5 class="modal-title">Ajouter une page</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <h5 class="modal-title"><i class="fa fa-plus me-1"></i> Nouvelle boutique</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <label class="form-label">Nom</label>
-          <input type="text" name="nom" class="form-control mb-2" required>
-
-          <label class="form-label">Type</label>
-          <select name="type" class="form-select mb-2" required>
-            {% for key, label in type_choices %}
-              <option value="{{ key }}">{{ label }}</option>
-            {% endfor %}
-          </select>
-
-          <label class="form-label">Contact</label>
-          <input type="text" name="contact" class="form-control mb-2" required>
-
-          <label class="form-label">Lien</label>
-          <input type="url" name="lien" class="form-control mb-2">
-
-          <label class="form-label">Logo</label>
-          <input type="file" name="logo" class="form-control">
+          <div class="mb-2">
+            <label class="form-label">Nom</label>
+            <input type="text" name="nom" class="form-control" required {% if not is_admin %}disabled{% endif %}>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Contact</label>
+            <input type="text" name="contact" class="form-control" {% if not is_admin %}disabled{% endif %}>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Lien</label>
+            <input type="url" name="lien" class="form-control" placeholder="https://..." {% if not is_admin %}disabled{% endif %}>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Type</label>
+            <select name="type" class="form-select" {% if not is_admin %}disabled{% endif %}>
+              {% for val,label in type_choices %}
+                <option value="{{ val }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Logo (optionnel)</label>
+            <input type="file" name="logo" accept="image/*" class="form-control" {% if not is_admin %}disabled{% endif %}>
+          </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-          <button type="submit" class="btn btn-success" {% if not is_admin %}disabled{% endif %}>Enregistrer</button>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
+          <button type="submit" class="btn btn-success" {% if not is_admin %}disabled title="Réservé aux administrateurs"{% endif %}>
+            Enregistrer
+          </button>
         </div>
       </form>
     </div>
