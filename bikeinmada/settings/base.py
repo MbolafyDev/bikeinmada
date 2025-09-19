@@ -2,10 +2,11 @@ from .env_base_dir import BASE_DIR
 from pathlib import Path
 import os
 
+# --- Clé & Auth ---
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-secret-key')
-
 AUTH_USER_MODEL = 'users.CustomUser'
 
+# --- Apps ---
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -30,9 +31,10 @@ INSTALLED_APPS = [
     'service',
     'pwa',
     'configuration',
-    'dashboard'
+    'dashboard',
 ]
 
+# --- Middleware ---
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -42,11 +44,14 @@ MIDDLEWARE = [
     'common.middleware.CurrentUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
 ]
 
+# --- URL / WSGI / ASGI ---
 ROOT_URLCONF = 'bikeinmada.urls'
+WSGI_APPLICATION = 'bikeinmada.wsgi.application'
+ASGI_APPLICATION = 'bikeinmada.asgi.application'
 
+# --- Templates ---
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -59,15 +64,13 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'common.context_processors.is_admin_context',
-                "common.context_processors.config_nav_flags",
+                'common.context_processors.config_nav_flags',
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'bikeinmada.wsgi.application'
-ASGI_APPLICATION = "bikeinmada.asgi.application"
-
+# --- Passwords ---
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -75,32 +78,26 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# --- i18n / tz ---
 LANGUAGE_CODE = 'fr'
 TIME_ZONE = 'Indian/Antananarivo'
 USE_TZ = True
 USE_I18N = True
 
-STATIC_URL = 'static/'
+# --- Static & Media ---
+# IMPORTANT : URL absolues avec barre initiale (évite des chemins relatifs)
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# --- Auth redirects ---
 LOGIN_URL = "/users/login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 APPEND_SLASH = True
-
 APP_VERSION = "2025-09-17.1"
-
-
-# --- Sécurité / CSRF ---
-CSRF_TRUSTED_ORIGINS = [
-    "https://bikeinmada1.pythonanywhere.com",
-]
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
