@@ -1,6 +1,6 @@
 {
-  "name": "BikeinMada",
-  "short_name": "BikeinMada",
+  "name": "Bike in Mada",
+  "short_name": "Bike in Mada",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
