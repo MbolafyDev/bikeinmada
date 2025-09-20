@@ -1,6 +1,7 @@
-# articles/models.py
 from django.db import models
+from django.utils.text import slugify
 from common.mixins import AuditMixin
+
 
 class Categorie(AuditMixin):
     categorie = models.CharField("Categorie", max_length=100)
@@ -8,16 +9,20 @@ class Categorie(AuditMixin):
     def __str__(self):
         return self.categorie
 
+
 class Taille(AuditMixin):
     taille = models.CharField("Taille", max_length=100)
 
     def __str__(self):
         return self.taille
 
+
 class Couleur(AuditMixin):
     couleur = models.CharField("Couleur", max_length=100)
+
     def __str__(self):
         return self.couleur
+
 
 class Article(AuditMixin):
     LIVRAISON_CHOICES = [
@@ -27,7 +32,7 @@ class Article(AuditMixin):
 
     nom = models.CharField("Nom de l'article", max_length=100)
     image = models.ImageField(upload_to='articles/', blank=True, null=True)
-    reference = models.CharField("Référence", max_length=50, unique=True)
+    reference = models.CharField("Référence", max_length=50, unique=True, blank=True)
     prix_achat = models.PositiveIntegerField("Prix d'achat (Ar)")
     prix_vente = models.PositiveIntegerField("Prix de vente (Ar)")
     livraison = models.CharField(
@@ -45,9 +50,21 @@ class Article(AuditMixin):
     def __str__(self):
         return self.nom
 
+    def save(self, *args, **kwargs):
+        # Si pas de référence fournie → slug du nom
+        if not self.reference:
+            base_slug = slugify(self.nom)
+            unique_slug = base_slug
+            num = 1
+            # Vérifier unicité
+            while Article.objects.filter(reference=unique_slug).exclude(pk=self.pk).exists():
+                unique_slug = f"{base_slug}-{num}"
+                num += 1
+            self.reference = unique_slug
+        super().save(*args, **kwargs)
+
     @property
     def stock_final(self):
-        # Import local pour éviter les import circulaires
         from achats.models import LigneAchat
         from ventes.models import LigneCommande
         from stocks.models import Inventaire
@@ -67,6 +84,7 @@ class Article(AuditMixin):
             for inv in self.inventaires.filter(statut_publication__iexact="publiée")
         )
         return entrees - sorties + ajustements
+
 
 class Service(AuditMixin):
     nom = models.CharField("Nom de l'article", max_length=100)
