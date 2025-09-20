@@ -1,33 +1,56 @@
 {# templates/configuration/includes/configuration_utilisateurs.html #}
+{% load static %}
+
 <style>
   @media (max-width: 767.98px){
     .card.shadow-sm{ box-shadow: 0 .25rem .5rem rgba(0,0,0,.075)!important; }
   }
 
-  /* Egalisation des hauteurs sans impacter la largeur responsive de la colonne */
-  .user-col { display: flex; }                    /* la colonne devient un conteneur flex */
-  .user-card {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;          /* <-- occupe 100% de la largeur de la colonne */
-    min-width: 0;         /* <-- empêche les débordements (longs emails/noms) */
-    min-height: 230px;    /* xs */
+  /* Egalisation des hauteurs (sans figer la largeur de la colonne) */
+  .user-col{ display:flex; }
+  .user-card{
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    width:100%;
+    min-width:0;       /* autorise les truncates à fonctionner */
+    min-height:230px;  /* xs */
+    overflow:hidden;   /* évite tout débordement visuel */
   }
-  .user-card .card-body { flex: 1 1 auto; }       /* le body pousse le footer en bas */
-  .user-card .card-footer { flex-shrink: 0; }
+  .user-card .card-body{ flex:1 1 auto; }
+  .user-card .card-footer{ flex-shrink:0; }
 
-  @media (min-width: 576px){ .user-card{ min-height: 240px; } } /* sm */
-  @media (min-width: 768px){ .user-card{ min-height: 260px; } } /* md */
-  @media (min-width: 992px){ .user-card{ min-height: 260px; } } /* lg */
-  /* en xl: on passe en tableau */
+  @media (min-width:576px){ .user-card{ min-height:240px; } } /* sm */
+  @media (min-width:768px){ .user-card{ min-height:260px; } } /* md */
+  @media (min-width:992px){ .user-card{ min-height:260px; } } /* lg */
+
+  /* Avatars */
+  .avatar-56{ width:56px; height:56px; border-radius:50%; object-fit:cover; }
+  .avatar-40{ width:40px; height:40px; border-radius:50%; object-fit:cover; }
+
+  /* Header d'identité de la carte */
+  .card-identity{
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    flex-wrap:wrap;    /* ⟵ permet d'aller à la ligne si trop serré */
+  }
+  .card-identity .info{
+    min-width:0;       /* ⟵ requis pour que text-truncate marche en flex */
+  }
+
+  /* Casser proprement les emails/numéros/longs mots */
+  .break-anywhere{
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
 </style>
 
 <div class="card">
   <div class="card-body">
     <h4 class="mb-3"><i class="fa fa-users-gear me-1"></i> Gestion des utilisateurs</h4>
 
-    {# ======= MOBILE/TABLET/LAPTOP ( < xl ) : bouton "Filtres" + collapse ======= #}
+    {# ======= MOBILE/TABLET/LAPTOP (< xl) : bouton "Filtres" ======= #}
     <div class="d-xl-none mb-3">
       <button class="btn btn-outline-success w-100" type="button"
               data-bs-toggle="collapse" data-bs-target="#usersFiltersCollapse"
@@ -45,9 +68,7 @@
           <select name="role" class="form-select">
             <option value="">— Tous rôles —</option>
             {% for r in roles %}
-              <option value="{{ r.id }}" {% if role_id|default:''|stringformat:"s" == r.id|stringformat:"s" %}selected{% endif %}>
-                {{ r.role }}
-              </option>
+              <option value="{{ r.id }}" {% if role_id|default:''|stringformat:"s" == r.id|stringformat:"s" %}selected{% endif %}>{{ r.role }}</option>
             {% endfor %}
           </select>
 
@@ -61,14 +82,12 @@
             <label for="m_only_waiting_validation" class="form-check-label">En attente validation</label>
           </div>
 
-          <button class="btn btn-success w-100">
-            <i class="fa fa-search"></i> Filtrer
-          </button>
+          <button class="btn btn-success w-100"><i class="fa fa-search"></i> Filtrer</button>
         </form>
       </div>
     </div>
 
-    {# ======= DESKTOP LARGE ( ≥ xl ) : barre horizontale ======= #}
+    {# ======= DESKTOP LARGE (≥ xl) : barre horizontale ======= #}
     <form class="row g-2 align-items-center mb-3 d-none d-xl-flex" method="get">
       <input type="hidden" name="tab" value="utilisateurs">
 
@@ -81,9 +100,7 @@
         <select name="role" class="form-select">
           <option value="">— Tous rôles —</option>
           {% for r in roles %}
-            <option value="{{ r.id }}" {% if role_id|default:''|stringformat:"s" == r.id|stringformat:"s" %}selected{% endif %}>
-              {{ r.role }}
-            </option>
+            <option value="{{ r.id }}" {% if role_id|default:''|stringformat:"s" == r.id|stringformat:"s" %}selected{% endif %}>{{ r.role }}</option>
           {% endfor %}
         </select>
       </div>
@@ -114,7 +131,7 @@
       <table class="table table-sm align-middle">
         <thead class="table-light">
           <tr>
-            <th style="width:72px">#</th>
+            <th style="width:64px">Photo</th>
             <th>Identité</th>
             <th>Email</th>
             <th style="width:220px">Rôle</th>
@@ -133,26 +150,37 @@
       </table>
     </div>
 
-    {# --- Vue CARTES (< xl) : xs=1, sm=2 (col-sm-6), md=3 (col-md-4), lg=3 --- #}
+    {# --- Vue CARTES (< xl) --- #}
     <div class="d-xl-none">
       <div class="row g-2 row-cols-1 row-cols-sm-2 row-cols-md-3">
         {% for u in page_obj.object_list %}
           <div class="col user-col" id="user-card-col-{{ u.id }}">
             <div class="card shadow-sm mb-2 h-100 user-card w-100" id="user-card-{{ u.id }}">
               <div class="card-body py-2">
-                <div>
-                  <div class="small text-muted">#{{ u.id }}</div>
-                  <div class="fw-semibold">{{ u.username }}</div>
-                  <div class="small text-muted">
-                    {{ u.first_name }} {{ u.last_name }}{% if u.telephone %} • {{ u.telephone }}{% endif %}
+
+                {# En-tête avatar + identité (wrap si manque d'espace) #}
+                <div class="card-identity">
+                  {% if u.profil_photo %}
+                    <img src="{{ u.profil_photo.url }}" alt="{{ u.username }}" class="avatar-56">
+                  {% else %}
+                    <img src="{% static 'images/default.jpg' %}" alt="—" class="avatar-56">
+                  {% endif %}
+
+                  <div class="info">
+                    <div class="small text-muted">#{{ u.id }}</div>
+                    <div class="fw-semibold text-truncate">{{ u.username }}</div>
+                    <div class="small text-muted break-anywhere">
+                      {{ u.first_name }} {{ u.last_name }}{% if u.telephone %} • {{ u.telephone }}{% endif %}
+                    </div>
                   </div>
-                  <div class="small mt-1">
-                    {% if u.email %}
-                      <a href="mailto:{{ u.email }}">{{ u.email }}</a>
-                    {% else %}
-                      <span class="text-muted">—</span>
-                    {% endif %}
-                  </div>
+                </div>
+
+                <div class="small mt-2 break-anywhere">
+                  {% if u.email %}
+                    <a class="break-anywhere" href="mailto:{{ u.email }}">{{ u.email }}</a>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
                 </div>
 
                 <div class="mt-2">
@@ -183,9 +211,7 @@
                 </div>
               </div>
 
-              {# Boutons intégrés dans le footer de la card #}
               <div class="card-footer d-flex justify-content-end gap-2 py-2">
-                {# mini form pour POST + swap sur la carte #}
                 <form id="fc{{ u.id }}"
                       method="post"
                       action="{% url 'config_user_update' u.id %}"
@@ -291,7 +317,7 @@
   </div>
 </div>
 
-{# Indicateur (utilisé par hx-indicator) #}
+{# Indicateur HTMX #}
 <div id="hxIndicator" class="position-fixed bottom-0 end-0 m-3 d-none">
   <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
 </div>
@@ -352,11 +378,8 @@
     if (form) {
       form.setAttribute('action', deleteUrl);
       form.setAttribute('hx-post', deleteUrl);
-      if (rowSelector) {
-        form.setAttribute('hx-target', rowSelector);
-      } else {
-        form.removeAttribute('hx-target');
-      }
+      if (rowSelector) { form.setAttribute('hx-target', rowSelector); }
+      else { form.removeAttribute('hx-target'); }
     }
   });
 

@@ -1,6 +1,14 @@
 {# templates/configuration/includes/_user_row.html : rend UNE ligne <tr> complète (desktop ≥ xl) #}
+{% load static %}
+
 <tr id="user-row-table-{{ u.id }}">
-  <td class="text-muted">{{ u.id }}</td>
+  <td>
+    {% if u.profil_photo %}
+      <img src="{{ u.profil_photo.url }}" alt="{{ u.username }}" class="avatar-40">
+    {% else %}
+      <img src="{% static 'images/default.jpg' %}" alt="—" class="avatar-40">
+    {% endif %}
+  </td>
 
   <td>
     <div class="fw-semibold">{{ u.username }}</div>
