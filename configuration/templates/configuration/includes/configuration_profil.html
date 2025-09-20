@@ -1,30 +1,54 @@
+{# templates/configuration/includes/configuration_profil.html #}
+{% load static %}
 {% load custom_tags %}
 
-<div class="d-flex align-items-center justify-content-between mb-2">
-  <h4 class="mb-0">Profil</h4>
-  <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalProfil">
-    <i class="fa fa-edit"></i> Modifier le profil
-  </button>
+<div class="d-flex row align-items-center justify-content-between mb-2">
+  <h4 class="mb-0 col-12 col-md-4">Profil</h4>
+  <div class="d-flex col-12 col-md-4 gap-2">
+    <button class="btn btn-outline-success w-100 mt-2" data-bs-toggle="modal" data-bs-target="#modalPassword">
+      <i class="fa fa-key me-1"></i> Modifier le mot de passe
+    </button>
+    
+  </div>
+  <div class="d-flex col-12 col-md-4 gap-2">
+    <button class="btn btn-success w-100 mt-2" data-bs-toggle="modal" data-bs-target="#modalProfil">
+      <i class="fa fa-edit me-1"></i> Modifier le profil
+    </button>
+  </div>
 </div>
 
 <div class="card shadow-sm">
   <div class="card-body">
-    <div class="row g-3">
-      <div class="col-md-6"><strong>Nom :</strong> {{ u.last_name|default:"—" }}</div>
-      <div class="col-md-6"><strong>Prénom :</strong> {{ u.first_name|default:"—" }}</div>
-      <div class="col-md-6"><strong>Adresse :</strong> {{ u.adresse|default:"—" }}</div>
-      <div class="col-md-6"><strong>Téléphone :</strong> {{ u.telephone|default:"—" }}</div>
-      <div class="col-md-6"><strong>Email :</strong> {{ u.email|default:"—" }}</div>
-      <div class="col-md-6"><strong>Nom d’utilisateur :</strong> {{ u.username }}</div>
+    <div class="row g-3 align-items-center">
+      <div class="col-md-3 text-center">
+        {# 🖼️ Photo de profil avec fallback #}
+        {% if u.profil_photo %}
+          <img src="{{ u.profil_photo.url }}" class="img-thumbnail rounded-circle"
+              style="width:160px;height:160px;object-fit:cover;" alt="Photo de profil">
+        {% else %}
+          <img src="{% static 'images/bikeinmada.png' %}" class="img-thumbnail rounded-circle"
+              style="width:160px;height:160px;object-fit:cover;" alt="Par défaut">
+        {% endif %}
+      </div>
+      <div class="col-md-9">
+        <div class="row g-3">
+          <div class="col-md-6"><strong>Nom :</strong> {{ u.last_name|default:"—" }}</div>
+          <div class="col-md-6"><strong>Prénom :</strong> {{ u.first_name|default:"—" }}</div>
+          <div class="col-md-6"><strong>Adresse :</strong> {{ u.adresse|default:"—" }}</div>
+          <div class="col-md-6"><strong>Téléphone :</strong> {{ u.telephone|default:"—" }}</div>
+          <div class="col-md-6"><strong>Email :</strong> {{ u.email|default:"—" }}</div>
+          <div class="col-md-6"><strong>Nom d’utilisateur :</strong> {{ u.username }}</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-{# ---------- Modal édition Profil (intégré) ---------- #}
+{# ---------- Modal édition Profil ---------- #}
 <div class="modal fade" id="modalProfil" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form method="post" action="{% url 'configuration_profil_update' %}">
+      <form method="post" action="{% url 'configuration_profil_update' %}" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="modal-header">
           <h5 class="modal-title">Modifier le profil</h5>
@@ -51,10 +75,63 @@
             {{ form.telephone|add_class:"form-control" }}
             {% if form.telephone.errors %}<div class="invalid-feedback d-block">{{ form.telephone.errors|striptags }}</div>{% endif %}
           </div>
+
+          {# 🆕 Champ photo de profil #}
+          <div class="mb-3">
+            <label for="{{ form.profil_photo.id_for_label }}" class="form-label">Photo de profil</label>
+            {{ form.profil_photo|add_class:"form-control" }}
+            <div class="form-text">Formats conseillés : JPG/PNG, ~1 Mo max.</div>
+            {% if form.profil_photo.errors %}<div class="invalid-feedback d-block">{{ form.profil_photo.errors|striptags }}</div>{% endif %}
+          </div>
+
+          {# Aperçu actuel #}
+          <div class="mb-2">
+            <small class="text-muted">Aperçu actuel :</small><br>
+            {% if u.profil_photo %}
+              <img src="{{ u.profil_photo.url }}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+            {% else %}
+              <img src="{% static 'images/default-profile.png' %}" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+            {% endif %}
+          </div>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
           <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# ---------- Modal changement de mot de passe ---------- #}
+<div class="modal fade" id="modalPassword" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'configuration_password_change' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fa fa-key me-1"></i> Changer le mot de passe</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Ancien mot de passe</label>
+            <input type="password" name="old_password" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nouveau mot de passe</label>
+            <input type="password" name="new_password1" class="form-control" required>
+          </div>
+          <div class="mb-1">
+            <label class="form-label">Confirmez le nouveau mot de passe</label>
+            <input type="password" name="new_password2" class="form-control" required>
+          </div>
+          <small class="text-muted">Utilisez un mot de passe fort (8+ caractères, mélange lettres/chiffres/symboles).</small>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success">Mettre à jour</button>
         </div>
       </form>
     </div>

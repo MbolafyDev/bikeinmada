@@ -16,6 +16,7 @@ urlpatterns = [
 
     # Profil (dans Configuration)
     path("profil/update/", views.configuration_profil_update, name="configuration_profil_update"),
+    path("profil/password-change/", views.configuration_password_change, name="configuration_password_change"),
 
     # Pages
     path('ajouter_page/', views.ajouter_page, name='ajouter_page'),

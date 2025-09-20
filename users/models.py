@@ -19,5 +19,12 @@ class CustomUser(AbstractUser):
     telephone = models.CharField(max_length=20, blank=True)
     is_validated_by_admin = models.BooleanField(default=False)
 
+    profil_photo = models.ImageField(
+        upload_to="profile/",
+        null=True,
+        blank=True,
+        default=None
+    )
+
     def __str__(self):
         return self.username

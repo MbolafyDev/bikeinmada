@@ -1,24 +1,26 @@
 # configuration/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.template.loader import render_to_string
 from django.db import transaction
-from django.http import HttpResponse
-import json
 from django.urls import reverse
 from django.http import Http404, JsonResponse, QueryDict, HttpResponse
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.db.models import Q
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.decorators import user_passes_test
+import json
 
 from common.decorators import admin_required
 from common.models import Pages, Caisse, PlanDesComptes
 from articles.models import Categorie, Taille, Couleur
 
-# Profil (depuis l’app users)
-from users.forms import ProfilForm
+# Profil / Users
+from users.forms import ProfilForm, PasswordChangeForm
+from users.models import Role, CustomUser
 
 # Livraison (modèles + constantes + formulaire)
 from livraison.models import (
@@ -28,9 +30,6 @@ from livraison.models import (
     FRAIS_LIVREUR_PAR_DEFAUT,
 )
 from livraison.forms import LivreurForm
-
-# ✅ Rôles & Utilisateurs (depuis users)
-from users.models import Role, CustomUser
 
 
 # -------------------------------
@@ -56,11 +55,6 @@ def is_admin_user(user) -> bool:
     return role_label in ADMIN_ROLE_ALIASES
 
 
-# Alias interne pour compatibilité (évitons les divergences)
-def _has_admin_role(user) -> bool:
-    return is_admin_user(user)
-
-
 # -------------------------------
 # Sections disponibles
 # -------------------------------
@@ -79,6 +73,7 @@ SECTIONS = (
 
 # -------------------------------
 # Helper : construire le contexte d’une section
+# (⚠️ Définir UNE SEULE FOIS — c'était la cause de l'erreur)
 # -------------------------------
 def _get_section_context(request, section):
     # ⚠️ Une seule variable d’accès, pilotée par is_admin_user()
@@ -104,8 +99,10 @@ def _get_section_context(request, section):
         })
 
     if section == "profil":
+        # 🆕 On fournit aussi pwd_form ici
         return ("configuration/includes/configuration_profil.html", {
             "form": ProfilForm(instance=request.user),
+            "pwd_form": PasswordChangeForm(user=request.user),
             "u": request.user,
             "is_admin": is_admin_like,
         })
@@ -210,6 +207,7 @@ def _get_section_context(request, section):
             "is_admin": is_admin_like,
         })
 
+    # Si la section est inconnue -> 404 explicite
     raise Http404("Section inconnue")
 
 
@@ -415,6 +413,52 @@ def supprimer_plan(request, pk):
         messages.warning(request, f"Erreur lors de la suppression du compte : {e}")
     return redirect(f"{reverse('configuration')}?tab=plans")
 
+@login_required
+@user_passes_test(is_admin_user)
+@require_POST
+def ajouter_role(request):
+    lib = (request.POST.get("role") or "").strip()
+    if not lib:
+        messages.warning(request, "Le nom du rôle est requis.")
+        return redirect(f"{reverse('configuration')}?tab=roles")
+    try:
+        lib_norm = lib.title()
+        Role.objects.get_or_create(role=lib_norm)
+        messages.success(request, f"Rôle « {lib_norm} » ajouté ✅")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de l’ajout du rôle : {e}")
+    return redirect(f"{reverse('configuration')}?tab=roles")
+
+@login_required
+@user_passes_test(is_admin_user)
+@require_POST
+def modifier_role(request, pk):
+    lib = (request.POST.get("role") or "").strip()
+    if not lib:
+        messages.warning(request, "Le nom du rôle est requis.")
+        return redirect(f"{reverse('configuration')}?tab=roles")
+    try:
+        r = get_object_or_404(Role, pk=pk)
+        r.role = lib.title()
+        r.save()
+        messages.success(request, f"Rôle « {r.role} » modifié ✅")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de la modification du rôle : {e}")
+    return redirect(f"{reverse('configuration')}?tab=roles")
+
+@login_required
+@user_passes_test(is_admin_user)
+@require_POST
+def supprimer_role(request, pk):
+    try:
+        r = get_object_or_404(Role, pk=pk)
+        nom = r.role
+        r.delete()
+        messages.success(request, f"Rôle « {nom} » supprimé 🗑️")
+    except Exception as e:
+        messages.warning(request, f"Erreur lors de la suppression du rôle : {e}")
+    return redirect(f"{reverse('configuration')}?tab=roles")
+
 
 # -------------------------------
 # Actions PROFIL
@@ -422,12 +466,26 @@ def supprimer_plan(request, pk):
 @login_required
 @require_POST
 def configuration_profil_update(request):
-    form = ProfilForm(request.POST, instance=request.user)
+    form = ProfilForm(request.POST, request.FILES, instance=request.user)
     if form.is_valid():
         form.save()
         messages.success(request, "Profil mis à jour avec succès ✅")
     else:
         messages.warning(request, "Échec de la mise à jour du profil. Corrigez les erreurs puis réessayez.")
+    return redirect(f"{reverse('configuration')}?tab=profil")
+
+
+@login_required
+@require_POST
+def configuration_password_change(request):
+    form = PasswordChangeForm(user=request.user, data=request.POST)
+    if form.is_valid():
+        user = form.save()
+        update_session_auth_hash(request, user)  # ⚠️ rester connecté après changement
+        messages.success(request, "Mot de passe changé avec succès ✅")
+    else:
+        first_error = next(iter(form.errors.values()))[0] if form.errors else "Erreur de validation."
+        messages.warning(request, f"Échec du changement de mot de passe : {first_error}")
     return redirect(f"{reverse('configuration')}?tab=profil")
 
 
@@ -694,58 +752,6 @@ def supprimer_couleur(request, pk):
 
 
 # -------------------------------
-# ✅ Actions ROLES (protégées strictement)
-# -------------------------------
-@login_required
-@user_passes_test(is_admin_user)
-@require_POST
-def ajouter_role(request):
-    lib = (request.POST.get("role") or "").strip()
-    if not lib:
-        messages.warning(request, "Le nom du rôle est requis.")
-        return redirect(f"{reverse('configuration')}?tab=roles")
-    try:
-        lib_norm = lib.title()
-        Role.objects.get_or_create(role=lib_norm)
-        messages.success(request, f"Rôle « {lib_norm} » ajouté ✅")
-    except Exception as e:
-        messages.warning(request, f"Erreur lors de l’ajout du rôle : {e}")
-    return redirect(f"{reverse('configuration')}?tab=roles")
-
-
-@login_required
-@user_passes_test(is_admin_user)
-@require_POST
-def modifier_role(request, pk):
-    lib = (request.POST.get("role") or "").strip()
-    if not lib:
-        messages.warning(request, "Le nom du rôle est requis.")
-        return redirect(f"{reverse('configuration')}?tab=roles")
-    try:
-        r = get_object_or_404(Role, pk=pk)
-        r.role = lib.title()
-        r.save()
-        messages.success(request, f"Rôle « {r.role} » modifié ✅")
-    except Exception as e:
-        messages.warning(request, f"Erreur lors de la modification du rôle : {e}")
-    return redirect(f"{reverse('configuration')}?tab=roles")
-
-
-@login_required
-@user_passes_test(is_admin_user)
-@require_POST
-def supprimer_role(request, pk):
-    try:
-        r = get_object_or_404(Role, pk=pk)
-        nom = r.role
-        r.delete()
-        messages.success(request, f"Rôle « {nom} » supprimé 🗑️")
-    except Exception as e:
-        messages.warning(request, f"Erreur lors de la suppression du rôle : {e}")
-    return redirect(f"{reverse('configuration')}?tab=roles")
-
-
-# -------------------------------
 # ✅ Actions UTILISATEURS (inline via HTMX)
 # -------------------------------
 @login_required
@@ -773,7 +779,7 @@ def config_user_update(request, user_id: int):
                 u.role = new_role
                 changed_fields.append("role")
 
-        # --- is_staff (MANQUAIT)
+        # --- is_staff
         if "is_staff" in request.POST:
             new_is_staff = as_bool(last_value("is_staff"))
             if bool(u.is_staff) != new_is_staff:
