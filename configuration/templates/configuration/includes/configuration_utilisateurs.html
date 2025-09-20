@@ -3,14 +3,32 @@
   @media (max-width: 767.98px){
     .card.shadow-sm{ box-shadow: 0 .25rem .5rem rgba(0,0,0,.075)!important; }
   }
+
+  /* Egalisation des hauteurs sans impacter la largeur responsive de la colonne */
+  .user-col { display: flex; }                    /* la colonne devient un conteneur flex */
+  .user-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;          /* <-- occupe 100% de la largeur de la colonne */
+    min-width: 0;         /* <-- empêche les débordements (longs emails/noms) */
+    min-height: 230px;    /* xs */
+  }
+  .user-card .card-body { flex: 1 1 auto; }       /* le body pousse le footer en bas */
+  .user-card .card-footer { flex-shrink: 0; }
+
+  @media (min-width: 576px){ .user-card{ min-height: 240px; } } /* sm */
+  @media (min-width: 768px){ .user-card{ min-height: 260px; } } /* md */
+  @media (min-width: 992px){ .user-card{ min-height: 260px; } } /* lg */
+  /* en xl: on passe en tableau */
 </style>
 
 <div class="card">
   <div class="card-body">
     <h4 class="mb-3"><i class="fa fa-users-gear me-1"></i> Gestion des utilisateurs</h4>
 
-    {# ======= MOBILE: bouton "Filtres" + panneau repliable ======= #}
-    <div class="d-md-none mb-3">
+    {# ======= MOBILE/TABLET/LAPTOP ( < xl ) : bouton "Filtres" + collapse ======= #}
+    <div class="d-xl-none mb-3">
       <button class="btn btn-outline-success w-100" type="button"
               data-bs-toggle="collapse" data-bs-target="#usersFiltersCollapse"
               aria-expanded="false" aria-controls="usersFiltersCollapse">
@@ -50,16 +68,16 @@
       </div>
     </div>
 
-    {# ======= DESKTOP: barre horizontale ======= #}
-    <form class="row g-2 align-items-center mb-3 d-none d-md-flex" method="get">
+    {# ======= DESKTOP LARGE ( ≥ xl ) : barre horizontale ======= #}
+    <form class="row g-2 align-items-center mb-3 d-none d-xl-flex" method="get">
       <input type="hidden" name="tab" value="utilisateurs">
 
-      <div class="col-md-4">
+      <div class="col-xl-4">
         <input type="text" name="q" value="{{ q }}" class="form-control"
                placeholder="Rechercher (nom, email, téléphone, adresse)">
       </div>
 
-      <div class="col-md-3">
+      <div class="col-xl-3">
         <select name="role" class="form-select">
           <option value="">— Tous rôles —</option>
           {% for r in roles %}
@@ -70,29 +88,29 @@
         </select>
       </div>
 
-      <div class="col-md-2">
+      <div class="col-xl-2">
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="only_active" name="only_active" {% if only_active %}checked{% endif %}>
           <label for="only_active" class="form-check-label">Actifs uniquement</label>
         </div>
       </div>
 
-      <div class="col-md-2">
+      <div class="col-xl-2">
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="only_waiting_validation" name="only_waiting_validation" {% if only_waiting_validation %}checked{% endif %}>
           <label for="only_waiting_validation" class="form-check-label">En attente validation</label>
         </div>
       </div>
 
-      <div class="col-md-auto">
+      <div class="col-xl-auto">
         <button class="btn btn-success"><i class="fa fa-search"></i> Filtrer</button>
       </div>
     </form>
 
     {# ======= LISTE UTILISATEURS ======= #}
 
-    {# --- Vue TABLE (>= md) --- #}
-    <div class="table-responsive d-none d-md-block">
+    {# --- Vue TABLE (≥ xl) --- #}
+    <div class="table-responsive d-none d-xl-block">
       <table class="table table-sm align-middle">
         <thead class="table-light">
           <tr>
@@ -115,37 +133,67 @@
       </table>
     </div>
 
-    {# --- Vue CARTES (< md) --- #}
-    <div class="d-md-none">
-      {% for u in page_obj.object_list %}
-        <div class="card shadow-sm mb-2" id="user-row-card-{{ u.id }}">
-          <div class="card-body py-2">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <div class="small text-muted">#{{ u.id }}</div>
-                <div class="fw-semibold">{{ u.username }}</div>
-                <div class="small text-muted">
-                  {{ u.first_name }} {{ u.last_name }}{% if u.telephone %} • {{ u.telephone }}{% endif %}
+    {# --- Vue CARTES (< xl) : xs=1, sm=2 (col-sm-6), md=3 (col-md-4), lg=3 --- #}
+    <div class="d-xl-none">
+      <div class="row g-2 row-cols-1 row-cols-sm-2 row-cols-md-3">
+        {% for u in page_obj.object_list %}
+          <div class="col user-col" id="user-card-col-{{ u.id }}">
+            <div class="card shadow-sm mb-2 h-100 user-card w-100" id="user-card-{{ u.id }}">
+              <div class="card-body py-2">
+                <div>
+                  <div class="small text-muted">#{{ u.id }}</div>
+                  <div class="fw-semibold">{{ u.username }}</div>
+                  <div class="small text-muted">
+                    {{ u.first_name }} {{ u.last_name }}{% if u.telephone %} • {{ u.telephone }}{% endif %}
+                  </div>
+                  <div class="small mt-1">
+                    {% if u.email %}
+                      <a href="mailto:{{ u.email }}">{{ u.email }}</a>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </div>
                 </div>
-                <div class="small mt-1">
-                  {% if u.email %}
-                    <a href="mailto:{{ u.email }}">{{ u.email }}</a>
-                  {% else %}
-                    <span class="text-muted">—</span>
-                  {% endif %}
+
+                <div class="mt-2">
+                  <label class="form-label mb-1 small text-muted">Rôle</label>
+                  <select name="role_id" form="fc{{ u.id }}" class="form-select form-select-sm">
+                    <option value="">— Aucun —</option>
+                    {% for r in roles %}
+                      <option value="{{ r.id }}" {% if u.role_id == r.id %}selected{% endif %}>{{ r.role }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="d-flex gap-3 mt-2">
+                  <div class="form-check">
+                    <input type="hidden" name="is_active" value="0" form="fc{{ u.id }}">
+                    <input class="form-check-input" type="checkbox" id="m_is_active_{{ u.id }}"
+                           name="is_active" value="1" form="fc{{ u.id }}" {% if u.is_active %}checked{% endif %}>
+                    <label class="form-check-label" for="m_is_active_{{ u.id }}">Actif</label>
+                  </div>
+
+                  <div class="form-check">
+                    <input type="hidden" name="is_validated_by_admin" value="0" form="fc{{ u.id }}">
+                    <input class="form-check-input" type="checkbox" id="m_is_validated_{{ u.id }}"
+                           name="is_validated_by_admin" value="1" form="fc{{ u.id }}"
+                           {% if u.is_validated_by_admin %}checked{% endif %}>
+                    <label class="form-check-label" for="m_is_validated_{{ u.id }}">Validé par admin</label>
+                  </div>
                 </div>
               </div>
 
-              <div class="text-end">
+              {# Boutons intégrés dans le footer de la card #}
+              <div class="card-footer d-flex justify-content-end gap-2 py-2">
                 {# mini form pour POST + swap sur la carte #}
                 <form id="fc{{ u.id }}"
                       method="post"
                       action="{% url 'config_user_update' u.id %}"
                       hx-post="{% url 'config_user_update' u.id %}"
-                      hx-target="#user-row-card-{{ u.id }}"
+                      hx-target="#user-card-{{ u.id }}"
                       hx-swap="outerHTML"
                       hx-indicator="#hxIndicator"
-                      hx-include="#user-row-card-{{ u.id }} input, #user-row-card-{{ u.id }} select"
+                      hx-include="#user-card-{{ u.id }} input, #user-card-{{ u.id }} select"
                       class="d-none">
                   {% csrf_token %}
                 </form>
@@ -153,56 +201,29 @@
                 <button type="submit" form="fc{{ u.id }}" class="btn btn-success btn-sm" title="Mettre à jour">
                   <i class="fa fa-save"></i>
                 </button>
-                <button class="btn btn-outline-danger btn-sm ms-1"
+                <button class="btn btn-outline-danger btn-sm"
                         title="Supprimer"
                         data-bs-toggle="modal"
                         data-bs-target="#confirmDeleteUserModal"
                         data-user-id="{{ u.id }}"
                         data-username="{{ u.username }}"
                         data-delete-url="{% url 'config_user_delete' u.id %}"
-                        data-row-selector="#user-row-card-{{ u.id }}"
+                        data-row-selector="#user-card-col-{{ u.id }}"
                         {% if u.id == request.user.id or u.is_superuser %}disabled{% endif %}>
                   <i class="fa fa-trash"></i>
                 </button>
               </div>
             </div>
-
-            <div class="mt-2">
-              <label class="form-label mb-1 small text-muted">Rôle</label>
-              <select name="role_id" form="fc{{ u.id }}" class="form-select form-select-sm">
-                <option value="">— Aucun —</option>
-                {% for r in roles %}
-                  <option value="{{ r.id }}" {% if u.role_id == r.id %}selected{% endif %}>{{ r.role }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div class="d-flex gap-3 mt-2">
-              <div class="form-check">
-                <input type="hidden" name="is_active" value="0" form="fc{{ u.id }}">
-                <input class="form-check-input" type="checkbox" id="m_is_active_{{ u.id }}"
-                       name="is_active" value="1" form="fc{{ u.id }}" {% if u.is_active %}checked{% endif %}>
-                <label class="form-check-label" for="m_is_active_{{ u.id }}">Actif</label>
-              </div>
-
-              <div class="form-check">
-                <input type="hidden" name="is_validated_by_admin" value="0" form="fc{{ u.id }}">
-                <input class="form-check-input" type="checkbox" id="m_is_validated_{{ u.id }}"
-                       name="is_validated_by_admin" value="1" form="fc{{ u.id }}"
-                       {% if u.is_validated_by_admin %}checked{% endif %}>
-                <label class="form-check-label" for="m_is_validated_{{ u.id }}">Validé par admin</label>
-              </div>
-            </div>
           </div>
-        </div>
-      {% empty %}
-        <div class="text-center text-muted py-4">Aucun utilisateur trouvé.</div>
-      {% endfor %}
+        {% empty %}
+          <div class="text-center text-muted py-4">Aucun utilisateur trouvé.</div>
+        {% endfor %}
+      </div>
     </div>
 
     {% if page_obj.paginator.num_pages > 1 %}
       <nav class="mt-2">
-        <ul class="pagination pagination-sm justify-content-center justify-content-md-start">
+        <ul class="pagination pagination-sm justify-content-center justify-content-xl-start">
           {% if page_obj.has_previous %}
             <li class="page-item">
               <a class="page-link" href="?tab=utilisateurs&page=1{% if q %}&q={{ q }}{% endif %}{% if role_id %}&role={{ role_id }}{% endif %}{% if only_active %}&only_active=on{% endif %}{% if only_waiting_validation %}&only_waiting_validation=on{% endif %}">&laquo;</a>
@@ -240,7 +261,7 @@
     <div class="modal-content border-0 shadow">
       <div class="modal-header bg-danger text-white">
         <h5 class="modal-title" id="confirmDeleteUserLabel"><i class="fa fa-triangle-exclamation me-1"></i> Confirmer la suppression</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
       <div class="modal-body">
         <p class="mb-0">
